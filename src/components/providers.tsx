@@ -5,7 +5,7 @@ import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
 } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { NuqsAdapter } from "nuqs/adapters/react-router";
 import { useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -15,8 +15,8 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            gcTime: 5 * 60 * 1000, // 5 minutes
+            staleTime: 60 * 1000,
+            gcTime: 5 * 60 * 1000,
           },
         },
       })

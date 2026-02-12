@@ -1,4 +1,3 @@
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
 
 export function getErrorMessage(err: unknown) {
@@ -13,10 +12,6 @@ export function getErrorMessage(err: unknown) {
 
   if (err instanceof Error) {
     return err.message;
-  }
-
-  if (isRedirectError(err)) {
-    throw err;
   }
 
   return unknownError;

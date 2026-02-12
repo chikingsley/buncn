@@ -1,5 +1,5 @@
 import { LayoutGrid } from "lucide-react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { ActiveLink } from "@/components/active-link";
 import { Icons } from "@/components/icons";
 import { DocsLink } from "@/components/layouts/docs-link";
@@ -12,7 +12,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
       <div className="container flex h-14 items-center">
         <Button asChild className="size-8" size="icon" variant="ghost">
-          <Link href="/">
+          <Link to="/">
             <LayoutGrid />
           </Link>
         </Button>
@@ -23,14 +23,14 @@ export function SiteHeader() {
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
           <Button asChild className="size-8" size="icon" variant="ghost">
-            <Link
+            <a
               aria-label="GitHub repo"
               href={siteConfig.links.github}
               rel="noopener noreferrer"
               target="_blank"
             >
               <Icons.gitHub aria-hidden="true" className="size-4" />
-            </Link>
+            </a>
           </Button>
           <ModeToggle />
         </nav>

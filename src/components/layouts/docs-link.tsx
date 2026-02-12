@@ -1,11 +1,11 @@
 "use client";
 
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useLocation } from "react-router-dom";
 import { ActiveLink } from "@/components/active-link";
 
 export function DocsLink() {
-  const segment = useSelectedLayoutSegment();
-  const href = segment?.startsWith("data-grid")
+  const location = useLocation();
+  const href = location.pathname.startsWith("/data-grid")
     ? "https://diceui.com/docs/components/data-grid"
     : "https://diceui.com/docs/components/data-table";
 

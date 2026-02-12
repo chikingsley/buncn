@@ -1,7 +1,5 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import { env } from "@/env";
 
 const redis =
@@ -26,10 +24,10 @@ export async function checkRateLimit(req?: Request) {
     return { success: true };
   }
 
-  const headersList = req ? req.headers : await headers();
+  const headersList = req?.headers;
   const ip =
-    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    headersList.get("x-real-ip") ??
+    headersList?.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headersList?.get("x-real-ip") ??
     "anonymous";
 
   const { success, limit, reset, remaining } = await ratelimit.limit(ip);
@@ -48,11 +46,12 @@ export function rateLimitResponse(result: {
   reset?: number;
   remaining?: number;
 }) {
-  return NextResponse.json(
-    { error: "Too many requests. Please slow down." },
+  return new Response(
+    JSON.stringify({ error: "Too many requests. Please slow down." }),
     {
       status: 429,
       headers: {
+        "content-type": "application/json",
         "X-RateLimit-Limit": String(result.limit ?? 30),
         "X-RateLimit-Remaining": String(result.remaining ?? 0),
         "X-RateLimit-Reset": String(result.reset ?? Date.now()),
