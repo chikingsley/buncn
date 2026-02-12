@@ -30,7 +30,8 @@
         "useAltText": "off",
         "useKeyWithClickEvents": "off",
         "useSemanticElements": "off",
-        "noLabelWithoutControl": "off"
+        "noLabelWithoutControl": "off",
+        "noNoninteractiveElementInteractions": "off"
       },
       "correctness": {
         "noNestedComponentDefinitions": "off",
@@ -41,11 +42,15 @@
         "useHookAtTopLevel": "warn"
       },
       "complexity": {
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "noExcessiveCognitiveComplexity": "off",
+        "noVoid": "off"
       },
       "style": {
         "useImportType": "warn",
-        "useSelfClosingElements": "off"
+        "useSelfClosingElements": "off",
+        "noNestedTernary": "off",
+        "useDefaultSwitchClause": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -53,7 +58,14 @@
       "suspicious": {
         "noAssignInExpressions": "off",
         "noUnknownAtRules": "off",
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "useAwait": "off",
+        "noBitwiseOperators": "off",
+        "noEmptyBlockStatements": "off"
+      },
+      "performance": {
+        "noNamespaceImport": "off",
+        "useTopLevelRegex": "off"
       },
       "nursery": {
         "useSortedClasses": {
@@ -79,7 +91,6 @@
   },
   "files": {
     "includes": [
-      "**",
       "!**/node_modules",
       "!**/dist",
       "!**/build",
@@ -87,5 +98,6 @@
       "!**/.turbo",
       "!**/.next"
     ]
-  }
+  },
+  "extends": ["ultracite/biome/core", "ultracite/biome/next"]
 }
