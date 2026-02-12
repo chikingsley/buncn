@@ -30,16 +30,16 @@ function DataGridSelectHitbox({
         "group relative -my-1.5 h-[calc(100%+0.75rem)] py-1.5",
         size === "default" && "-ms-3 -me-2 ps-3 pe-2",
         size === "sm" && "-ms-3 -me-1.5 ps-3 pe-1.5",
-        size === "lg" && "-mx-3 px-3",
+        size === "lg" && "-mx-3 px-3"
       )}
     >
       {children}
       <label
-        htmlFor={htmlFor}
         className={cn(
           "absolute inset-0 cursor-pointer",
-          debug && "border border-red-500 border-dashed bg-red-500/20",
+          debug && "border border-red-500 border-dashed bg-red-500/20"
         )}
+        htmlFor={htmlFor}
       />
     </div>
   );
@@ -64,24 +64,24 @@ function DataGridSelectCheckbox({
 
   if (rowNumber !== undefined) {
     return (
-      <DataGridSelectHitbox htmlFor={id} size={hitboxSize} debug={debug}>
+      <DataGridSelectHitbox debug={debug} htmlFor={id} size={hitboxSize}>
         <div
           aria-hidden="true"
           className={cn(
             "pointer-events-none absolute start-3 top-1.5 flex size-4 items-center justify-center text-muted-foreground text-xs tabular-nums transition-opacity group-hover:opacity-0",
-            checked && "opacity-0",
+            checked && "opacity-0"
           )}
         >
           {rowNumber}
         </div>
         <Checkbox
-          id={id}
+          checked={checked}
           className={cn(
             "relative transition-[shadow,border,opacity] hover:border-primary/40",
             "opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100",
-            className,
+            className
           )}
-          checked={checked}
+          id={id}
           {...props}
         />
       </DataGridSelectHitbox>
@@ -89,14 +89,14 @@ function DataGridSelectCheckbox({
   }
 
   return (
-    <DataGridSelectHitbox htmlFor={id} size={hitboxSize} debug={debug}>
+    <DataGridSelectHitbox debug={debug} htmlFor={id} size={hitboxSize}>
       <Checkbox
-        id={id}
+        checked={checked}
         className={cn(
           "relative transition-[shadow,border] hover:border-primary/40",
-          className,
+          className
         )}
-        checked={checked}
+        id={id}
         {...props}
       />
     </DataGridSelectHitbox>
@@ -118,7 +118,7 @@ function DataGridSelectHeader<TData>({
 }: DataGridSelectHeaderProps<TData>) {
   const onCheckedChange = React.useCallback(
     (value: boolean) => table.toggleAllPageRowsSelected(value),
-    [table],
+    [table]
   );
 
   if (readOnly) {
@@ -136,9 +136,9 @@ function DataGridSelectHeader<TData>({
         table.getIsAllPageRowsSelected() ||
         (table.getIsSomePageRowsSelected() && "indeterminate")
       }
-      onCheckedChange={onCheckedChange}
-      hitboxSize={hitboxSize}
       debug={debug}
+      hitboxSize={hitboxSize}
+      onCheckedChange={onCheckedChange}
     />
   );
 }
@@ -172,7 +172,7 @@ function DataGridSelectCell<TData>({
         row.toggleSelected(value);
       }
     },
-    [meta, row],
+    [meta, row]
   );
 
   const onClick = React.useCallback(
@@ -182,7 +182,7 @@ function DataGridSelectCell<TData>({
         meta?.onRowSelect?.(row.index, !row.getIsSelected(), true);
       }
     },
-    [meta, row],
+    [meta, row]
   );
 
   if (readOnly) {
@@ -197,11 +197,11 @@ function DataGridSelectCell<TData>({
     <DataGridSelectCheckbox
       aria-label={rowNumber ? `Select row ${rowNumber}` : "Select row"}
       checked={row.getIsSelected()}
+      debug={debug}
+      hitboxSize={hitboxSize}
       onCheckedChange={onCheckedChange}
       onClick={onClick}
       rowNumber={rowNumber}
-      hitboxSize={hitboxSize}
-      debug={debug}
     />
   );
 }
@@ -229,20 +229,20 @@ export function getDataGridSelectColumn<TData>({
     id: "select",
     header: ({ table }) => (
       <DataGridSelectHeader
-        table={table}
+        debug={debug}
         hitboxSize={hitboxSize}
         readOnly={readOnly}
-        debug={debug}
+        table={table}
       />
     ),
     cell: ({ row, table }) => (
       <DataGridSelectCell
+        debug={debug}
+        enableRowMarkers={enableRowMarkers}
+        hitboxSize={hitboxSize}
+        readOnly={readOnly}
         row={row}
         table={table}
-        enableRowMarkers={enableRowMarkers}
-        readOnly={readOnly}
-        hitboxSize={hitboxSize}
-        debug={debug}
       />
     ),
     size,

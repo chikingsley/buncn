@@ -25,7 +25,7 @@ export function useFeatureFlags() {
   const context = React.useContext(FeatureFlagsContext);
   if (!context) {
     throw new Error(
-      "useFeatureFlags must be used within a FeatureFlagsProvider",
+      "useFeatureFlags must be used within a FeatureFlagsProvider"
     );
   }
   return context;
@@ -40,7 +40,9 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
     "filterFlag",
     {
       parse: (value) => {
-        if (!value) return null;
+        if (!value) {
+          return null;
+        }
         const validValues = flagConfig.featureFlags.map((flag) => flag.value);
         return validValues.includes(value as FilterFlag)
           ? (value as FilterFlag)
@@ -50,15 +52,15 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
       defaultValue: null,
       clearOnDefault: true,
       shallow: false,
-      eq: (a, b) => (!a && !b) || a === b,
-    },
+      eq: (a, b) => !(a || b) || a === b,
+    }
   );
 
   const onFilterFlagChange = React.useCallback(
     (value: FilterFlag) => {
       setFilterFlag(value);
     },
-    [setFilterFlag],
+    [setFilterFlag]
   );
 
   const contextValue = React.useMemo<FeatureFlagsContextValue>(
@@ -67,26 +69,26 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
       enableAdvancedFilter:
         filterFlag === "advancedFilters" || filterFlag === "commandFilters",
     }),
-    [filterFlag],
+    [filterFlag]
   );
 
   return (
     <FeatureFlagsContext.Provider value={contextValue}>
       <div className="w-full overflow-x-auto p-1">
         <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          value={filterFlag}
-          onValueChange={onFilterFlagChange}
           className="w-fit gap-0"
+          onValueChange={onFilterFlagChange}
+          size="sm"
+          type="single"
+          value={filterFlag}
+          variant="outline"
         >
           {flagConfig.featureFlags.map((flag) => (
-            <Tooltip key={flag.value} delayDuration={700}>
+            <Tooltip delayDuration={700} key={flag.value}>
               <ToggleGroupItem
-                value={flag.value}
-                className="whitespace-nowrap px-3 text-xs data-[state=on]:bg-accent/70 data-[state=on]:hover:bg-accent/90"
                 asChild
+                className="whitespace-nowrap px-3 text-xs data-[state=on]:bg-accent/70 data-[state=on]:hover:bg-accent/90"
+                value={flag.value}
               >
                 <TooltipTrigger>
                   <flag.icon className="size-3.5 shrink-0" />
@@ -95,9 +97,9 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
               </ToggleGroupItem>
               <TooltipContent
                 align="start"
+                className="flex flex-col gap-1.5 border bg-background py-2 font-semibold text-foreground [&>span]:hidden"
                 side="bottom"
                 sideOffset={6}
-                className="flex flex-col gap-1.5 border bg-background py-2 font-semibold text-foreground [&>span]:hidden"
               >
                 <div>{flag.tooltipTitle}</div>
                 <p className="text-balance text-muted-foreground text-xs">

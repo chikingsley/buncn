@@ -18,7 +18,7 @@ export interface Person {
   attachments?: FileCellData[];
 }
 
-faker.seed(12345);
+faker.seed(12_345);
 
 export const departments = [
   "Engineering",
@@ -119,7 +119,7 @@ const sampleFiles = [
     type: "application/pdf",
     sizeRange: [300, 600],
   },
-  { name: "Training_Video.mp4", type: "video/mp4", sizeRange: [5000, 15000] },
+  { name: "Training_Video.mp4", type: "video/mp4", sizeRange: [5000, 15_000] },
 ] as const;
 
 function generatePerson(id: number): Person {
@@ -150,7 +150,7 @@ function generatePerson(id: number): Person {
     email: faker.internet.email({ firstName, lastName }).toLowerCase(),
     website: faker.internet.url().replace(/\/$/, ""),
     notes: faker.helpers.arrayElement(notes),
-    salary: faker.number.int({ min: 40000, max: 150000 }),
+    salary: faker.number.int({ min: 40_000, max: 150_000 }),
     department: faker.helpers.arrayElement(departments),
     status: faker.helpers.arrayElement(statuses),
     isActive: faker.datatype.boolean(),
@@ -164,6 +164,6 @@ function generatePerson(id: number): Person {
   };
 }
 
-export const initialData: Person[] = Array.from({ length: 10000 }, (_, i) =>
-  generatePerson(i + 1),
+export const initialData: Person[] = Array.from({ length: 10_000 }, (_, i) =>
+  generatePerson(i + 1)
 );

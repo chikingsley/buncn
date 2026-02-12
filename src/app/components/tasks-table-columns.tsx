@@ -56,19 +56,19 @@ export function getTasksTableColumns({
       header: ({ table }) => (
         <Checkbox
           aria-label="Select all"
-          className="translate-y-0.5"
           checked={
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
+          className="translate-y-0.5"
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           aria-label="Select row"
-          className="translate-y-0.5"
           checked={row.getIsSelected()}
+          className="translate-y-0.5"
           onCheckedChange={(value) => row.toggleSelected(!!value)}
         />
       ),
@@ -94,7 +94,7 @@ export function getTasksTableColumns({
       ),
       cell: ({ row }) => {
         const label = tasks.label.enumValues.find(
-          (label) => label === row.original.label,
+          (label) => label === row.original.label
         );
 
         return (
@@ -122,15 +122,17 @@ export function getTasksTableColumns({
       ),
       cell: ({ cell }) => {
         const status = tasks.status.enumValues.find(
-          (status) => status === cell.getValue<Task["status"]>(),
+          (status) => status === cell.getValue<Task["status"]>()
         );
 
-        if (!status) return null;
+        if (!status) {
+          return null;
+        }
 
         const Icon = getStatusIcon(status);
 
         return (
-          <Badge variant="outline" className="py-1 [&>svg]:size-3.5">
+          <Badge className="py-1 [&>svg]:size-3.5" variant="outline">
             <Icon />
             <span className="capitalize">{status}</span>
           </Badge>
@@ -157,15 +159,17 @@ export function getTasksTableColumns({
       ),
       cell: ({ cell }) => {
         const priority = tasks.priority.enumValues.find(
-          (priority) => priority === cell.getValue<Task["priority"]>(),
+          (priority) => priority === cell.getValue<Task["priority"]>()
         );
 
-        if (!priority) return null;
+        if (!priority) {
+          return null;
+        }
 
         const Icon = getPriorityIcon(priority);
 
         return (
-          <Badge variant="outline" className="py-1 [&>svg]:size-3.5">
+          <Badge className="py-1 [&>svg]:size-3.5" variant="outline">
             <Icon />
             <span className="capitalize">{priority}</span>
           </Badge>
@@ -219,7 +223,7 @@ export function getTasksTableColumns({
     },
     {
       id: "actions",
-      cell: function Cell({ row }) {
+      cell({ row }) {
         const [isUpdatePending, startUpdateTransition] = React.useTransition();
 
         return (
@@ -227,10 +231,10 @@ export function getTasksTableColumns({
             <DropdownMenuTrigger asChild>
               <Button
                 aria-label="Open menu"
-                variant="ghost"
                 className="flex size-8 p-0 data-[state=open]:bg-muted"
+                variant="ghost"
               >
-                <Ellipsis className="size-4" aria-hidden="true" />
+                <Ellipsis aria-hidden="true" className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
@@ -243,7 +247,6 @@ export function getTasksTableColumns({
                 <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuRadioGroup
-                    value={row.original.label}
                     onValueChange={(value) => {
                       startUpdateTransition(() => {
                         toast.promise(
@@ -255,17 +258,18 @@ export function getTasksTableColumns({
                             loading: "Updating...",
                             success: "Label updated",
                             error: (err) => getErrorMessage(err),
-                          },
+                          }
                         );
                       });
                     }}
+                    value={row.original.label}
                   >
                     {tasks.label.enumValues.map((label) => (
                       <DropdownMenuRadioItem
-                        key={label}
-                        value={label}
                         className="capitalize"
                         disabled={isUpdatePending}
+                        key={label}
+                        value={label}
                       >
                         {label}
                       </DropdownMenuRadioItem>

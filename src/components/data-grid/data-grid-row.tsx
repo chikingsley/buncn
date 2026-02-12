@@ -72,10 +72,12 @@ export const DataGridRow = React.memo(DataGridRowImpl, (prev, next) => {
   }
 
   // Re-render if focused column changed within this row
-  if (nextHasFocus && prevHasFocus) {
-    if (prev.focusedCell?.columnId !== next.focusedCell?.columnId) {
-      return false;
-    }
+  if (
+    nextHasFocus &&
+    prevHasFocus &&
+    prev.focusedCell?.columnId !== next.focusedCell?.columnId
+  ) {
+    return false;
   }
 
   // Re-render if editing state changed for this row
@@ -87,10 +89,12 @@ export const DataGridRow = React.memo(DataGridRowImpl, (prev, next) => {
   }
 
   // Re-render if editing column changed within this row
-  if (nextHasEditing && prevHasEditing) {
-    if (prev.editingCell?.columnId !== next.editingCell?.columnId) {
-      return false;
-    }
+  if (
+    nextHasEditing &&
+    prevHasEditing &&
+    prev.editingCell?.columnId !== next.editingCell?.columnId
+  ) {
+    return false;
   }
 
   // Re-render if this row's selected cells changed
@@ -175,7 +179,9 @@ function DataGridRowImpl<TData>({
 
   const onRowChange = React.useCallback(
     (node: HTMLDivElement | null) => {
-      if (typeof virtualRowIndex === "undefined") return;
+      if (typeof virtualRowIndex === "undefined") {
+        return;
+      }
 
       if (node) {
         measureElement(node);
@@ -184,7 +190,7 @@ function DataGridRowImpl<TData>({
         rowMapRef.current?.delete(virtualRowIndex);
       }
     },
-    [virtualRowIndex, measureElement, rowMapRef],
+    [virtualRowIndex, measureElement, rowMapRef]
   );
 
   const rowRef = useComposedRefs(ref, onRowChange);
@@ -196,25 +202,25 @@ function DataGridRowImpl<TData>({
   // biome-ignore lint/correctness/useExhaustiveDependencies: columnVisibility and columnPinning are used for calculating the visible cells
   const visibleCells = React.useMemo(
     () => row.getVisibleCells(),
-    [row, columnVisibility, columnPinning],
+    [row, columnVisibility, columnPinning]
   );
 
   return (
     <div
-      key={row.id}
-      role="row"
       aria-rowindex={virtualRowIndex + 2}
       aria-selected={isRowSelected}
       data-index={virtualRowIndex}
       data-slot="grid-row"
+      key={row.id}
+      role="row"
       tabIndex={-1}
       {...props}
-      ref={rowRef}
       className={cn(
         "absolute flex w-full border-b [content-visibility:auto]",
         !adjustLayout && "will-change-transform",
-        className,
+        className
       )}
+      ref={rowRef}
       style={{
         height: `${getRowHeightValue(rowHeight)}px`,
         ...(adjustLayout
@@ -249,21 +255,21 @@ function DataGridRowImpl<TData>({
 
         return (
           <div
-            key={cell.id}
-            role="gridcell"
             aria-colindex={colIndex + 1}
-            data-highlighted={isCellFocused ? "" : undefined}
-            data-slot="grid-cell"
-            tabIndex={-1}
             className={cn({
               grow: stretchColumns && columnId !== "select",
               "border-e": showEndBorder && columnId !== "select",
               "border-s": showStartBorder && columnId !== "select",
             })}
+            data-highlighted={isCellFocused ? "" : undefined}
+            data-slot="grid-cell"
+            key={cell.id}
+            role="gridcell"
             style={{
               ...getColumnPinningStyle({ column: cell.column, dir }),
               width: `calc(var(--col-${columnId}-size) * 1px)`,
             }}
+            tabIndex={-1}
           >
             {typeof cell.column.columnDef.header === "function" ? (
               <div
@@ -276,16 +282,16 @@ function DataGridRowImpl<TData>({
             ) : (
               <DataGridCell
                 cell={cell}
-                tableMeta={tableMeta}
-                rowIndex={virtualRowIndex}
                 columnId={columnId}
-                rowHeight={rowHeight}
-                isFocused={isCellFocused}
-                isEditing={isCellEditing}
-                isSelected={isCellSelected}
-                isSearchMatch={isSearchMatch}
                 isActiveSearchMatch={isActiveSearchMatch}
+                isEditing={isCellEditing}
+                isFocused={isCellFocused}
+                isSearchMatch={isSearchMatch}
+                isSelected={isCellSelected}
                 readOnly={readOnly}
+                rowHeight={rowHeight}
+                rowIndex={virtualRowIndex}
+                tableMeta={tableMeta}
               />
             )}
           </div>

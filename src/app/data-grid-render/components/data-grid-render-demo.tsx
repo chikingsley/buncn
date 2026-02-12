@@ -48,13 +48,13 @@ function generatePerson(): Person {
     name: faker.person.fullName(),
     age: faker.number.int({ min: 22, max: 65 }),
     email: faker.internet.email().toLowerCase(),
-    salary: faker.number.int({ min: 40000, max: 150000 }),
+    salary: faker.number.int({ min: 40_000, max: 150_000 }),
     department: faker.helpers.arrayElement(DEPARTMENTS),
   };
 }
 
 const initialData: Person[] = Array.from({ length: 100 }, () =>
-  generatePerson(),
+  generatePerson()
 );
 
 export function DataGridRenderDemo() {
@@ -76,7 +76,7 @@ export function DataGridRenderDemo() {
   React.useEffect(() => {
     console.log(
       `%c[DataGridRenderTest] Component render #${componentRenderCount.current}`,
-      "color: #ff6b6b; font-weight: bold;",
+      "color: #ff6b6b; font-weight: bold;"
     );
   });
 
@@ -89,11 +89,11 @@ export function DataGridRenderDemo() {
         header: ({ table }) => (
           <Checkbox
             aria-label="Select all"
-            className="relative transition-[shadow,border] after:absolute after:-inset-2.5 after:content-[''] hover:border-primary/40"
             checked={
               table.getIsAllPageRowsSelected() ||
               (table.getIsSomePageRowsSelected() && "indeterminate")
             }
+            className="relative transition-[shadow,border] after:absolute after:-inset-2.5 after:content-[''] hover:border-primary/40"
             onCheckedChange={(value) =>
               table.toggleAllPageRowsSelected(!!value)
             }
@@ -102,8 +102,8 @@ export function DataGridRenderDemo() {
         cell: ({ row, table }) => (
           <Checkbox
             aria-label="Select row"
-            className="relative transition-[shadow,border] after:absolute after:-inset-2.5 after:content-[''] hover:border-primary/40"
             checked={row.getIsSelected()}
+            className="relative transition-[shadow,border] after:absolute after:-inset-2.5 after:content-[''] hover:border-primary/40"
             onCheckedChange={(value) => {
               const onRowSelect = table.options.meta?.onRowSelect;
               if (onRowSelect) {
@@ -203,7 +203,7 @@ export function DataGridRenderDemo() {
         },
       },
     ],
-    [filterFn],
+    [filterFn]
   );
 
   const onDataChange = React.useCallback((newData: Person[]) => {
@@ -225,7 +225,7 @@ export function DataGridRenderDemo() {
         const cycle = updateCycleRef.current++;
         console.log(
           `%c\n========== UPDATING ${count} CELLS (cycle ${cycle}) ==========`,
-          "color: #ffd43b; font-size: 14px; font-weight: bold;",
+          "color: #ffd43b; font-size: 14px; font-weight: bold;"
         );
         const startTime = performance.now();
 
@@ -245,7 +245,9 @@ export function DataGridRenderDemo() {
             const colIndex = i % columnsToFill.length;
             const col = columnsToFill[colIndex];
 
-            if (!col) continue;
+            if (!col) {
+              continue;
+            }
 
             let value: string | number;
             switch (col) {
@@ -264,7 +266,7 @@ export function DataGridRenderDemo() {
                 value = 22 + ((rowIndex + cycle * 7) % 43);
                 break;
               case "salary":
-                value = 40000 + ((rowIndex + cycle) % 20) * 5000;
+                value = 40_000 + ((rowIndex + cycle) % 20) * 5000;
                 break;
             }
 
@@ -286,22 +288,26 @@ export function DataGridRenderDemo() {
         }
       });
     },
-    [table],
+    [table]
   );
 
   const onRapidCellsUpdate = React.useCallback(
     async (count: number) => {
-      if (isRapidUpdating) return;
+      if (isRapidUpdating) {
+        return;
+      }
 
       console.log(
         `%c\n========== RAPID UPDATE: ${count} CELLS ==========`,
-        "color: #845ef7; font-size: 14px; font-weight: bold;",
+        "color: #845ef7; font-size: 14px; font-weight: bold;"
       );
       setIsRapidUpdating(true);
       const overallStartTime = performance.now();
 
       try {
-        if (!table.options.meta?.onDataUpdate) return;
+        if (!table.options.meta?.onDataUpdate) {
+          return;
+        }
 
         const columnsToFill = [
           "name",
@@ -318,15 +324,17 @@ export function DataGridRenderDemo() {
           endCell: number,
           getValue: (
             row: number,
-            col: (typeof columnsToFill)[number],
-          ) => string | number,
+            col: (typeof columnsToFill)[number]
+          ) => string | number
         ) {
           const updates: CellUpdate[] = [];
           for (let i = startCell; i < endCell; i++) {
             const rowIndex = Math.floor(i / columnsToFill.length);
             const colIndex = i % columnsToFill.length;
             const col = columnsToFill[colIndex];
-            if (!col || rowIndex >= rowsCount) continue;
+            if (!col || rowIndex >= rowsCount) {
+              continue;
+            }
             updates.push({
               rowIndex,
               columnId: col,
@@ -339,12 +347,12 @@ export function DataGridRenderDemo() {
         // Phase 1: Mark all cells as "Searching..."
         console.log(
           `%c[Phase 1] Marking ${count} cells as "Searching..."`,
-          "color: #845ef7;",
+          "color: #845ef7;"
         );
         const searchingUpdates = buildUpdates(
           0,
           count,
-          () => "🔍 Searching...",
+          () => "🔍 Searching..."
         );
         table.options.meta.onDataUpdate(searchingUpdates);
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -352,12 +360,12 @@ export function DataGridRenderDemo() {
         // Phase 2: Mark cells as "Generating..."
         console.log(
           `%c[Phase 2] Marking cells as "Generating..."`,
-          "color: #845ef7;",
+          "color: #845ef7;"
         );
         const generatingUpdates = buildUpdates(
           0,
           count,
-          () => "✨ Generating...",
+          () => "✨ Generating..."
         );
         table.options.meta.onDataUpdate(generatingUpdates);
         await new Promise((resolve) => setTimeout(resolve, 400));
@@ -365,18 +373,18 @@ export function DataGridRenderDemo() {
         // Phase 3: Mark cells as "Processing..."
         console.log(
           `%c[Phase 3] Marking cells as "Processing..."`,
-          "color: #845ef7;",
+          "color: #845ef7;"
         );
         const processingUpdates = buildUpdates(
           0,
           count,
-          () => "⚙️ Processing...",
+          () => "⚙️ Processing..."
         );
         table.options.meta.onDataUpdate(processingUpdates);
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Phase 4: Stream final values in chunks
-        console.log(`%c[Phase 4] Streaming final values...`, "color: #845ef7;");
+        console.log("%c[Phase 4] Streaming final values...", "color: #845ef7;");
         const chunkSize = Math.max(5, Math.floor(count / 10));
         const cycle = updateCycleRef.current++;
         for (let chunk = 0; chunk < Math.ceil(count / chunkSize); chunk++) {
@@ -397,7 +405,7 @@ export function DataGridRenderDemo() {
               case "age":
                 return 22 + ((row + cycle * 7) % 43);
               case "salary":
-                return 40000 + ((row + cycle) % 20) * 5000;
+                return 40_000 + ((row + cycle) % 20) * 5000;
             }
           });
 
@@ -408,7 +416,7 @@ export function DataGridRenderDemo() {
         const overallEndTime = performance.now();
         console.log(
           `%c[Rapid Update Complete] Total time: ${(overallEndTime - overallStartTime).toFixed(2)}ms`,
-          "color: #845ef7; font-weight: bold;",
+          "color: #845ef7; font-weight: bold;"
         );
 
         setRenderStats({
@@ -420,7 +428,7 @@ export function DataGridRenderDemo() {
         setIsRapidUpdating(false);
       }
     },
-    [table, isRapidUpdating],
+    [table, isRapidUpdating]
   );
 
   return (
@@ -436,8 +444,8 @@ export function DataGridRenderDemo() {
             </p>
           </div>
           <Select
-            value={String(cellCount)}
             onValueChange={(value) => setCellCount(Number(value))}
+            value={String(cellCount)}
           >
             <SelectTrigger className="w-22">
               <SelectValue />
@@ -457,10 +465,10 @@ export function DataGridRenderDemo() {
         <div className="flex items-center justify-between gap-4 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onCellsUpdate(cellCount)}
               disabled={isUpdatePending}
+              onClick={() => onCellsUpdate(cellCount)}
+              size="sm"
+              variant="outline"
             >
               {isUpdatePending ? (
                 <Loader className="animate-spin" />
@@ -470,10 +478,10 @@ export function DataGridRenderDemo() {
               Update
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onRapidCellsUpdate(cellCount)}
               disabled={isRapidUpdating}
+              onClick={() => onRapidCellsUpdate(cellCount)}
+              size="sm"
+              variant="outline"
             >
               {isRapidUpdating ? (
                 <Loader className="animate-spin" />
@@ -503,7 +511,7 @@ export function DataGridRenderDemo() {
           </div>
         </div>
       </div>
-      <DataGrid {...dataGridProps} table={table} height={600} />
+      <DataGrid {...dataGridProps} height={600} table={table} />
     </div>
   );
 }

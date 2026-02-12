@@ -8,12 +8,13 @@ import { DataGridRenderDemo } from "./components/data-grid-render-demo";
 export default function DataGridRenderPage() {
   const mounted = useMounted();
 
-  if (!mounted)
+  if (!mounted) {
     return (
       <div className="container flex h-[calc(100dvh-5rem)] py-8">
         <Skeleton className="size-full" />
       </div>
     );
+  }
 
   return (
     <>

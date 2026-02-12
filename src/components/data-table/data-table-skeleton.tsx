@@ -32,7 +32,7 @@ export function DataTableSkeleton({
 }: DataTableSkeletonProps) {
   const cozyCellWidths = Array.from(
     { length: columnCount },
-    (_, index) => cellWidths[index % cellWidths.length] ?? "auto",
+    (_, index) => cellWidths[index % cellWidths.length] ?? "auto"
   );
 
   return (
@@ -44,7 +44,7 @@ export function DataTableSkeleton({
         <div className="flex flex-1 items-center gap-2">
           {filterCount > 0
             ? Array.from({ length: filterCount }).map((_, i) => (
-                <Skeleton key={i} className="h-7 w-18 border-dashed" />
+                <Skeleton className="h-7 w-18 border-dashed" key={i} />
               ))
             : null}
         </div>
@@ -56,7 +56,7 @@ export function DataTableSkeleton({
         <Table>
           <TableHeader>
             {Array.from({ length: 1 }).map((_, i) => (
-              <TableRow key={i} className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent" key={i}>
                 {Array.from({ length: columnCount }).map((_, j) => (
                   <TableHead
                     key={j}
@@ -73,7 +73,7 @@ export function DataTableSkeleton({
           </TableHeader>
           <TableBody>
             {Array.from({ length: rowCount }).map((_, i) => (
-              <TableRow key={i} className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent" key={i}>
                 {Array.from({ length: columnCount }).map((_, j) => (
                   <TableCell
                     key={j}

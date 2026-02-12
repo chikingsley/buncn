@@ -30,7 +30,7 @@ const fpsVariants = cva(
       position: "top-right",
       status: "good",
     },
-  },
+  }
 );
 
 interface FpsProps
@@ -64,19 +64,25 @@ function Fps(props: FpsProps) {
   const lastTimeRef = React.useRef(performance.now());
   const animationFrameRef = React.useRef<number | null>(null);
   const updateTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
+    null
   );
 
   React.useLayoutEffect(() => setMounted(true), []);
 
   const status = React.useMemo(() => {
-    if (fps < errorThreshold) return "error";
-    if (fps < warningThreshold) return "warning";
+    if (fps < errorThreshold) {
+      return "error";
+    }
+    if (fps < warningThreshold) {
+      return "warning";
+    }
     return "good";
   }, [fps, errorThreshold, warningThreshold]);
 
   React.useEffect(() => {
-    if (!enabled || typeof window === "undefined") return;
+    if (!enabled || typeof window === "undefined") {
+      return;
+    }
 
     function measureFps() {
       const now = performance.now();
@@ -105,7 +111,9 @@ function Fps(props: FpsProps) {
     };
   }, [enabled, updateInterval]);
 
-  if (!enabled) return null;
+  if (!enabled) {
+    return null;
+  }
 
   const portalContainer =
     strategy === "absolute"
@@ -120,7 +128,7 @@ function Fps(props: FpsProps) {
       className={cn(fpsVariants({ strategy, position, status }), className)}
     >
       {label && (
-        <span data-slot="fps-label" className="text-muted-foreground">
+        <span className="text-muted-foreground" data-slot="fps-label">
           {label}:
         </span>
       )}

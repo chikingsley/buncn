@@ -10,7 +10,7 @@ import type { GetTasksSchema } from "./validations";
 
 type SqlParam = string | number | boolean | Date | null | string[];
 
-type RawTaskRow = {
+interface RawTaskRow {
   id: string;
   code: string;
   title: string | null;
@@ -21,7 +21,7 @@ type RawTaskRow = {
   archived: boolean;
   createdAt: Date | string;
   updatedAt: Date | string | null;
-};
+}
 
 function mapTaskRow(row: RawTaskRow): Task {
   return {
@@ -115,12 +115,12 @@ export async function getTasks(input: GetTasksSchema) {
        ${whereSql}
        ORDER BY ${orderBy}
        LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
-      [...values, input.perPage, offset],
+      [...values, input.perPage, offset]
     );
 
     const countRows = await db.unsafe<Array<{ count: string }>>(
       `SELECT COUNT(*)::text AS count FROM ${DB_TABLES.tasks} ${whereSql}`,
-      values,
+      values
     );
 
     const total = Number(countRows[0]?.count ?? 0);
@@ -138,14 +138,16 @@ export async function getTaskStatusCounts() {
   cacheTag("task-status-counts");
   try {
     const rows = await db.unsafe<Array<{ status: string; count: string }>>(
-      `SELECT status, COUNT(*)::text AS count FROM ${DB_TABLES.tasks} GROUP BY status HAVING COUNT(*) > 0`,
+      `SELECT status, COUNT(*)::text AS count FROM ${DB_TABLES.tasks} GROUP BY status HAVING COUNT(*) > 0`
     );
     return rows.reduce(
       (acc, { status, count }) => {
-        if (status in acc) acc[status as keyof typeof acc] = Number(count);
+        if (status in acc) {
+          acc[status as keyof typeof acc] = Number(count);
+        }
         return acc;
       },
-      { todo: 0, "in-progress": 0, done: 0, canceled: 0 },
+      { todo: 0, "in-progress": 0, done: 0, canceled: 0 }
     );
   } catch {
     return { todo: 0, "in-progress": 0, done: 0, canceled: 0 };
@@ -157,14 +159,16 @@ export async function getTaskPriorityCounts() {
   cacheTag("task-priority-counts");
   try {
     const rows = await db.unsafe<Array<{ priority: string; count: string }>>(
-      `SELECT priority, COUNT(*)::text AS count FROM ${DB_TABLES.tasks} GROUP BY priority HAVING COUNT(*) > 0`,
+      `SELECT priority, COUNT(*)::text AS count FROM ${DB_TABLES.tasks} GROUP BY priority HAVING COUNT(*) > 0`
     );
     return rows.reduce(
       (acc, { priority, count }) => {
-        if (priority in acc) acc[priority as keyof typeof acc] = Number(count);
+        if (priority in acc) {
+          acc[priority as keyof typeof acc] = Number(count);
+        }
         return acc;
       },
-      { low: 0, medium: 0, high: 0 },
+      { low: 0, medium: 0, high: 0 }
     );
   } catch {
     return { low: 0, medium: 0, high: 0 };
@@ -178,7 +182,7 @@ export async function getEstimatedHoursRange() {
     const [result] = await db.unsafe<
       Array<{ min: number | null; max: number | null }>
     >(
-      `SELECT COALESCE(MIN(estimated_hours), 0) AS min, COALESCE(MAX(estimated_hours), 0) AS max FROM ${DB_TABLES.tasks}`,
+      `SELECT COALESCE(MIN(estimated_hours), 0) AS min, COALESCE(MAX(estimated_hours), 0) AS max FROM ${DB_TABLES.tasks}`
     );
     return { min: Number(result?.min ?? 0), max: Number(result?.max ?? 0) };
   } catch {

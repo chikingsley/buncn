@@ -11,9 +11,13 @@ import type { SearchState } from "@/types/data-grid";
 interface DataGridSearchProps extends SearchState {}
 
 export const DataGridSearch = React.memo(DataGridSearchImpl, (prev, next) => {
-  if (prev.searchOpen !== next.searchOpen) return false;
+  if (prev.searchOpen !== next.searchOpen) {
+    return false;
+  }
 
-  if (!next.searchOpen) return true;
+  if (!next.searchOpen) {
+    return true;
+  }
 
   if (
     prev.searchQuery !== next.searchQuery ||
@@ -22,13 +26,17 @@ export const DataGridSearch = React.memo(DataGridSearchImpl, (prev, next) => {
     return false;
   }
 
-  if (prev.searchMatches.length !== next.searchMatches.length) return false;
+  if (prev.searchMatches.length !== next.searchMatches.length) {
+    return false;
+  }
 
   for (let i = 0; i < prev.searchMatches.length; i++) {
     const prevMatch = prev.searchMatches[i];
     const nextMatch = next.searchMatches[i];
 
-    if (!prevMatch || !nextMatch) return false;
+    if (!(prevMatch && nextMatch)) {
+      return false;
+    }
 
     if (
       prevMatch.rowIndex !== nextMatch.rowIndex ||
@@ -71,7 +79,9 @@ function DataGridSearchImpl({
   }, [searchOpen]);
 
   React.useEffect(() => {
-    if (!searchOpen) return;
+    if (!searchOpen) {
+      return;
+    }
 
     function onEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -97,7 +107,7 @@ function DataGridSearchImpl({
         }
       }
     },
-    [propsRef],
+    [propsRef]
   );
 
   const debouncedSearch = useDebouncedCallback((query: string) => {
@@ -110,14 +120,16 @@ function DataGridSearchImpl({
       propsRef.current.onSearchQueryChange(value);
       debouncedSearch(value);
     },
-    [propsRef, debouncedSearch],
+    [propsRef, debouncedSearch]
   );
 
   const onTriggerPointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       // prevent implicit pointer capture
       const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
       if (target.hasPointerCapture(event.pointerId)) {
         target.releasePointerCapture(event.pointerId);
       }
@@ -133,19 +145,19 @@ function DataGridSearchImpl({
         event.preventDefault();
       }
     },
-    [],
+    []
   );
 
   const onPrevMatchPointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) =>
       onTriggerPointerDown(event),
-    [onTriggerPointerDown],
+    [onTriggerPointerDown]
   );
 
   const onNextMatchPointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) =>
       onTriggerPointerDown(event),
-    [onTriggerPointerDown],
+    [onTriggerPointerDown]
   );
 
   const onClose = React.useCallback(() => {
@@ -160,56 +172,58 @@ function DataGridSearchImpl({
     propsRef.current.onNavigateToNextMatch();
   }, [propsRef]);
 
-  if (!searchOpen) return null;
+  if (!searchOpen) {
+    return null;
+  }
 
   return (
     <div
-      role="search"
-      data-slot="grid-search"
       className="fade-in-0 slide-in-from-top-2 absolute end-4 top-4 z-50 flex animate-in flex-col gap-2 rounded-lg border bg-background p-2 shadow-lg"
+      data-slot="grid-search"
+      role="search"
     >
       <div className="flex items-center gap-2">
         <Input
+          autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          placeholder="Find in table..."
           className="h-8 w-64"
-          ref={inputRef}
-          value={searchQuery}
           onChange={onChange}
           onKeyDown={onKeyDown}
+          placeholder="Find in table..."
+          ref={inputRef}
+          spellCheck={false}
+          value={searchQuery}
         />
         <div className="flex items-center gap-1">
           <Button
             aria-label="Previous match"
-            variant="ghost"
-            size="icon"
             className="size-7"
+            disabled={searchMatches.length === 0}
             onClick={onPrevMatch}
             onPointerDown={onPrevMatchPointerDown}
-            disabled={searchMatches.length === 0}
+            size="icon"
+            variant="ghost"
           >
             <ChevronUp />
           </Button>
           <Button
             aria-label="Next match"
-            variant="ghost"
-            size="icon"
             className="size-7"
+            disabled={searchMatches.length === 0}
             onClick={onNextMatch}
             onPointerDown={onNextMatchPointerDown}
-            disabled={searchMatches.length === 0}
+            size="icon"
+            variant="ghost"
           >
             <ChevronDown />
           </Button>
           <Button
             aria-label="Close search"
-            variant="ghost"
-            size="icon"
             className="size-7"
             onClick={onClose}
+            size="icon"
+            variant="ghost"
           >
             <X />
           </Button>

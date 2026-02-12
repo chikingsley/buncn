@@ -6,7 +6,7 @@ export function exportTableToCSV<TData>(
     filename?: string;
     excludeColumns?: (keyof TData | "select" | "actions")[];
     onlySelected?: boolean;
-  } = {},
+  } = {}
 ): void {
   const {
     filename = "table",
@@ -32,7 +32,7 @@ export function exportTableToCSV<TData>(
             ? `"${cellValue.replace(/"/g, '""')}"`
             : cellValue;
         })
-        .join(","),
+        .join(",")
     ),
   ].join("\n");
 

@@ -27,13 +27,15 @@ export function DataGridPasteDialog<TData>({
   const onPasteDialogOpenChange = tableMeta?.onPasteDialogOpenChange;
   const onCellsPaste = tableMeta?.onCellsPaste;
 
-  if (!pasteDialog.open) return null;
+  if (!pasteDialog.open) {
+    return null;
+  }
 
   return (
     <PasteDialog
-      pasteDialog={pasteDialog}
-      onPasteDialogOpenChange={onPasteDialogOpenChange}
       onCellsPaste={onCellsPaste}
+      onPasteDialogOpenChange={onPasteDialogOpenChange}
+      pasteDialog={pasteDialog}
     />
   );
 }
@@ -43,9 +45,15 @@ interface PasteDialogProps
     Required<Pick<TableMeta<unknown>, "pasteDialog">> {}
 
 const PasteDialog = React.memo(PasteDialogImpl, (prev, next) => {
-  if (prev.pasteDialog.open !== next.pasteDialog.open) return false;
-  if (!next.pasteDialog.open) return true;
-  if (prev.pasteDialog.rowsNeeded !== next.pasteDialog.rowsNeeded) return false;
+  if (prev.pasteDialog.open !== next.pasteDialog.open) {
+    return false;
+  }
+  if (!next.pasteDialog.open) {
+    return true;
+  }
+  if (prev.pasteDialog.rowsNeeded !== next.pasteDialog.rowsNeeded) {
+    return false;
+  }
 
   return true;
 });
@@ -66,7 +74,7 @@ function PasteDialogImpl({
     (open: boolean) => {
       propsRef.current.onPasteDialogOpenChange?.(open);
     },
-    [propsRef],
+    [propsRef]
   );
 
   const onCancel = React.useCallback(() => {
@@ -78,7 +86,7 @@ function PasteDialogImpl({
   }, [propsRef]);
 
   return (
-    <Dialog open={pasteDialog.open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={pasteDialog.open}>
       <DialogContent data-grid-popover="">
         <DialogHeader>
           <DialogTitle>Do you want to add more rows?</DialogTitle>
@@ -91,10 +99,10 @@ function PasteDialogImpl({
         <div className="flex flex-col gap-3 py-1">
           <label className="flex cursor-pointer items-start gap-3">
             <RadioItem
-              ref={expandRadioRef}
-              name="expand-option"
-              value="expand"
               defaultChecked
+              name="expand-option"
+              ref={expandRadioRef}
+              value="expand"
             />
             <div className="flex flex-col gap-1">
               <span className="font-medium text-sm leading-none">
@@ -120,7 +128,7 @@ function PasteDialogImpl({
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
+          <Button onClick={onCancel} variant="outline">
             Cancel
           </Button>
           <Button onClick={onContinue}>Continue</Button>
@@ -133,15 +141,15 @@ function PasteDialogImpl({
 function RadioItem({ className, ...props }: React.ComponentProps<"input">) {
   return (
     <input
-      type="radio"
       className={cn(
         "relative size-4 shrink-0 appearance-none rounded-full border border-input bg-background shadow-xs outline-none transition-[color,box-shadow]",
         "text-primary focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "checked:before:absolute checked:before:start-1/2 checked:before:top-1/2 checked:before:size-2 checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:rounded-full checked:before:bg-primary checked:before:content-['']",
         "dark:bg-input/30",
-        className,
+        className
       )}
+      type="radio"
       {...props}
     />
   );

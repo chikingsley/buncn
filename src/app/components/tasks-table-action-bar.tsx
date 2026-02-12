@@ -35,13 +35,13 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
         table.toggleAllRowsSelected(false);
       }
     },
-    [table],
+    [table]
   );
 
   const onTaskUpdate = React.useCallback(
     (
       field: "status" | "priority",
-      value: Task["status"] | Task["priority"],
+      value: Task["status"] | Task["priority"]
     ) => {
       async function update() {
         const { error } = await updateTasks({
@@ -57,7 +57,7 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
       }
       update();
     },
-    [rows],
+    [rows]
   );
 
   const onTaskExport = React.useCallback(() => {
@@ -83,7 +83,7 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
   }, [rows, table]);
 
   return (
-    <ActionBar open={rows.length > 0} onOpenChange={onOpenChange}>
+    <ActionBar onOpenChange={onOpenChange} open={rows.length > 0}>
       <ActionBarSelection>
         <span className="font-medium">{rows.length}</span>
         <span>selected</span>
@@ -104,8 +104,8 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
           <DropdownMenuContent>
             {tasks.status.enumValues.map((status) => (
               <DropdownMenuItem
-                key={status}
                 className="capitalize"
+                key={status}
                 onClick={() => onTaskUpdate("status", status)}
               >
                 {status}
@@ -123,8 +123,8 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
           <DropdownMenuContent>
             {tasks.priority.enumValues.map((priority) => (
               <DropdownMenuItem
-                key={priority}
                 className="capitalize"
+                key={priority}
                 onClick={() => onTaskUpdate("priority", priority)}
               >
                 {priority}
@@ -136,7 +136,7 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
           <Download />
           Export
         </ActionBarItem>
-        <ActionBarItem variant="destructive" onClick={onTaskDelete}>
+        <ActionBarItem onClick={onTaskDelete} variant="destructive">
           <Trash2 />
           Delete
         </ActionBarItem>

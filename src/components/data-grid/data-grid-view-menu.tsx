@@ -40,9 +40,9 @@ export function DataGridViewMenu<TData>({
         .getAllColumns()
         .filter(
           (column) =>
-            typeof column.accessorFn !== "undefined" && column.getCanHide(),
+            typeof column.accessorFn !== "undefined" && column.getCanHide()
         ),
-    [table],
+    [table]
   );
 
   return (
@@ -50,20 +50,20 @@ export function DataGridViewMenu<TData>({
       <PopoverTrigger asChild>
         <Button
           aria-label="Toggle columns"
-          role="combobox"
-          dir={dir}
-          variant="outline"
-          size="sm"
           className="ms-auto hidden h-8 font-normal lg:flex"
+          dir={dir}
           disabled={disabled}
+          role="combobox"
+          size="sm"
+          variant="outline"
         >
           <Settings2 className="text-muted-foreground" />
           View
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        dir={dir}
         className={cn("w-44 p-0", className)}
+        dir={dir}
         {...props}
       >
         <Command>
@@ -84,7 +84,7 @@ export function DataGridViewMenu<TData>({
                   <Check
                     className={cn(
                       "ms-auto size-4 shrink-0",
-                      column.getIsVisible() ? "opacity-100" : "opacity-0",
+                      column.getIsVisible() ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

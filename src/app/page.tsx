@@ -23,8 +23,6 @@ export default function IndexPage(props: IndexPageProps) {
       <Suspense
         fallback={
           <DataTableSkeleton
-            columnCount={7}
-            filterCount={2}
             cellWidths={[
               "10rem",
               "30rem",
@@ -34,6 +32,8 @@ export default function IndexPage(props: IndexPageProps) {
               "6rem",
               "6rem",
             ]}
+            columnCount={7}
+            filterCount={2}
             shrinkZero
           />
         }

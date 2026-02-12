@@ -42,11 +42,11 @@ interface Store<TData> {
 
 function useStore<T>(
   store: Store<T>,
-  selector: (state: StoreState<T>) => boolean,
+  selector: (state: StoreState<T>) => boolean
 ): boolean {
   const getSnapshot = React.useCallback(
     () => selector(store.getState()),
-    [store, selector],
+    [store, selector]
   );
 
   return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
@@ -54,7 +54,7 @@ function useStore<T>(
 
 function buildIndexById<TData>(
   data: TData[],
-  getRowId: (row: TData) => string,
+  getRowId: (row: TData) => string
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (let i = 0; i < data.length; i++) {
@@ -146,10 +146,14 @@ function useDataGridUndoRedo<TData>({
       },
       undo: () => {
         const state = stateRef.current;
-        if (state.undoStack.length === 0) return null;
+        if (state.undoStack.length === 0) {
+          return null;
+        }
 
-        const entry = state.undoStack[state.undoStack.length - 1];
-        if (!entry) return null;
+        const entry = state.undoStack.at(-1);
+        if (!entry) {
+          return null;
+        }
 
         stateRef.current = {
           undoStack: state.undoStack.slice(0, -1),
@@ -161,10 +165,14 @@ function useDataGridUndoRedo<TData>({
       },
       redo: () => {
         const state = stateRef.current;
-        if (state.redoStack.length === 0) return null;
+        if (state.redoStack.length === 0) {
+          return null;
+        }
 
-        const entry = state.redoStack[state.redoStack.length - 1];
-        if (!entry) return null;
+        const entry = state.redoStack.at(-1);
+        if (!entry) {
+          return null;
+        }
 
         stateRef.current = {
           undoStack: [...state.undoStack, entry],
@@ -183,7 +191,9 @@ function useDataGridUndoRedo<TData>({
         store.notify();
       },
       setPendingChanges: (value) => {
-        if (stateRef.current.hasPendingChanges === value) return;
+        if (stateRef.current.hasPendingChanges === value) {
+          return;
+        }
         stateRef.current = {
           ...stateRef.current,
           hasPendingChanges: value,
@@ -207,13 +217,15 @@ function useDataGridUndoRedo<TData>({
 
   const canUndo = useStore(
     store,
-    (state) => state.undoStack.length > 0 || state.hasPendingChanges,
+    (state) => state.undoStack.length > 0 || state.hasPendingChanges
   );
   const canRedo = useStore(store, (state) => state.redoStack.length > 0);
 
   const onCommit = React.useCallback(() => {
     const pending = pendingBatchRef.current;
-    if (pending.byKey.size === 0) return;
+    if (pending.byKey.size === 0) {
+      return;
+    }
 
     if (pending.timeoutId) {
       clearTimeout(pending.timeoutId);
@@ -268,7 +280,9 @@ function useDataGridUndoRedo<TData>({
   }, [store, propsRef]);
 
   const onUndo = React.useCallback(() => {
-    if (!propsRef.current.enabled) return;
+    if (!propsRef.current.enabled) {
+      return;
+    }
 
     onCommit();
 
@@ -282,12 +296,14 @@ function useDataGridUndoRedo<TData>({
     propsRef.current.onDataChange(newData);
 
     toast.success(
-      `${entry.count} action${entry.count !== 1 ? "s" : ""} undone`,
+      `${entry.count} action${entry.count !== 1 ? "s" : ""} undone`
     );
   }, [store, propsRef, onCommit]);
 
   const onRedo = React.useCallback(() => {
-    if (!propsRef.current.enabled) return;
+    if (!propsRef.current.enabled) {
+      return;
+    }
 
     onCommit();
 
@@ -301,7 +317,7 @@ function useDataGridUndoRedo<TData>({
     propsRef.current.onDataChange(newData);
 
     toast.success(
-      `${entry.count} action${entry.count !== 1 ? "s" : ""} redone`,
+      `${entry.count} action${entry.count !== 1 ? "s" : ""} redone`
     );
   }, [store, propsRef, onCommit]);
 
@@ -318,12 +334,16 @@ function useDataGridUndoRedo<TData>({
 
   const trackCellsUpdate = React.useCallback(
     (updates: UndoRedoCellUpdate[]) => {
-      if (!propsRef.current.enabled || updates.length === 0) return;
+      if (!propsRef.current.enabled || updates.length === 0) {
+        return;
+      }
 
       const filteredUpdates = updates.filter(
-        (u) => !Object.is(u.previousValue, u.newValue),
+        (u) => !Object.is(u.previousValue, u.newValue)
       );
-      if (filteredUpdates.length === 0) return;
+      if (filteredUpdates.length === 0) {
+        return;
+      }
 
       const pending = pendingBatchRef.current;
 
@@ -345,12 +365,14 @@ function useDataGridUndoRedo<TData>({
       }
       pending.timeoutId = setTimeout(onCommit, BATCH_TIMEOUT);
     },
-    [store, propsRef, onCommit],
+    [store, propsRef, onCommit]
   );
 
   const trackRowsAdd = React.useCallback(
     (rows: TData[]) => {
-      if (!propsRef.current.enabled || rows.length === 0) return;
+      if (!propsRef.current.enabled || rows.length === 0) {
+        return;
+      }
 
       onCommit();
 
@@ -373,12 +395,14 @@ function useDataGridUndoRedo<TData>({
 
       store.push(entry);
     },
-    [store, propsRef, onCommit],
+    [store, propsRef, onCommit]
   );
 
   const trackRowsDelete = React.useCallback(
     (rows: TData[]) => {
-      if (!propsRef.current.enabled || rows.length === 0) return;
+      if (!propsRef.current.enabled || rows.length === 0) {
+        return;
+      }
 
       onCommit();
 
@@ -421,7 +445,7 @@ function useDataGridUndoRedo<TData>({
 
       store.push(entry);
     },
-    [store, propsRef, onCommit],
+    [store, propsRef, onCommit]
   );
 
   React.useEffect(() => {
@@ -434,13 +458,17 @@ function useDataGridUndoRedo<TData>({
   }, []);
 
   React.useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     function onKeyDown(event: KeyboardEvent) {
       const isCtrlOrCmd = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
 
-      if (!isCtrlOrCmd || (key !== "z" && key !== "y")) return;
+      if (!isCtrlOrCmd || (key !== "z" && key !== "y")) {
+        return;
+      }
 
       const activeElement = document.activeElement;
       if (activeElement) {
@@ -451,7 +479,9 @@ function useDataGridUndoRedo<TData>({
           activeElement.getAttribute("contenteditable") === "true";
         const isInPopover = getIsInPopover(activeElement);
 
-        if (isInput || isContentEditable || isInPopover) return;
+        if (isInput || isContentEditable || isInPopover) {
+          return;
+        }
       }
 
       if (key === "z" && !event.shiftKey) {
@@ -490,7 +520,7 @@ function useDataGridUndoRedo<TData>({
       trackCellsUpdate,
       trackRowsAdd,
       trackRowsDelete,
-    ],
+    ]
   );
 }
 

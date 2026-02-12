@@ -79,28 +79,28 @@ declare module "@tanstack/react-table" {
     onRowSelect?: (
       rowIndex: number,
       checked: boolean,
-      shiftKey: boolean,
+      shiftKey: boolean
     ) => void;
-    onDataUpdate?: (params: CellUpdate | Array<CellUpdate>) => void;
+    onDataUpdate?: (params: CellUpdate | CellUpdate[]) => void;
     onRowsDelete?: (rowIndices: number[]) => void | Promise<void>;
     onColumnClick?: (columnId: string) => void;
     onCellClick?: (
       rowIndex: number,
       columnId: string,
-      event?: React.MouseEvent,
+      event?: React.MouseEvent
     ) => void;
     onCellDoubleClick?: (rowIndex: number, columnId: string) => void;
     onCellMouseDown?: (
       rowIndex: number,
       columnId: string,
-      event: React.MouseEvent,
+      event: React.MouseEvent
     ) => void;
     onCellMouseEnter?: (rowIndex: number, columnId: string) => void;
     onCellMouseUp?: () => void;
     onCellContextMenu?: (
       rowIndex: number,
       columnId: string,
-      event: React.MouseEvent,
+      event: React.MouseEvent
     ) => void;
     onCellEditingStart?: (rowIndex: number, columnId: string) => void;
     onCellEditingStop?: (opts?: {

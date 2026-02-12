@@ -260,7 +260,7 @@ export function getFilterFn<TData>(): FilterFn<TData> {
     if (operator === "isAnyOf" && Array.isArray(value)) {
       if (Array.isArray(cellValue)) {
         return cellValue.some((v) =>
-          value.some((fv) => String(v) === String(fv)),
+          value.some((fv) => String(v) === String(fv))
         );
       }
       return value.some((fv) => String(cellValue) === String(fv));
@@ -269,7 +269,7 @@ export function getFilterFn<TData>(): FilterFn<TData> {
     if (operator === "isNoneOf" && Array.isArray(value)) {
       if (Array.isArray(cellValue)) {
         return !cellValue.some((v) =>
-          value.some((fv) => String(v) === String(fv)),
+          value.some((fv) => String(v) === String(fv))
         );
       }
       return !value.some((fv) => String(cellValue) === String(fv));

@@ -29,7 +29,7 @@ import type {
 
 export function flexRender<TProps extends object>(
   Comp: ((props: TProps) => React.ReactNode) | string | undefined,
-  props: TProps,
+  props: TProps
 ): React.ReactNode {
   if (typeof Comp === "string") {
     return Comp;
@@ -50,13 +50,13 @@ export function getIsFileCellData(item: unknown): item is FileCellData {
 
 export function matchSelectOption(
   value: string,
-  options: { value: string; label: string }[],
+  options: { value: string; label: string }[]
 ): string | undefined {
   return options.find(
     (o) =>
       o.value === value ||
       o.value.toLowerCase() === value.toLowerCase() ||
-      o.label.toLowerCase() === value.toLowerCase(),
+      o.label.toLowerCase() === value.toLowerCase()
   )?.value;
 }
 
@@ -69,7 +69,7 @@ export function parseCellKey(cellKey: string): Required<CellPosition> {
   const rowIndexStr = parts[0];
   const columnId = parts[1];
   if (rowIndexStr && columnId) {
-    const rowIndex = parseInt(rowIndexStr, 10);
+    const rowIndex = Number.parseInt(rowIndexStr, 10);
     if (!Number.isNaN(rowIndex)) {
       return { rowIndex, columnId };
     }
@@ -173,7 +173,7 @@ export function getColumnPinningStyle<TData>(params: {
 }
 
 export function getScrollDirection(
-  direction: string,
+  direction: string
 ): "left" | "right" | "home" | "end" | undefined {
   if (
     direction === "left" ||
@@ -183,8 +183,12 @@ export function getScrollDirection(
   ) {
     return direction as "left" | "right" | "home" | "end";
   }
-  if (direction === "pageleft") return "left";
-  if (direction === "pageright") return "right";
+  if (direction === "pageleft") {
+    return "left";
+  }
+  if (direction === "pageright") {
+    return "right";
+  }
   return undefined;
 }
 
@@ -211,11 +215,11 @@ export function scrollCellIntoView<TData>(params: {
 
   const leftPinnedWidth = leftPinnedColumns.reduce(
     (sum, c) => sum + c.getSize(),
-    0,
+    0
   );
   const rightPinnedWidth = rightPinnedColumns.reduce(
     (sum, c) => sum + c.getSize(),
-    0,
+    0
   );
 
   const viewportLeft = isActuallyRtl
@@ -228,20 +232,16 @@ export function scrollCellIntoView<TData>(params: {
   const isFullyVisible =
     cellRect.left >= viewportLeft && cellRect.right <= viewportRight;
 
-  if (isFullyVisible) return;
+  if (isFullyVisible) {
+    return;
+  }
 
   const isClippedLeft = cellRect.left < viewportLeft;
   const isClippedRight = cellRect.right > viewportRight;
 
   let scrollDelta = 0;
 
-  if (!direction) {
-    if (isClippedRight) {
-      scrollDelta = cellRect.right - viewportRight;
-    } else if (isClippedLeft) {
-      scrollDelta = -(viewportLeft - cellRect.left);
-    }
-  } else {
+  if (direction) {
     const shouldScrollRight = isActuallyRtl
       ? direction === "right" || direction === "home"
       : direction === "right" || direction === "end";
@@ -251,6 +251,10 @@ export function scrollCellIntoView<TData>(params: {
     } else {
       scrollDelta = -(viewportLeft - cellRect.left);
     }
+  } else if (isClippedRight) {
+    scrollDelta = cellRect.right - viewportRight;
+  } else if (isClippedLeft) {
+    scrollDelta = -(viewportLeft - cellRect.left);
   }
 
   container.scrollLeft += scrollDelta;
@@ -293,16 +297,24 @@ export function getColumnVariant(variant?: CellOpts["variant"]): {
 }
 
 export function getEmptyCellValue(
-  variant: CellOpts["variant"] | undefined,
+  variant: CellOpts["variant"] | undefined
 ): unknown {
-  if (variant === "multi-select" || variant === "file") return [];
-  if (variant === "number" || variant === "date") return null;
-  if (variant === "checkbox") return false;
+  if (variant === "multi-select" || variant === "file") {
+    return [];
+  }
+  if (variant === "number" || variant === "date") {
+    return null;
+  }
+  if (variant === "checkbox") {
+    return false;
+  }
   return "";
 }
 
 export function getUrlHref(urlString: string): string {
-  if (!urlString || urlString.trim() === "") return "";
+  if (!urlString || urlString.trim() === "") {
+    return "";
+  }
 
   const trimmed = urlString.trim();
 
@@ -319,11 +331,19 @@ export function getUrlHref(urlString: string): string {
 }
 
 export function parseLocalDate(dateStr: unknown): Date | null {
-  if (!dateStr) return null;
-  if (dateStr instanceof Date) return dateStr;
-  if (typeof dateStr !== "string") return null;
+  if (!dateStr) {
+    return null;
+  }
+  if (dateStr instanceof Date) {
+    return dateStr;
+  }
+  if (typeof dateStr !== "string") {
+    return null;
+  }
   const [year, month, day] = dateStr.split("-").map(Number);
-  if (!year || !month || !day) return null;
+  if (!(year && month && day)) {
+    return null;
+  }
   const date = new Date(year, month - 1, day);
   // Verify date wasn't auto-corrected (e.g. Feb 30 -> Mar 1)
   if (
@@ -344,44 +364,67 @@ export function formatDateToString(date: Date): string {
 }
 
 export function formatDateForDisplay(dateStr: unknown): string {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
   const date = parseLocalDate(dateStr);
-  if (!date) return typeof dateStr === "string" ? dateStr : "";
+  if (!date) {
+    return typeof dateStr === "string" ? dateStr : "";
+  }
   return date.toLocaleDateString();
 }
 
 export function formatFileSize(bytes: number): string {
-  if (bytes <= 0 || !Number.isFinite(bytes)) return "0 B";
+  if (bytes <= 0 || !Number.isFinite(bytes)) {
+    return "0 B";
+  }
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.min(
     sizes.length - 1,
-    Math.floor(Math.log(bytes) / Math.log(k)),
+    Math.floor(Math.log(bytes) / Math.log(k))
   );
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
 export function getFileIcon(
-  type: string,
+  type: string
 ): React.ComponentType<React.SVGProps<SVGSVGElement>> {
-  if (type.startsWith("image/")) return FileImage;
-  if (type.startsWith("video/")) return FileVideo;
-  if (type.startsWith("audio/")) return FileAudio;
-  if (type.includes("pdf")) return FileText;
-  if (type.includes("zip") || type.includes("rar")) return FileArchive;
+  if (type.startsWith("image/")) {
+    return FileImage;
+  }
+  if (type.startsWith("video/")) {
+    return FileVideo;
+  }
+  if (type.startsWith("audio/")) {
+    return FileAudio;
+  }
+  if (type.includes("pdf")) {
+    return FileText;
+  }
+  if (type.includes("zip") || type.includes("rar")) {
+    return FileArchive;
+  }
   if (
     type.includes("word") ||
     type.includes("document") ||
     type.includes("doc")
-  )
+  ) {
     return FileText;
-  if (type.includes("sheet") || type.includes("excel") || type.includes("xls"))
+  }
+  if (
+    type.includes("sheet") ||
+    type.includes("excel") ||
+    type.includes("xls")
+  ) {
     return FileSpreadsheet;
+  }
   if (
     type.includes("presentation") ||
     type.includes("powerpoint") ||
     type.includes("ppt")
-  )
+  ) {
     return Presentation;
+  }
   return File;
 }

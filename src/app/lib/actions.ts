@@ -15,7 +15,9 @@ export async function seedTasks(input: { count: number }) {
 
   try {
     const allTasks: Task[] = [];
-    for (let i = 0; i < count; i++) allTasks.push(generateRandomTask());
+    for (let i = 0; i < count; i++) {
+      allTasks.push(generateRandomTask());
+    }
 
     await db.unsafe(`DELETE FROM ${DB_TABLES.tasks}`);
     console.log("📝 Inserting tasks", allTasks.length);
@@ -34,7 +36,7 @@ export async function seedTasks(input: { count: number }) {
           task.label,
           task.estimatedHours,
           task.archived,
-        ],
+        ]
       );
     }
   } catch (err) {
@@ -55,12 +57,12 @@ export async function createTask(input: CreateTaskSchema) {
           input.status,
           input.label,
           input.priority,
-        ],
+        ]
       );
 
       const [oldest] = await tx.unsafe<Array<{ id: string }>>(
         `SELECT id FROM ${DB_TABLES.tasks} WHERE id != $1 ORDER BY created_at ASC LIMIT 1`,
-        [newTask?.id ?? ""],
+        [newTask?.id ?? ""]
       );
       if (oldest?.id) {
         await tx.unsafe(`DELETE FROM ${DB_TABLES.tasks} WHERE id = $1`, [
@@ -90,7 +92,7 @@ export async function updateTask(input: UpdateTaskSchema & { id: string }) {
         input.status ?? null,
         input.priority ?? null,
         input.id,
-      ],
+      ]
     );
 
     updateTag("tasks");
@@ -121,7 +123,7 @@ export async function updateTasks(input: {
         input.status ?? null,
         input.priority ?? null,
         input.ids,
-      ],
+      ]
     );
 
     updateTag("tasks");
@@ -152,7 +154,7 @@ export async function deleteTask(input: { id: string }) {
           task.label,
           task.estimatedHours,
           task.archived,
-        ],
+        ]
       );
     });
 
@@ -185,7 +187,7 @@ export async function deleteTasks(input: { ids: string[] }) {
             task.label,
             task.estimatedHours,
             task.archived,
-          ],
+          ]
         );
       }
     });

@@ -7,11 +7,11 @@ interface DivProps extends React.ComponentProps<"div"> {}
 function DataGridSkeleton({ className, ...props }: DivProps) {
   return (
     <div
-      data-slot="grid-skeleton"
       className={cn(
         "flex h-[calc(100dvh-(--spacing(16)))] w-full flex-col gap-4 has-[>[data-slot=grid-skeleton-toolbar]]:h-[calc(100dvh-(--spacing(20)))]",
-        className,
+        className
       )}
+      data-slot="grid-skeleton"
       {...props}
     />
   );
@@ -30,7 +30,6 @@ function DataGridSkeletonToolbar({
 }: DataGridSkeletonToolbarProps) {
   return (
     <div
-      data-slot="grid-skeleton-toolbar"
       className={cn(
         "flex items-center gap-2",
         {
@@ -38,12 +37,13 @@ function DataGridSkeletonToolbar({
           "justify-center": align === "center",
           "justify-end": align === "end",
         },
-        className,
+        className
       )}
+      data-slot="grid-skeleton-toolbar"
       {...props}
     >
       {Array.from({ length: actionCount }).map((_, i) => (
-        <Skeleton key={i} className="h-7 w-20 shrink-0" />
+        <Skeleton className="h-7 w-20 shrink-0" key={i} />
       ))}
     </div>
   );
@@ -52,8 +52,8 @@ function DataGridSkeletonToolbar({
 function DataGridSkeletonGrid({ className, ...props }: DivProps) {
   return (
     <Skeleton
-      data-slot="grid-skeleton-grid"
       className={cn("flex-1", className)}
+      data-slot="grid-skeleton-grid"
       {...props}
     />
   );

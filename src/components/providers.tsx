@@ -19,7 +19,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
             gcTime: 5 * 60 * 1000, // 5 minutes
           },
         },
-      }),
+      })
   );
 
   return (

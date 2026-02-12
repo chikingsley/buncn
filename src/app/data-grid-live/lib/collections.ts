@@ -36,10 +36,12 @@ export const skatersCollection = createCollection(
             createdAt: _createdAt,
             updatedAt: _updatedAt,
             ...data
-          }) => data,
+          }) => data
         );
 
-      if (skatersToInsert.length === 0) return;
+      if (skatersToInsert.length === 0) {
+        return;
+      }
 
       // Use bulk insert - single DB query for all inserts
       const response = await fetch(getAbsoluteUrl("/api/skaters"), {
@@ -56,15 +58,17 @@ export const skatersCollection = createCollection(
       const updates = transaction.mutations
         .filter(
           (
-            m,
+            m
           ): m is typeof m & {
             key: string;
             changes: Partial<SkaterSchema>;
-          } => m?.key != null && m?.changes != null,
+          } => m?.key != null && m?.changes != null
         )
         .map((m) => ({ id: m.key, changes: m.changes }));
 
-      if (updates.length === 0) return;
+      if (updates.length === 0) {
+        return;
+      }
 
       // Use bulk update - optimized for same-changes case
       const response = await fetch(getAbsoluteUrl("/api/skaters"), {
@@ -82,7 +86,9 @@ export const skatersCollection = createCollection(
         .map((m) => m?.key)
         .filter((id): id is string => id != null);
 
-      if (ids.length === 0) return;
+      if (ids.length === 0) {
+        return;
+      }
 
       // Use bulk delete - single DB query for all deletes
       const response = await fetch(getAbsoluteUrl("/api/skaters"), {
@@ -95,5 +101,5 @@ export const skatersCollection = createCollection(
         throw new Error("Failed to delete skaters");
       }
     },
-  }),
+  })
 );

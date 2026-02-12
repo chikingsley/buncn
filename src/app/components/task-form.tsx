@@ -37,8 +37,8 @@ export function TaskForm<T extends FieldValues>({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-4 px-4"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
           control={form.control}
@@ -48,8 +48,8 @@ export function TaskForm<T extends FieldValues>({
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Do a kickflip"
                   className="resize-none"
+                  placeholder="Do a kickflip"
                   {...field}
                 />
               </FormControl>
@@ -63,7 +63,7 @@ export function TaskForm<T extends FieldValues>({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Label</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="capitalize">
                     <SelectValue placeholder="Select a label" />
@@ -73,9 +73,9 @@ export function TaskForm<T extends FieldValues>({
                   <SelectGroup>
                     {tasks.label.enumValues.map((item) => (
                       <SelectItem
+                        className="capitalize"
                         key={item}
                         value={item}
-                        className="capitalize"
                       >
                         {item}
                       </SelectItem>
@@ -93,7 +93,7 @@ export function TaskForm<T extends FieldValues>({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="capitalize">
                     <SelectValue placeholder="Select a status" />
@@ -103,9 +103,9 @@ export function TaskForm<T extends FieldValues>({
                   <SelectGroup>
                     {tasks.status.enumValues.map((item) => (
                       <SelectItem
+                        className="capitalize"
                         key={item}
                         value={item}
-                        className="capitalize"
                       >
                         {item}
                       </SelectItem>
@@ -123,7 +123,7 @@ export function TaskForm<T extends FieldValues>({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Priority</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="capitalize">
                     <SelectValue placeholder="Select a priority" />
@@ -133,9 +133,9 @@ export function TaskForm<T extends FieldValues>({
                   <SelectGroup>
                     {tasks.priority.enumValues.map((item) => (
                       <SelectItem
+                        className="capitalize"
                         key={item}
                         value={item}
-                        className="capitalize"
                       >
                         {item}
                       </SelectItem>
@@ -155,10 +155,10 @@ export function TaskForm<T extends FieldValues>({
               <FormLabel>Estimated Hours</FormLabel>
               <FormControl>
                 <Input
-                  type="number"
+                  min="0"
                   placeholder="Enter estimated hours"
                   step="0.5"
-                  min="0"
+                  type="number"
                   {...field}
                   onChange={(event) =>
                     field.onChange(event.target.valueAsNumber)

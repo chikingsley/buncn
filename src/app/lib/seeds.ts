@@ -8,7 +8,9 @@ export async function seedTasks(input: { count: number }) {
 
   try {
     const allTasks: Task[] = [];
-    for (let i = 0; i < count; i++) allTasks.push(generateRandomTask());
+    for (let i = 0; i < count; i++) {
+      allTasks.push(generateRandomTask());
+    }
 
     await db.unsafe(`DELETE FROM ${DB_TABLES.tasks}`);
     console.log("📝 Inserting tasks", allTasks.length);
@@ -27,7 +29,7 @@ export async function seedTasks(input: { count: number }) {
           task.label,
           task.estimatedHours,
           task.archived,
-        ],
+        ]
       );
     }
   } catch (err) {
@@ -40,8 +42,9 @@ export async function seedSkaters(input: { count: number }) {
 
   try {
     const allSkaters: Skater[] = [];
-    for (let i = 0; i < count; i++)
+    for (let i = 0; i < count; i++) {
       allSkaters.push(generateRandomSkater({ order: i }));
+    }
 
     await db.unsafe(`DELETE FROM ${DB_TABLES.skaters}`);
     console.log("🛹 Inserting skaters", allSkaters.length);
@@ -64,7 +67,7 @@ export async function seedSkaters(input: { count: number }) {
           skater.isPro,
           JSON.stringify(skater.tricks ?? []),
           JSON.stringify(skater.media ?? []),
-        ],
+        ]
       );
     }
   } catch (err) {

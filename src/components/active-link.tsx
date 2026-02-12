@@ -16,14 +16,14 @@ export function ActiveLink({ href, className, ...props }: ActiveLinkProps) {
   const isActive = hrefSegment ? segment === hrefSegment : segment === null;
 
   return (
-    <Button variant="ghost" size="sm" asChild>
+    <Button asChild size="sm" variant="ghost">
       <Link
-        data-state={isActive ? "active" : "inactive"}
-        href={href}
         className={cn(
           "font-normal text-foreground/60 data-[state=active]:text-accent-foreground",
-          className,
+          className
         )}
+        data-state={isActive ? "active" : "inactive"}
+        href={href}
         {...props}
       />
     </Button>

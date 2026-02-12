@@ -49,7 +49,7 @@ export interface Skater {
   startedSkating: Date | null;
   isPro: boolean;
   tricks: string[] | null;
-  media: Array<FileCellData> | null;
+  media: FileCellData[] | null;
   createdAt: Date;
   updatedAt: Date | null;
 }

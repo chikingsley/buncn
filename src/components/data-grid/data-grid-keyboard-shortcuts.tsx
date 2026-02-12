@@ -44,7 +44,7 @@ export const DataGridKeyboardShortcuts = React.memo(
       prev.enableRowAdd === next.enableRowAdd &&
       prev.enableRowsDelete === next.enableRowsDelete
     );
-  },
+  }
 );
 
 function DataGridKeyboardShortcutsImpl({
@@ -82,7 +82,7 @@ function DataGridKeyboardShortcutsImpl({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setInput(event.target.value);
     },
-    [],
+    []
   );
 
   const shortcutGroups: ShortcutGroup[] = React.useMemo(
@@ -350,11 +350,13 @@ function DataGridKeyboardShortcutsImpl({
       enablePaste,
       enableRowAdd,
       enableRowsDelete,
-    ],
+    ]
   );
 
   const filteredGroups = React.useMemo(() => {
-    if (!input.trim()) return shortcutGroups;
+    if (!input.trim()) {
+      return shortcutGroups;
+    }
 
     const query = input.toLowerCase();
     return shortcutGroups
@@ -363,7 +365,7 @@ function DataGridKeyboardShortcutsImpl({
         shortcuts: group.shortcuts.filter(
           (shortcut) =>
             shortcut.description.toLowerCase().includes(query) ||
-            shortcut.keys.some((key) => key.toLowerCase().includes(query)),
+            shortcut.keys.some((key) => key.toLowerCase().includes(query))
         ),
       }))
       .filter((group) => group.shortcuts.length > 0);
@@ -384,15 +386,15 @@ function DataGridKeyboardShortcutsImpl({
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent
-        dir={dir}
         className="max-w-2xl px-0"
+        dir={dir}
         onOpenAutoFocus={onOpenAutoFocus}
         showCloseButton={false}
       >
-        <DialogClose className="absolute end-6 top-6" asChild>
-          <Button variant="ghost" size="icon" className="size-6">
+        <DialogClose asChild className="absolute end-6 top-6">
+          <Button className="size-6" size="icon" variant="ghost">
             <XIcon />
           </Button>
         </DialogClose>
@@ -407,11 +409,11 @@ function DataGridKeyboardShortcutsImpl({
           <div className="relative">
             <SearchIcon className="absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              ref={inputRef}
-              placeholder="Search shortcuts..."
               className="h-8 ps-8"
-              value={input}
               onChange={onInputChange}
+              placeholder="Search shortcuts..."
+              ref={inputRef}
+              value={input}
             />
           </div>
         </div>
@@ -434,16 +436,16 @@ function DataGridKeyboardShortcutsImpl({
           ) : (
             <div className="flex flex-col gap-6">
               {filteredGroups.map((shortcutGroup) => (
-                <div key={shortcutGroup.title} className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" key={shortcutGroup.title}>
                   <h3 className="font-semibold text-foreground text-sm">
                     {shortcutGroup.title}
                   </h3>
                   <div className="divide-y divide-border rounded-md border">
                     {shortcutGroup.shortcuts.map((shortcut, index) => (
                       <ShortcutCard
+                        description={shortcut.description}
                         key={index}
                         keys={shortcut.keys}
-                        description={shortcut.description}
                       />
                     ))}
                   </div>

@@ -12,21 +12,23 @@ import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 export async function GET() {
   try {
     const allSkaters = await db.unsafe(
-      `SELECT * FROM ${DB_TABLES.skaters} ORDER BY "order" ASC`,
+      `SELECT * FROM ${DB_TABLES.skaters} ORDER BY "order" ASC`
     );
     return NextResponse.json(allSkaters);
   } catch (error) {
     console.error({ error });
     return NextResponse.json(
       { error: "Failed to fetch skaters" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function POST(request: Request) {
   const rateLimit = await checkRateLimit();
-  if (!rateLimit.success) return rateLimitResponse(rateLimit);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
 
   try {
     const body: unknown = await request.json();
@@ -52,9 +54,11 @@ export async function POST(request: Request) {
             skater.isPro ?? false,
             JSON.stringify(skater.tricks ?? []),
             JSON.stringify(skater.media ?? []),
-          ],
+          ]
         );
-        if (row) inserted.push(row);
+        if (row) {
+          inserted.push(row);
+        }
       }
 
       return NextResponse.json({
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
           error: "Invalid request body",
           details: singleResult.error.flatten(),
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -91,7 +95,7 @@ export async function POST(request: Request) {
         singleResult.data.isPro ?? false,
         JSON.stringify(singleResult.data.tricks ?? []),
         JSON.stringify(singleResult.data.media ?? []),
-      ],
+      ]
     );
 
     return NextResponse.json(newSkater);
@@ -99,14 +103,16 @@ export async function POST(request: Request) {
     console.error({ error });
     return NextResponse.json(
       { error: "Failed to create skater" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function PATCH(request: Request) {
   const rateLimit = await checkRateLimit();
-  if (!rateLimit.success) return rateLimitResponse(rateLimit);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
 
   try {
     const body: unknown = await request.json();
@@ -114,7 +120,7 @@ export async function PATCH(request: Request) {
     if (!result.success) {
       return NextResponse.json(
         { error: "Invalid request body", details: result.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -170,11 +176,13 @@ export async function PATCH(request: Request) {
           values.push(JSON.stringify(changes.media));
         }
 
-        if (fields.length === 0) continue;
+        if (fields.length === 0) {
+          continue;
+        }
         values.push(id);
         const resultRows = await tx.unsafe(
           `UPDATE ${DB_TABLES.skaters} SET ${fields.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING id`,
-          values,
+          values
         );
         count += resultRows.length;
       }
@@ -186,14 +194,16 @@ export async function PATCH(request: Request) {
     console.error({ error });
     return NextResponse.json(
       { error: "Failed to update skaters" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(request: Request) {
   const rateLimit = await checkRateLimit();
-  if (!rateLimit.success) return rateLimitResponse(rateLimit);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
 
   try {
     const body: unknown = await request.json();
@@ -201,20 +211,20 @@ export async function DELETE(request: Request) {
     if (!result.success) {
       return NextResponse.json(
         { error: "Invalid request body", details: result.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const deleted = await db.unsafe(
       `DELETE FROM ${DB_TABLES.skaters} WHERE id = ANY($1) RETURNING id`,
-      [result.data.ids],
+      [result.data.ids]
     );
     return NextResponse.json({ deleted: deleted.length });
   } catch (error) {
     console.error({ error });
     return NextResponse.json(
       { error: "Failed to delete skaters" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

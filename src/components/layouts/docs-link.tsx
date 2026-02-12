@@ -10,7 +10,7 @@ export function DocsLink() {
     : "https://diceui.com/docs/components/data-table";
 
   return (
-    <ActiveLink href={href} target="_blank" rel="noopener noreferrer">
+    <ActiveLink href={href} rel="noopener noreferrer" target="_blank">
       Docs
     </ActiveLink>
   );

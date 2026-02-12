@@ -17,15 +17,33 @@ import type { DataGridCellProps } from "@/types/data-grid";
 
 export const DataGridCell = React.memo(DataGridCellImpl, (prev, next) => {
   // Fast path: check stable primitive props first
-  if (prev.isFocused !== next.isFocused) return false;
-  if (prev.isEditing !== next.isEditing) return false;
-  if (prev.isSelected !== next.isSelected) return false;
-  if (prev.isSearchMatch !== next.isSearchMatch) return false;
-  if (prev.isActiveSearchMatch !== next.isActiveSearchMatch) return false;
-  if (prev.readOnly !== next.readOnly) return false;
-  if (prev.rowIndex !== next.rowIndex) return false;
-  if (prev.columnId !== next.columnId) return false;
-  if (prev.rowHeight !== next.rowHeight) return false;
+  if (prev.isFocused !== next.isFocused) {
+    return false;
+  }
+  if (prev.isEditing !== next.isEditing) {
+    return false;
+  }
+  if (prev.isSelected !== next.isSelected) {
+    return false;
+  }
+  if (prev.isSearchMatch !== next.isSearchMatch) {
+    return false;
+  }
+  if (prev.isActiveSearchMatch !== next.isActiveSearchMatch) {
+    return false;
+  }
+  if (prev.readOnly !== next.readOnly) {
+    return false;
+  }
+  if (prev.rowIndex !== next.rowIndex) {
+    return false;
+  }
+  if (prev.columnId !== next.columnId) {
+    return false;
+  }
+  if (prev.rowHeight !== next.rowHeight) {
+    return false;
+  }
 
   // Check cell value using row.original instead of getValue() for stability
   // getValue() is unstable and recreates on every render, breaking memoization
@@ -40,7 +58,9 @@ export const DataGridCell = React.memo(DataGridCellImpl, (prev, next) => {
   }
 
   // Check cell/row identity
-  if (prev.cell.row.id !== next.cell.row.id) return false;
+  if (prev.cell.row.id !== next.cell.row.id) {
+    return false;
+  }
 
   return true;
 }) as typeof DataGridCellImpl;
@@ -100,16 +120,16 @@ function DataGridCellImpl<TData>({
   return (
     <Comp
       cell={cell}
-      tableMeta={tableMeta}
-      rowIndex={rowIndex}
       columnId={columnId}
-      rowHeight={rowHeight}
+      isActiveSearchMatch={isActiveSearchMatch}
       isEditing={isEditing}
       isFocused={isFocused}
-      isSelected={isSelected}
       isSearchMatch={isSearchMatch}
-      isActiveSearchMatch={isActiveSearchMatch}
+      isSelected={isSelected}
       readOnly={readOnly}
+      rowHeight={rowHeight}
+      rowIndex={rowIndex}
+      tableMeta={tableMeta}
     />
   );
 }

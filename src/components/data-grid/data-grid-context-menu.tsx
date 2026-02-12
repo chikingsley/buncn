@@ -17,7 +17,7 @@ import type { CellUpdate, ContextMenuState } from "@/types/data-grid";
 
 interface DataGridContextMenuProps<TData> {
   tableMeta: TableMeta<TData>;
-  columns: Array<ColumnDef<TData>>;
+  columns: ColumnDef<TData>[];
   contextMenu: ContextMenuState;
 }
 
@@ -34,20 +34,22 @@ export function DataGridContextMenu<TData>({
   const onCellsCopy = tableMeta?.onCellsCopy;
   const onCellsCut = tableMeta?.onCellsCut;
 
-  if (!contextMenu.open) return null;
+  if (!contextMenu.open) {
+    return null;
+  }
 
   return (
     <ContextMenu
-      tableMeta={tableMeta}
       columns={columns}
-      dataGridRef={dataGridRef}
       contextMenu={contextMenu}
-      onContextMenuOpenChange={onContextMenuOpenChange}
-      selectionState={selectionState}
-      onDataUpdate={onDataUpdate}
-      onRowsDelete={onRowsDelete}
+      dataGridRef={dataGridRef}
       onCellsCopy={onCellsCopy}
       onCellsCut={onCellsCut}
+      onContextMenuOpenChange={onContextMenuOpenChange}
+      onDataUpdate={onDataUpdate}
+      onRowsDelete={onRowsDelete}
+      selectionState={selectionState}
+      tableMeta={tableMeta}
     />
   );
 }
@@ -66,18 +68,28 @@ interface ContextMenuProps<TData>
     >,
     Required<Pick<TableMeta<TData>, "contextMenu">> {
   tableMeta: TableMeta<TData>;
-  columns: Array<ColumnDef<TData>>;
+  columns: ColumnDef<TData>[];
 }
 
 const ContextMenu = React.memo(ContextMenuImpl, (prev, next) => {
-  if (prev.contextMenu.open !== next.contextMenu.open) return false;
-  if (!next.contextMenu.open) return true;
-  if (prev.contextMenu.x !== next.contextMenu.x) return false;
-  if (prev.contextMenu.y !== next.contextMenu.y) return false;
+  if (prev.contextMenu.open !== next.contextMenu.open) {
+    return false;
+  }
+  if (!next.contextMenu.open) {
+    return true;
+  }
+  if (prev.contextMenu.x !== next.contextMenu.x) {
+    return false;
+  }
+  if (prev.contextMenu.y !== next.contextMenu.y) {
+    return false;
+  }
 
   const prevSize = prev.selectionState?.selectedCells?.size ?? 0;
   const nextSize = next.selectionState?.selectedCells?.size ?? 0;
-  if (prevSize !== nextSize) return false;
+  if (prevSize !== nextSize) {
+    return false;
+  }
 
   return true;
 }) as typeof ContextMenuImpl;
@@ -118,7 +130,7 @@ function ContextMenuImpl<TData>({
       pointerEvents: "none",
       opacity: 0,
     }),
-    [contextMenu.x, contextMenu.y],
+    [contextMenu.x, contextMenu.y]
   );
 
   const onCloseAutoFocus: NonNullable<
@@ -128,7 +140,7 @@ function ContextMenuImpl<TData>({
       event.preventDefault();
       propsRef.current.dataGridRef?.current?.focus();
     },
-    [propsRef],
+    [propsRef]
   );
 
   const onCopy = React.useCallback(() => {
@@ -145,18 +157,23 @@ function ContextMenuImpl<TData>({
     if (
       !selectionState?.selectedCells ||
       selectionState.selectedCells.size === 0
-    )
+    ) {
       return;
+    }
 
-    const updates: Array<CellUpdate> = [];
+    const updates: CellUpdate[] = [];
 
     for (const cellKey of selectionState.selectedCells) {
       const { rowIndex, columnId } = parseCellKey(cellKey);
 
       // Get column from columns array
       const column = columns.find((col) => {
-        if (col.id) return col.id === columnId;
-        if ("accessorKey" in col) return col.accessorKey === columnId;
+        if (col.id) {
+          return col.id === columnId;
+        }
+        if ("accessorKey" in col) {
+          return col.accessorKey === columnId;
+        }
         return false;
       });
       const cellVariant = column?.meta?.cell?.variant;
@@ -176,7 +193,7 @@ function ContextMenuImpl<TData>({
     onDataUpdate?.(updates);
 
     toast.success(
-      `${updates.length} cell${updates.length !== 1 ? "s" : ""} cleared`,
+      `${updates.length} cell${updates.length !== 1 ? "s" : ""} cleared`
     );
   }, [propsRef]);
 
@@ -186,8 +203,9 @@ function ContextMenuImpl<TData>({
     if (
       !selectionState?.selectedCells ||
       selectionState.selectedCells.size === 0
-    )
+    ) {
       return;
+    }
 
     const rowIndices = new Set<number>();
     for (const cellKey of selectionState.selectedCells) {
@@ -205,32 +223,32 @@ function ContextMenuImpl<TData>({
 
   return (
     <DropdownMenu
-      open={contextMenu.open}
       onOpenChange={onContextMenuOpenChange}
+      open={contextMenu.open}
     >
       <DropdownMenuTrigger style={triggerStyle} />
       <DropdownMenuContent
-        data-grid-popover=""
         align="start"
         className="w-48"
+        data-grid-popover=""
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DropdownMenuItem onSelect={onCopy}>
           <CopyIcon />
           Copy
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onCut} disabled={tableMeta?.readOnly}>
+        <DropdownMenuItem disabled={tableMeta?.readOnly} onSelect={onCut}>
           <ScissorsIcon />
           Cut
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onClear} disabled={tableMeta?.readOnly}>
+        <DropdownMenuItem disabled={tableMeta?.readOnly} onSelect={onClear}>
           <EraserIcon />
           Clear
         </DropdownMenuItem>
         {onRowsDelete && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+            <DropdownMenuItem onSelect={onDelete} variant="destructive">
               <Trash2Icon />
               Delete rows
             </DropdownMenuItem>

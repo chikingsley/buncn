@@ -68,8 +68,8 @@ export function DeleteTasksDialog({
       <Dialog {...props}>
         {showTrigger ? (
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Trash className="mr-2 size-4" aria-hidden="true" />
+            <Button size="sm" variant="outline">
+              <Trash aria-hidden="true" className="mr-2 size-4" />
               Delete ({tasks.length})
             </Button>
           </DialogTrigger>
@@ -89,14 +89,14 @@ export function DeleteTasksDialog({
             </DialogClose>
             <Button
               aria-label="Delete selected rows"
-              variant="destructive"
-              onClick={onDelete}
               disabled={isDeletePending}
+              onClick={onDelete}
+              variant="destructive"
             >
               {isDeletePending && (
                 <Loader
-                  className="mr-2 size-4 animate-spin"
                   aria-hidden="true"
+                  className="mr-2 size-4 animate-spin"
                 />
               )}
               Delete
@@ -111,8 +111,8 @@ export function DeleteTasksDialog({
     <Drawer {...props}>
       {showTrigger ? (
         <DrawerTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Trash className="mr-2 size-4" aria-hidden="true" />
+          <Button size="sm" variant="outline">
+            <Trash aria-hidden="true" className="mr-2 size-4" />
             Delete ({tasks.length})
           </Button>
         </DrawerTrigger>
@@ -132,12 +132,12 @@ export function DeleteTasksDialog({
           </DrawerClose>
           <Button
             aria-label="Delete selected rows"
-            variant="destructive"
-            onClick={onDelete}
             disabled={isDeletePending}
+            onClick={onDelete}
+            variant="destructive"
           >
             {isDeletePending && (
-              <Loader className="mr-2 size-4 animate-spin" aria-hidden="true" />
+              <Loader aria-hidden="true" className="mr-2 size-4 animate-spin" />
             )}
             Delete
           </Button>

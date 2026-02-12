@@ -11,7 +11,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
       <div className="container flex h-14 items-center">
-        <Button variant="ghost" size="icon" className="size-8" asChild>
+        <Button asChild className="size-8" size="icon" variant="ghost">
           <Link href="/">
             <LayoutGrid />
           </Link>
@@ -22,14 +22,14 @@ export function SiteHeader() {
           <DocsLink />
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
-          <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Button asChild className="size-8" size="icon" variant="ghost">
             <Link
               aria-label="GitHub repo"
               href={siteConfig.links.github}
-              target="_blank"
               rel="noopener noreferrer"
+              target="_blank"
             >
-              <Icons.gitHub className="size-4" aria-hidden="true" />
+              <Icons.gitHub aria-hidden="true" className="size-4" />
             </Link>
           </Button>
           <ModeToggle />

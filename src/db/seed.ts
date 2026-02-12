@@ -11,7 +11,9 @@ const ALL_TABLES = Object.keys(SEED_FUNCTIONS) as TableName[];
 function parseArgs(): TableName[] {
   const args = process.argv.slice(2);
 
-  if (args.length === 0) return ALL_TABLES;
+  if (args.length === 0) {
+    return ALL_TABLES;
+  }
 
   // Support both space-separated and comma-separated
   const tables = args

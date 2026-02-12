@@ -12,7 +12,7 @@ import { getFiltersStateParser, getSortingStateParser } from "@/lib/parsers";
 
 export const searchParamsCache = createSearchParamsCache({
   filterFlag: parseAsStringEnum(
-    flagConfig.featureFlags.map((flag) => flag.value),
+    flagConfig.featureFlags.map((flag) => flag.value)
   ),
   page: parseAsInteger.withDefault(1),
   perPage: parseAsInteger.withDefault(10),
@@ -21,10 +21,10 @@ export const searchParamsCache = createSearchParamsCache({
   ]),
   title: parseAsString.withDefault(""),
   status: parseAsArrayOf(
-    parseAsStringEnum([...tasks.status.enumValues]),
+    parseAsStringEnum([...tasks.status.enumValues])
   ).withDefault([]),
   priority: parseAsArrayOf(
-    parseAsStringEnum([...tasks.priority.enumValues]),
+    parseAsStringEnum([...tasks.priority.enumValues])
   ).withDefault([]),
   estimatedHours: parseAsArrayOf(parseAsInteger).withDefault([]),
   createdAt: parseAsArrayOf(parseAsInteger).withDefault([]),

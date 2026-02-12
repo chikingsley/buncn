@@ -15,7 +15,7 @@ export const ourFileRouter = {
       const limit = await checkRateLimit(req);
       if (!limit.success) {
         throw new UploadThingError(
-          "Rate limit exceeded, please try again later.",
+          "Rate limit exceeded, please try again later."
         );
       }
 

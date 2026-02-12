@@ -95,7 +95,7 @@ export function DataGridLiveDemo() {
 
       return query;
     },
-    [sorting],
+    [sorting]
   );
 
   const { startUpload } = useUploadThing("skaterMedia");
@@ -247,7 +247,7 @@ export function DataGridLiveDemo() {
         },
       },
     ],
-    [filterFn],
+    [filterFn]
   );
 
   // Undo/redo support - wraps data changes to track history
@@ -266,13 +266,12 @@ export function DataGridLiveDemo() {
 
       // Insert or update rows
       for (const skater of newData) {
-        if (!currentIds.has(skater.id)) {
-          // Insert new row (undo delete / redo add)
-          skatersCollection.insert(skater);
-        } else {
+        if (currentIds.has(skater.id)) {
           // Update existing row
           const existingSkater = data.find((s) => s.id === skater.id);
-          if (!existingSkater) continue;
+          if (!existingSkater) {
+            continue;
+          }
 
           const hasChanges = (
             Object.keys(skater) as Array<keyof SkaterSchema>
@@ -294,10 +293,13 @@ export function DataGridLiveDemo() {
               Object.assign(draft, skater);
             });
           }
+        } else {
+          // Insert new row (undo delete / redo add)
+          skatersCollection.insert(skater);
         }
       }
     },
-    [data],
+    [data]
   );
 
   const { trackCellsUpdate, trackRowsAdd, trackRowsDelete } =
@@ -312,7 +314,7 @@ export function DataGridLiveDemo() {
   > = React.useCallback(
     (newData) => {
       // Track cell updates for undo/redo
-      const cellUpdates: Array<UndoRedoCellUpdate> = [];
+      const cellUpdates: UndoRedoCellUpdate[] = [];
 
       // Diff and update changed skaters via TanStack DB for optimistic updates
       for (const skater of newData) {
@@ -358,7 +360,7 @@ export function DataGridLiveDemo() {
         trackCellsUpdate(cellUpdates);
       }
     },
-    [data, trackCellsUpdate],
+    [data, trackCellsUpdate]
   );
 
   const onRowAdd: NonNullable<UseDataGridProps<SkaterSchema>["onRowAdd"]> =
@@ -408,7 +410,7 @@ export function DataGridLiveDemo() {
         // Track for undo/redo
         trackRowsAdd(newRows);
       },
-      [data, trackRowsAdd],
+      [data, trackRowsAdd]
     );
 
   const onRowsDelete: NonNullable<
@@ -421,7 +423,7 @@ export function DataGridLiveDemo() {
       // Use batch delete - single transaction for all deletions
       skatersCollection.delete(rowsToDelete.map((skater) => skater.id));
     },
-    [trackRowsDelete],
+    [trackRowsDelete]
   );
 
   const onFilesUpload: NonNullable<
@@ -456,7 +458,7 @@ export function DataGridLiveDemo() {
         url: URL.createObjectURL(file),
       }));
     },
-    [startUpload],
+    [startUpload]
   );
 
   const onFilesDelete: NonNullable<
@@ -511,14 +513,14 @@ export function DataGridLiveDemo() {
           for (const draft of drafts) {
             draft.status = value as never;
           }
-        },
+        }
       );
 
       toast.success(
-        `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} updated`,
+        `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} updated`
       );
     },
-    [table],
+    [table]
   );
 
   const onStyleUpdate = React.useCallback(
@@ -536,14 +538,14 @@ export function DataGridLiveDemo() {
           for (const draft of drafts) {
             draft.style = value as never;
           }
-        },
+        }
       );
 
       toast.success(
-        `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} updated`,
+        `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} updated`
       );
     },
-    [table],
+    [table]
   );
 
   const onDelete = React.useCallback(() => {
@@ -558,7 +560,7 @@ export function DataGridLiveDemo() {
     tableMeta.onRowsDelete?.(rowIndices);
 
     toast.success(
-      `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} deleted`,
+      `${selectedRows.length} skater${selectedRows.length === 1 ? "" : "s"} deleted`
     );
     table.toggleAllRowsSelected(false);
   }, [table, tableMeta]);
@@ -569,37 +571,37 @@ export function DataGridLiveDemo() {
   return (
     <div className="container flex flex-col gap-4 py-4">
       <div
-        role="toolbar"
         aria-orientation="horizontal"
         className="flex items-center gap-2 self-end"
+        role="toolbar"
       >
         <DataGridKeyboardShortcuts
-          enableSearch
-          enableUndoRedo
           enablePaste
           enableRowAdd
           enableRowsDelete
+          enableSearch
+          enableUndoRedo
         />
-        <DataGridFilterMenu table={table} align="end" />
-        <DataGridSortMenu table={table} align="end" />
-        <DataGridRowHeightMenu table={table} align="end" />
-        <DataGridViewMenu table={table} align="end" />
+        <DataGridFilterMenu align="end" table={table} />
+        <DataGridSortMenu align="end" table={table} />
+        <DataGridRowHeightMenu align="end" table={table} />
+        <DataGridViewMenu align="end" table={table} />
       </div>
       <DataGrid
         {...dataGridProps}
+        height={height}
         table={table}
         tableMeta={tableMeta}
-        height={height}
       />
       <DataGridActionBar
-        table={table}
-        tableMeta={tableMeta}
+        onDelete={onDelete}
+        onStatusUpdate={onStatusUpdate}
+        onStyleUpdate={onStyleUpdate}
         selectedCellCount={selectedCellCount}
         statusOptions={statusOptions}
         styleOptions={styleOptions}
-        onStatusUpdate={onStatusUpdate}
-        onStyleUpdate={onStyleUpdate}
-        onDelete={onDelete}
+        table={table}
+        tableMeta={tableMeta}
       />
     </div>
   );

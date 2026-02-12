@@ -20,22 +20,22 @@ export function TasksTableToolbarActions({
     <div className="flex items-center gap-2">
       {table.getFilteredSelectedRowModel().rows.length > 0 ? (
         <DeleteTasksDialog
+          onSuccess={() => table.toggleAllRowsSelected(false)}
           tasks={table
             .getFilteredSelectedRowModel()
             .rows.map((row) => row.original)}
-          onSuccess={() => table.toggleAllRowsSelected(false)}
         />
       ) : null}
       <CreateTaskSheet />
       <Button
-        variant="outline"
-        size="sm"
         onClick={() =>
           exportTableToCSV(table, {
             filename: "tasks",
             excludeColumns: ["select", "actions"],
           })
         }
+        size="sm"
+        variant="outline"
       >
         <Download />
         Export

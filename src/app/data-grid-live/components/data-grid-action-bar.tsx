@@ -48,14 +48,14 @@ export function DataGridActionBar<TData>({
         tableMeta.onSelectionClear?.();
       }
     },
-    [table, tableMeta],
+    [table, tableMeta]
   );
 
   return (
     <ActionBar
       data-grid-popover
-      open={selectedCellCount > 0}
       onOpenChange={onOpenChange}
+      open={selectedCellCount > 0}
     >
       <ActionBarSelection>
         <span className="font-medium">{selectedCellCount}</span>
@@ -70,7 +70,7 @@ export function DataGridActionBar<TData>({
         {statusOptions && statusOptions.length > 0 && onStatusUpdate && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <ActionBarItem variant="secondary" size="sm">
+              <ActionBarItem size="sm" variant="secondary">
                 <CheckCircle2 />
                 Status
               </ActionBarItem>
@@ -90,7 +90,7 @@ export function DataGridActionBar<TData>({
         {styleOptions && styleOptions.length > 0 && onStyleUpdate && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <ActionBarItem variant="secondary" size="sm">
+              <ActionBarItem size="sm" variant="secondary">
                 <Palette />
                 Style
               </ActionBarItem>
@@ -108,7 +108,7 @@ export function DataGridActionBar<TData>({
           </DropdownMenu>
         )}
         {onDelete && (
-          <ActionBarItem variant="destructive" size="sm" onClick={onDelete}>
+          <ActionBarItem onClick={onDelete} size="sm" variant="destructive">
             <Trash2 />
             Delete
           </ActionBarItem>

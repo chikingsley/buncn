@@ -41,7 +41,9 @@ export function UpdateTaskSheet({ task, ...props }: UpdateTaskSheetProps) {
 
   function onSubmit(input: UpdateTaskSchema) {
     startTransition(async () => {
-      if (!task) return;
+      if (!task) {
+        return;
+      }
 
       const { error } = await updateTask({
         id: task.id,
@@ -78,8 +80,8 @@ export function UpdateTaskSheet({ task, ...props }: UpdateTaskSheetProps) {
             <Button disabled={isPending}>
               {isPending && (
                 <Loader
-                  className="mr-2 size-4 animate-spin"
                   aria-hidden="true"
+                  className="mr-2 size-4 animate-spin"
                 />
               )}
               Save

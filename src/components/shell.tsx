@@ -18,7 +18,7 @@ const shellVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 interface ShellProps

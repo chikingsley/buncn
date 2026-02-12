@@ -57,35 +57,35 @@ function DataGridDemoImpl({
   return (
     <div className="container flex flex-col gap-4 py-4">
       <div
-        role="toolbar"
         aria-orientation="horizontal"
         className="flex items-center gap-2 self-end"
+        role="toolbar"
       >
         <Toggle
           aria-label="Toggle text direction"
-          dir={dir}
-          variant="outline"
-          size="sm"
           className="bg-background dark:bg-input/30 dark:hover:bg-input/50"
-          pressed={dir === "rtl"}
+          dir={dir}
           onPressedChange={(pressed) => onDirChange(pressed ? "rtl" : "ltr")}
+          pressed={dir === "rtl"}
+          size="sm"
+          variant="outline"
         >
           <Languages className="text-muted-foreground" />
           {dir === "ltr" ? "LTR" : "RTL"}
         </Toggle>
-        <DataGridFilterMenu table={table} align="end" />
-        <DataGridSortMenu table={table} align="end" />
-        <DataGridRowHeightMenu table={table} align="end" />
-        <DataGridViewMenu table={table} align="end" />
+        <DataGridFilterMenu align="end" table={table} />
+        <DataGridSortMenu align="end" table={table} />
+        <DataGridRowHeightMenu align="end" table={table} />
+        <DataGridViewMenu align="end" table={table} />
       </div>
       <DataGridKeyboardShortcuts
-        enableSearch
-        enableUndoRedo
         enablePaste
         enableRowAdd
         enableRowsDelete
+        enableSearch
+        enableUndoRedo
       />
-      <DataGrid {...dataGridProps} table={table} height={height} />
+      <DataGrid {...dataGridProps} height={height} table={table} />
     </div>
   );
 }
@@ -279,7 +279,7 @@ export function DataGridDemo() {
         },
       },
     ],
-    [filterFn],
+    [filterFn]
   );
 
   const { trackCellsUpdate, trackRowsAdd, trackRowsDelete } =
@@ -337,7 +337,7 @@ export function DataGridDemo() {
         // Track for undo/redo
         trackRowsAdd(newRows);
       },
-      [trackRowsAdd],
+      [trackRowsAdd]
     );
 
   const onRowsDelete: NonNullable<UseDataGridProps<Person>["onRowsDelete"]> =
@@ -355,7 +355,7 @@ export function DataGridDemo() {
         // For this demo, just filter out the deleted rows
         setData((prev) => prev.filter((row) => !rows.includes(row)));
       },
-      [trackRowsDelete],
+      [trackRowsDelete]
     );
 
   const onFilesUpload: NonNullable<UseDataGridProps<Person>["onFilesUpload"]> =
@@ -392,7 +392,7 @@ export function DataGridDemo() {
           url: URL.createObjectURL(file),
         }));
       },
-      [],
+      []
     );
 
   const onFilesDelete: NonNullable<UseDataGridProps<Person>["onFilesDelete"]> =
@@ -407,7 +407,7 @@ export function DataGridDemo() {
       // For this demo, just log the deletion
       console.log(
         `Deleting ${fileIds.length} file(s) from row ${rowIndex}, column ${columnId}:`,
-        fileIds,
+        fileIds
       );
     }, []);
 
@@ -415,7 +415,7 @@ export function DataGridDemo() {
   const onDataChange = React.useCallback(
     (newData: Person[]) => {
       // Find which cells changed by comparing old and new data
-      const cellUpdates: Array<UndoRedoCellUpdate> = [];
+      const cellUpdates: UndoRedoCellUpdate[] = [];
 
       // Compare each row to find changed cells
       const maxLength = Math.max(data.length, newData.length);
@@ -458,7 +458,7 @@ export function DataGridDemo() {
 
       setData(newData);
     },
-    [data, trackCellsUpdate],
+    [data, trackCellsUpdate]
   );
 
   const height = Math.max(400, windowSize.height - 150);
@@ -466,17 +466,17 @@ export function DataGridDemo() {
   return (
     <DirectionProvider dir={dir}>
       <DataGridDemoImpl
-        data={data}
-        onDataChange={onDataChange}
         columns={columns}
+        data={data}
+        dir={dir}
+        height={height}
+        onDataChange={onDataChange}
+        onDirChange={setDir}
+        onFilesDelete={onFilesDelete}
+        onFilesUpload={onFilesUpload}
         onRowAdd={onRowAdd}
         onRowsAdd={onRowsAdd}
         onRowsDelete={onRowsDelete}
-        onFilesUpload={onFilesUpload}
-        onFilesDelete={onFilesDelete}
-        height={height}
-        dir={dir}
-        onDirChange={setDir}
       />
     </DirectionProvider>
   );

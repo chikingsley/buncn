@@ -55,7 +55,7 @@ export function TasksTable({ promises, queryKeys }: TasksTableProps) {
         estimatedHoursRange,
         setRowAction,
       }),
-    [statusCounts, priorityCounts, estimatedHoursRange],
+    [statusCounts, priorityCounts, estimatedHoursRange]
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({
@@ -76,46 +76,46 @@ export function TasksTable({ promises, queryKeys }: TasksTableProps) {
   return (
     <>
       <DataTable
-        table={table}
         actionBar={<TasksTableActionBar table={table} />}
+        table={table}
       >
         {enableAdvancedFilter ? (
           <DataTableAdvancedToolbar table={table}>
-            <DataTableSortList table={table} align="start" />
+            <DataTableSortList align="start" table={table} />
             {filterFlag === "advancedFilters" ? (
               <DataTableFilterList
-                table={table}
-                shallow={shallow}
-                debounceMs={debounceMs}
-                throttleMs={throttleMs}
                 align="start"
+                debounceMs={debounceMs}
+                shallow={shallow}
+                table={table}
+                throttleMs={throttleMs}
               />
             ) : (
               <DataTableFilterMenu
-                table={table}
-                shallow={shallow}
                 debounceMs={debounceMs}
+                shallow={shallow}
+                table={table}
                 throttleMs={throttleMs}
               />
             )}
           </DataTableAdvancedToolbar>
         ) : (
           <DataTableToolbar table={table}>
-            <DataTableSortList table={table} align="end" />
+            <DataTableSortList align="end" table={table} />
           </DataTableToolbar>
         )}
       </DataTable>
       <UpdateTaskSheet
-        open={rowAction?.variant === "update"}
         onOpenChange={() => setRowAction(null)}
+        open={rowAction?.variant === "update"}
         task={rowAction?.row.original ?? null}
       />
       <DeleteTasksDialog
-        open={rowAction?.variant === "delete"}
         onOpenChange={() => setRowAction(null)}
-        tasks={rowAction?.row.original ? [rowAction?.row.original] : []}
-        showTrigger={false}
         onSuccess={() => rowAction?.row.toggleSelected(false)}
+        open={rowAction?.variant === "delete"}
+        showTrigger={false}
+        tasks={rowAction?.row.original ? [rowAction?.row.original] : []}
       />
     </>
   );

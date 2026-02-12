@@ -13,7 +13,7 @@ import {
 const DataGridLiveDemo = dynamic(
   () =>
     import("./components/data-grid-live-demo").then(
-      (mod) => mod.DataGridLiveDemo,
+      (mod) => mod.DataGridLiveDemo
     ),
   {
     ssr: false,
@@ -23,7 +23,7 @@ const DataGridLiveDemo = dynamic(
         <DataGridSkeletonGrid />
       </DataGridSkeleton>
     ),
-  },
+  }
 );
 
 export default function DataGridLivePage() {
