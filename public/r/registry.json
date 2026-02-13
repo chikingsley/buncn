@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "tablecn",
-  "homepage": "https://tablecn.com",
+  "name": "buncn",
+  "homepage": "https://github.com/chikingsley/buncn",
   "items": [
     {
       "name": "data-table",

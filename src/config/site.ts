@@ -1,9 +1,9 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Table",
+  name: "buncn",
   description:
-    "Shadcn table with server side sorting, pagination, and filtering",
-  url: "https://tablecn.com",
-  links: { github: "https://github.com/sadmann7/tablecn" },
+    "Shadcn component proof-of-concepts for Bun — tables, data grids, mail, and more",
+  url: "https://github.com/chikingsley/buncn",
+  links: { github: "https://github.com/chikingsley/buncn" },
 };
