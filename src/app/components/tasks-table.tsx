@@ -14,7 +14,6 @@ import type {
   getEstimatedHoursRange,
   getTaskPriorityCounts,
   getTaskStatusCounts,
-  getTasks,
 } from "../lib/queries";
 import { DeleteTasksDialog } from "./delete-tasks-dialog";
 import { useFeatureFlags } from "./feature-flags-provider";
@@ -23,26 +22,23 @@ import { getTasksTableColumns } from "./tasks-table-columns";
 import { UpdateTaskSheet } from "./update-task-sheet";
 
 interface TasksTableProps {
-  promises: Promise<
-    [
-      Awaited<ReturnType<typeof getTasks>>,
-      Awaited<ReturnType<typeof getTaskStatusCounts>>,
-      Awaited<ReturnType<typeof getTaskPriorityCounts>>,
-      Awaited<ReturnType<typeof getEstimatedHoursRange>>,
-    ]
-  >;
+  data: Task[];
+  pageCount: number;
+  statusCounts: Awaited<ReturnType<typeof getTaskStatusCounts>>;
+  priorityCounts: Awaited<ReturnType<typeof getTaskPriorityCounts>>;
+  estimatedHoursRange: Awaited<ReturnType<typeof getEstimatedHoursRange>>;
   queryKeys?: Partial<QueryKeys>;
 }
 
-export function TasksTable({ promises, queryKeys }: TasksTableProps) {
+export function TasksTable({
+  data,
+  pageCount,
+  statusCounts,
+  priorityCounts,
+  estimatedHoursRange,
+  queryKeys,
+}: TasksTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags();
-
-  const [
-    { data, pageCount },
-    statusCounts,
-    priorityCounts,
-    estimatedHoursRange,
-  ] = React.use(promises);
 
   const [rowAction, setRowAction] =
     React.useState<DataTableRowAction<Task> | null>(null);

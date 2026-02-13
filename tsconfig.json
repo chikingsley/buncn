@@ -18,7 +18,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "types": ["vite/client", "bun-types"],
+    "types": ["bun-types"],
     "incremental": true,
     /* Path Aliases */
     "baseUrl": ".",
@@ -27,5 +27,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "example", "dist"]
 }

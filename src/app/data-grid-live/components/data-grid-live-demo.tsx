@@ -3,7 +3,6 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import * as React from "react";
-import { use } from "react";
 import { toast } from "sonner";
 import {
   generateRandomSkater,
@@ -27,7 +26,6 @@ import {
 import { useWindowSize } from "@/hooks/use-window-size";
 import { getFilterFn } from "@/lib/data-grid-filters";
 import { generateId } from "@/lib/id";
-import { useUploadThing } from "@/lib/uploadthing";
 import { skatersCollection } from "../lib/collections";
 import type { SkaterSchema } from "../lib/validation";
 import { DataGridActionBar } from "./data-grid-action-bar";
@@ -74,7 +72,11 @@ const trickSelectOptions = trickOptions.map((trick) => ({
 }));
 
 export function DataGridLiveDemo() {
-  use(skatersCollection.preload());
+  const [preloaded, setPreloaded] = React.useState(false);
+
+  React.useEffect(() => {
+    skatersCollection.preload().then(() => setPreloaded(true));
+  }, []);
 
   const windowSize = useWindowSize();
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -97,8 +99,6 @@ export function DataGridLiveDemo() {
     },
     [sorting]
   );
-
-  const { startUpload } = useUploadThing("skaterMedia");
 
   const filterFn = React.useMemo(() => getFilterFn<SkaterSchema>(), []);
 
@@ -428,53 +428,21 @@ export function DataGridLiveDemo() {
 
   const onFilesUpload: NonNullable<
     UseDataGridProps<SkaterSchema>["onFilesUpload"]
-  > = React.useCallback(
-    async ({ files }) => {
-      // Try to upload via UploadThing, fall back to simulation if not configured
-      try {
-        const uploadedFiles = await startUpload(files);
+  > = React.useCallback(async ({ files }) => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-        if (uploadedFiles) {
-          return uploadedFiles.map((file) => ({
-            id: file.key,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: file.ufsUrl,
-          }));
-        }
-      } catch {
-        // UploadThing not configured, fall back to simulation
-      }
-
-      // Simulate upload for demo/development without UploadThing
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      return files.map((file) => ({
-        id: crypto.randomUUID(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        url: URL.createObjectURL(file),
-      }));
-    },
-    [startUpload]
-  );
+    return files.map((file) => ({
+      id: crypto.randomUUID(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: URL.createObjectURL(file),
+    }));
+  }, []);
 
   const onFilesDelete: NonNullable<
     UseDataGridProps<SkaterSchema>["onFilesDelete"]
-  > = React.useCallback(async ({ fileIds }) => {
-    // Try to delete from UploadThing, silently fail if not configured
-    try {
-      await fetch("/api/uploadthing/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileKeys: fileIds }),
-      });
-    } catch {
-      // UploadThing not configured or delete failed, ignore
-    }
-  }, []);
+  > = React.useCallback(async () => {}, []);
 
   const { table, tableMeta, ...dataGridProps } = useDataGrid({
     data,
@@ -567,6 +535,10 @@ export function DataGridLiveDemo() {
 
   const height = Math.max(400, windowSize.height - 150);
   const selectedCellCount = tableMeta.selectionState?.selectedCells.size ?? 0;
+
+  if (!preloaded) {
+    return null;
+  }
 
   return (
     <div className="container flex flex-col gap-4 py-4">

@@ -1,2 +1,8 @@
 [install]
 linker = "hoisted"
+
+[serve.static]
+plugins = ["bun-plugin-tailwind"]
+
+[test]
+preload = ["./test-preload.ts"]

@@ -1,5 +1,6 @@
 import type { Task } from "@/db/schema";
 import { getErrorMessage } from "@/lib/handle-error";
+import { emitTasksChanged } from "./tasks-events";
 import type { CreateTaskSchema, UpdateTaskSchema } from "./validations";
 
 async function request(path: string, init: RequestInit) {
@@ -29,6 +30,7 @@ export async function createTask(input: CreateTaskSchema) {
       method: "POST",
       body: JSON.stringify(input),
     });
+    emitTasksChanged();
 
     return { data: null, error: null };
   } catch (err) {
@@ -42,6 +44,7 @@ export async function updateTask(input: UpdateTaskSchema & { id: string }) {
       method: "PATCH",
       body: JSON.stringify(input),
     });
+    emitTasksChanged();
 
     return { data: null, error: null };
   } catch (err) {
@@ -60,6 +63,7 @@ export async function updateTasks(input: {
       method: "PATCH",
       body: JSON.stringify(input),
     });
+    emitTasksChanged();
 
     return { data: null, error: null };
   } catch (err) {
@@ -72,6 +76,7 @@ export async function deleteTask(input: { id: string }) {
     await request(`/api/tasks/${input.id}`, {
       method: "DELETE",
     });
+    emitTasksChanged();
 
     return { data: null, error: null };
   } catch (err) {
@@ -85,6 +90,7 @@ export async function deleteTasks(input: { ids: string[] }) {
       method: "DELETE",
       body: JSON.stringify(input),
     });
+    emitTasksChanged();
 
     return { data: null, error: null };
   } catch (err) {

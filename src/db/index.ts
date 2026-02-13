@@ -1,5 +1,5 @@
 import postgres from "postgres";
-import { env } from "@/env.js";
+import { env } from "@/env";
 import { DATABASE_PREFIX } from "@/lib/constants";
 
 export const db = postgres(env.DATABASE_URL);
