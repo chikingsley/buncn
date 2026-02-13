@@ -1,1 +1,1 @@
-export const DATABASE_PREFIX = "tablecn";
+export const DATABASE_PREFIX = "buncn";
