@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
   ArrowUpDown,
   CalendarIcon,
@@ -34,6 +34,77 @@ import type { DataTableRowAction } from "@/types/data-table";
 
 import { updateTask } from "../lib/actions";
 import { getPriorityIcon, getStatusIcon } from "../lib/utils";
+
+function TaskActionsCell({
+  row,
+  setRowAction,
+}: {
+  row: Row<Task>;
+  setRowAction: GetTasksTableColumnsProps["setRowAction"];
+}) {
+  const [isUpdatePending, startUpdateTransition] = React.useTransition();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label="Open menu"
+          className="flex size-8 p-0 data-[state=open]:bg-muted"
+          variant="ghost"
+        >
+          <Ellipsis aria-hidden="true" className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuItem
+          onSelect={() => setRowAction({ row, variant: "update" })}
+        >
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup
+              onValueChange={(value) => {
+                startUpdateTransition(() => {
+                  toast.promise(
+                    updateTask({
+                      id: row.original.id,
+                      label: value as Task["label"],
+                    }),
+                    {
+                      loading: "Updating...",
+                      success: "Label updated",
+                      error: (err) => getErrorMessage(err),
+                    }
+                  );
+                });
+              }}
+              value={row.original.label}
+            >
+              {tasks.label.enumValues.map((label) => (
+                <DropdownMenuRadioItem
+                  className="capitalize"
+                  disabled={isUpdatePending}
+                  key={label}
+                  value={label}
+                >
+                  {label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => setRowAction({ row, variant: "delete" })}
+        >
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 interface GetTasksTableColumnsProps {
   statusCounts: Record<Task["status"], number>;
@@ -223,70 +294,9 @@ export function getTasksTableColumns({
     },
     {
       id: "actions",
-      cell({ row }) {
-        const [isUpdatePending, startUpdateTransition] = React.useTransition();
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                aria-label="Open menu"
-                className="flex size-8 p-0 data-[state=open]:bg-muted"
-                variant="ghost"
-              >
-                <Ellipsis aria-hidden="true" className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem
-                onSelect={() => setRowAction({ row, variant: "update" })}
-              >
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuRadioGroup
-                    onValueChange={(value) => {
-                      startUpdateTransition(() => {
-                        toast.promise(
-                          updateTask({
-                            id: row.original.id,
-                            label: value as Task["label"],
-                          }),
-                          {
-                            loading: "Updating...",
-                            success: "Label updated",
-                            error: (err) => getErrorMessage(err),
-                          }
-                        );
-                      });
-                    }}
-                    value={row.original.label}
-                  >
-                    {tasks.label.enumValues.map((label) => (
-                      <DropdownMenuRadioItem
-                        className="capitalize"
-                        disabled={isUpdatePending}
-                        key={label}
-                        value={label}
-                      >
-                        {label}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => setRowAction({ row, variant: "delete" })}
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
+      cell: ({ row }) => (
+        <TaskActionsCell row={row} setRowAction={setRowAction} />
+      ),
       size: 40,
     },
   ];

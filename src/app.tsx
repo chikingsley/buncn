@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Route, Routes } from "react-router-dom";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { SiteHeader } from "@/components/layouts/site-header";
+import { Shell } from "@/components/shell";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -29,7 +31,11 @@ export function App() {
       <SiteHeader />
       <main className="flex-1">
         <React.Suspense
-          fallback={<div className="p-4 text-sm">Loading...</div>}
+          fallback={
+            <Shell>
+              <DataTableSkeleton columnCount={5} filterCount={2} shrinkZero />
+            </Shell>
+          }
         >
           <Routes>
             <Route element={<HomePage />} path="/" />

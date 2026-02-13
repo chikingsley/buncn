@@ -2,7 +2,6 @@ import * as React from "react";
 import { useSearchParams } from "react-router-dom";
 import { FeatureFlagsProvider } from "@/app/components/feature-flags-provider";
 import { TasksTable } from "@/app/components/tasks-table";
-import type { Task } from "@/db/schema";
 import {
   getEstimatedHoursRange,
   getTaskPriorityCounts,
@@ -13,6 +12,7 @@ import { subscribeToTasksChanged } from "@/app/lib/tasks-events";
 import { parseTasksSearchParams } from "@/app/lib/validations";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Shell } from "@/components/shell";
+import type { Task } from "@/db/schema";
 import { getValidFilters } from "@/lib/data-table";
 
 interface TasksData {
@@ -26,24 +26,32 @@ function useTasksData(searchParams: URLSearchParams) {
   const [data, setData] = React.useState<TasksData | null>(null);
   const searchParamsKey = searchParams.toString();
 
-  const fetchData = React.useCallback(() => {
-    const search = parseTasksSearchParams(
-      new URLSearchParams(searchParamsKey)
-    );
+  const fetchData = React.useCallback(async () => {
+    const search = parseTasksSearchParams(new URLSearchParams(searchParamsKey));
     const validFilters = getValidFilters(search.filters);
 
-    Promise.all([
-      getTasks({ ...search, filters: validFilters }),
-      getTaskStatusCounts(),
-      getTaskPriorityCounts(),
-      getEstimatedHoursRange(),
-    ]).then(([tasks, statusCounts, priorityCounts, estimatedHoursRange]) => {
-      setData({ tasks, statusCounts, priorityCounts, estimatedHoursRange });
-    });
+    const [tasks, statusCounts, priorityCounts, estimatedHoursRange] =
+      await Promise.all([
+        getTasks({ ...search, filters: validFilters }),
+        getTaskStatusCounts(),
+        getTaskPriorityCounts(),
+        getEstimatedHoursRange(),
+      ]);
+
+    setData({ tasks, statusCounts, priorityCounts, estimatedHoursRange });
   }, [searchParamsKey]);
 
   React.useEffect(() => {
-    fetchData();
+    let stale = false;
+    const run = async () => {
+      await fetchData();
+    };
+    if (!stale) {
+      run();
+    }
+    return () => {
+      stale = true;
+    };
   }, [fetchData]);
 
   React.useEffect(() => {
