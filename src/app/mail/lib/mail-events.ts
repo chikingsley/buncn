@@ -10,7 +10,9 @@ export function emitMailsChanged() {
 
 export function subscribeToMailsChanged(callback: () => void) {
   if (typeof window === "undefined") {
-    return () => {};
+    return () => {
+      /* noop — SSR guard */
+    };
   }
 
   window.addEventListener(MAILS_CHANGED_EVENT, callback);

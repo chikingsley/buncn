@@ -29,6 +29,11 @@ const MailPage = React.lazy(() =>
     default: module.MailPage,
   }))
 );
+const MediaPlayerPage = React.lazy(() =>
+  import("@/routes/media-player-page").then((module) => ({
+    default: module.MediaPlayerPage,
+  }))
+);
 
 export function App() {
   return (
@@ -48,6 +53,7 @@ export function App() {
             <Route element={<DataGridLivePage />} path="/data-grid-live" />
             <Route element={<DataGridRenderPage />} path="/data-grid-render" />
             <Route element={<MailPage />} path="/mail" />
+            <Route element={<MediaPlayerPage />} path="/media-player" />
           </Routes>
         </React.Suspense>
       </main>

@@ -10,7 +10,9 @@ export function emitTasksChanged() {
 
 export function subscribeToTasksChanged(callback: () => void) {
   if (typeof window === "undefined") {
-    return () => {};
+    return () => {
+      /* noop — SSR guard */
+    };
   }
 
   window.addEventListener(TASKS_CHANGED_EVENT, callback);

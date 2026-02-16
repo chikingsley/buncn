@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
   "assist": {
     "actions": {
       "source": {
@@ -26,42 +27,40 @@
       "recommended": true,
       "a11y": {
         "noSvgWithoutTitle": "off",
-        "useButtonType": "off",
-        "useAltText": "off",
         "useKeyWithClickEvents": "off",
         "useSemanticElements": "off",
         "noLabelWithoutControl": "off",
         "noNoninteractiveElementInteractions": "off"
       },
       "correctness": {
-        "noNestedComponentDefinitions": "off",
-        "useUniqueElementIds": "off",
-        "noUnusedImports": "off",
+        "noNestedComponentDefinitions": "warn",
+        "useUniqueElementIds": "warn",
+        "noUnusedImports": "warn",
         "noUnusedVariables": "warn",
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "warn"
       },
       "complexity": {
-        "noBannedTypes": "off",
+        "noBannedTypes": "warn",
         "noExcessiveCognitiveComplexity": "off",
         "noVoid": "off"
       },
       "style": {
         "useImportType": "warn",
         "useSelfClosingElements": "off",
-        "noNestedTernary": "off",
+        "noNestedTernary": "warn",
         "useDefaultSwitchClause": "off"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "off"
+        "noDangerouslySetInnerHtml": "warn"
       },
       "suspicious": {
-        "noAssignInExpressions": "off",
+        "noAssignInExpressions": "error",
         "noUnknownAtRules": "off",
-        "noArrayIndexKey": "off",
+        "noArrayIndexKey": "warn",
         "useAwait": "off",
         "noBitwiseOperators": "off",
-        "noEmptyBlockStatements": "off"
+        "noEmptyBlockStatements": "warn"
       },
       "performance": {
         "noNamespaceImport": "off",
@@ -100,7 +99,6 @@
       "!**/example"
     ]
   },
-  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
   "javascript": {
     "globals": ["Bun"]
   }

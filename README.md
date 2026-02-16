@@ -17,6 +17,7 @@ BunCN eliminates that friction. Every block here is pre-configured and tested ag
 | **Data Grid** | Server-side pagination, sorting, filtering, cell editing, clipboard, keyboard navigation |
 | **Data Grid Live** | Real-time collaborative grid powered by TanStack DB |
 | **Mail** | 3-panel resizable email client with folder nav, search, labels, and full CRUD |
+| **Media Player** | Video, HLS streaming, and audio playback via Vidstack with custom controls |
 | **Tasks Table** | Task management with status/priority filtering, row selection, and CRUD actions |
 
 ### Porting Next
@@ -74,11 +75,18 @@ Moving from a standard Next.js + Shadcn setup to Bun full-stack required these s
 ```bash
 git clone https://github.com/chikingsley/buncn
 cd buncn
+bun install
 cp .env.example .env
-bun run ollie
 ```
 
-This installs dependencies, starts a Docker PostgreSQL instance, runs migrations, and seeds sample data.
+### Database Setup
+
+Start a local PostgreSQL instance with Docker and seed it:
+
+```bash
+bun run db:start
+bun run db:setup
+```
 
 ### Start Developing
 
@@ -88,23 +96,11 @@ bun run dev
 
 The server starts at `http://localhost:3000` with hot reload.
 
-### Manual Setup
-
-If you have an existing PostgreSQL instance:
-
-```bash
-bun install
-cp .env.example .env
-# Update .env with your database credentials
-bun run db:setup
-bun run dev:local
-```
-
 ### Production Build
 
 ```bash
 bun run build
-cd dist/app && NODE_ENV=production bun --env-file=../../.env index.js
+bun run start
 ```
 
 ## Project Structure
@@ -115,6 +111,7 @@ src/
 │   ├── data-grid/          # Data grid block
 │   ├── data-grid-live/     # Real-time grid block
 │   ├── mail/               # Mail client block
+│   ├── media-player/       # Media player block
 │   └── components/         # Tasks table block
 ├── components/
 │   ├── ui/                 # Base Shadcn components
@@ -134,13 +131,15 @@ src/
 
 | Command | Description |
 |---------|-------------|
-| `bun run dev` | Start dev server with Docker PostgreSQL |
-| `bun run dev:local` | Start dev server (bring your own DB) |
-| `bun run build` | Production build |
-| `bun run ollie` | Full setup (install + DB + migrate + seed) |
+| `bun run dev` | Start dev server with hot reload |
+| `bun run start` | Production server |
+| `bun run build` | Production build with source maps |
+| `bun run typecheck` | TypeScript type checking |
 | `bun run check` | Lint and format check |
 | `bun run fix` | Auto-fix lint and format issues |
-| `bun run typecheck` | TypeScript type checking |
+| `bun run test` | Run tests |
+| `bun run db:start` | Start PostgreSQL via Docker |
+| `bun run db:setup` | Run migrations and seed data |
 | `bun run db:reset` | Tear down and rebuild the database |
 | `bun run shadcn` | Add Shadcn components |
 

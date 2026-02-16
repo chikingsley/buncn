@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { useLazyRef } from "@/hooks/use-lazy-ref";
-import { getCellKey, getRowHeightValue, parseCellKey } from "@/lib/data-grid";
+import { getRowHeightValue, parseCellKey } from "@/lib/data-grid";
 import type { RowHeightValue } from "@/types/data-grid";
 
 import type { DataGridState, DataGridStore } from "./types";

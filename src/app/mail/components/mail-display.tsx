@@ -9,7 +9,6 @@ import {
   ReplyAll,
   Trash2,
 } from "lucide-react";
-import * as React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {

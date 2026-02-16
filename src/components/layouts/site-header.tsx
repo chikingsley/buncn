@@ -2,7 +2,6 @@ import { LayoutGrid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ActiveLink } from "@/components/active-link";
 import { Icons } from "@/components/icons";
-import { DocsLink } from "@/components/layouts/docs-link";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
@@ -23,7 +22,7 @@ export function SiteHeader() {
           <ActiveLink href="/data-grid">Data Grid</ActiveLink>
           <ActiveLink href="/data-grid-live">Data Grid Live</ActiveLink>
           <ActiveLink href="/mail">Mail</ActiveLink>
-          <DocsLink />
+          <ActiveLink href="/media-player">Media Player</ActiveLink>
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
           <Button

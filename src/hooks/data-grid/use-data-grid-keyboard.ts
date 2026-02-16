@@ -261,7 +261,9 @@ function useDataGridKeyboard<TData>(
               columnId: targetColumnId,
             });
           })
-          .catch(() => {});
+          .catch(() => {
+            /* silently ignore clipboard write failures */
+          });
         return;
       }
 

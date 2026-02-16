@@ -1,13 +1,11 @@
-import type { ColumnDef, Row, Table } from "@tanstack/react-table";
+import type { ColumnDef, Table } from "@tanstack/react-table";
 import type { Virtualizer } from "@tanstack/react-virtual";
 
 import type {
   CellPosition,
   CellUpdate,
   Direction,
-  NavigationDirection,
   RowHeightValue,
-  SearchState,
 } from "@/types/data-grid";
 
 export interface DataGridState {

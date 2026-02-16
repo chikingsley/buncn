@@ -442,7 +442,9 @@ export function DataGridLiveDemo() {
 
   const onFilesDelete: NonNullable<
     UseDataGridProps<SkaterSchema>["onFilesDelete"]
-  > = React.useCallback(async () => {}, []);
+  > = React.useCallback(async () => {
+    /* TODO: implement file deletion */
+  }, []);
 
   const { table, tableMeta, ...dataGridProps } = useDataGrid({
     data,

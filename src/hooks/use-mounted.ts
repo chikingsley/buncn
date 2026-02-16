@@ -1,7 +1,9 @@
 import * as React from "react";
 
 function subscribe() {
-  return () => {};
+  return () => {
+    /* static store — no subscription needed */
+  };
 }
 
 function getSnapshot() {

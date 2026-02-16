@@ -29,9 +29,7 @@ import type {
   CellUpdate,
   Direction,
   FileCellData,
-  NavigationDirection,
   RowHeightValue,
-  SearchState,
 } from "@/types/data-grid";
 
 import type { DataGridContext } from "./data-grid/types";
@@ -771,7 +769,12 @@ function useDataGrid<TData>({
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
   const isFirefox = React.useSyncExternalStore(
-    React.useCallback(() => () => {}, []),
+    React.useCallback(
+      () => () => {
+        /* static store — no subscription needed */
+      },
+      []
+    ),
     React.useCallback(() => {
       if (typeof window === "undefined" || typeof navigator === "undefined") {
         return false;

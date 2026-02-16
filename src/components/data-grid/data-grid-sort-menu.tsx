@@ -1,7 +1,7 @@
 "use client";
 
 import { useDirection } from "@base-ui/react/direction-provider";
-import type { ColumnSort, SortDirection, Table } from "@tanstack/react-table";
+import type { ColumnSort, Table } from "@tanstack/react-table";
 import {
   ArrowDownUp,
   ChevronsUpDown,
