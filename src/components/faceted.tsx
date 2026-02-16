@@ -43,9 +43,10 @@ function useFacetedContext(name: string) {
 }
 
 interface FacetedProps<Multiple extends boolean = false>
-  extends React.ComponentProps<typeof Popover> {
+  extends Omit<React.ComponentProps<typeof Popover>, "onOpenChange"> {
   value?: FacetedValue<Multiple>;
   onValueChange?: (value: FacetedValue<Multiple> | undefined) => void;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
   multiple?: Multiple;
 }
@@ -109,7 +110,11 @@ function Faceted<Multiple extends boolean = false>(
 
   return (
     <FacetedContext.Provider value={contextValue}>
-      <Popover onOpenChange={onOpenChange} open={open} {...facetedProps}>
+      <Popover
+        onOpenChange={(open) => onOpenChange(open)}
+        open={open}
+        {...facetedProps}
+      >
         {children}
       </Popover>
     </FacetedContext.Provider>

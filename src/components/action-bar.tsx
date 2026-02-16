@@ -1,10 +1,9 @@
 "use client";
 
-import { useDirection } from "@radix-ui/react-direction";
+import { useDirection } from "@base-ui/react/direction-provider";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Slot } from "@/components/ui/slot";
 import { useAsRef } from "@/hooks/use-as-ref";
 import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
 import { useComposedRefs } from "@/lib/compose-refs";
@@ -21,10 +20,6 @@ const EVENT_OPTIONS = { bubbles: false, cancelable: true };
 
 type Direction = "ltr" | "rtl";
 type Orientation = "horizontal" | "vertical";
-
-interface DivProps extends React.ComponentProps<"div"> {
-  asChild?: boolean;
-}
 
 type RootElement = React.ComponentRef<typeof ActionBar>;
 type ItemElement = React.ComponentRef<typeof ActionBarItem>;
@@ -115,7 +110,7 @@ function useFocusContext(consumerName: string) {
   return context;
 }
 
-interface ActionBarProps extends DivProps {
+interface ActionBarProps extends React.ComponentProps<"div"> {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
@@ -145,7 +140,6 @@ function ActionBar(props: ActionBarProps) {
     className,
     style,
     ref,
-    asChild,
     ...rootProps
   } = props;
 
@@ -159,7 +153,8 @@ function ActionBar(props: ActionBarProps) {
     onOpenChange,
   });
 
-  const dir = useDirection(dirProp);
+  const contextDir = useDirection();
+  const dir = dirProp ?? contextDir;
 
   React.useLayoutEffect(() => {
     setMounted(true);
@@ -202,12 +197,10 @@ function ActionBar(props: ActionBarProps) {
     return null;
   }
 
-  const RootPrimitive = asChild ? Slot : "div";
-
   return (
     <ActionBarContext.Provider value={contextValue}>
       {ReactDOM.createPortal(
-        <RootPrimitive
+        <div
           aria-orientation={orientation}
           data-align={align}
           data-orientation={orientation}
@@ -244,13 +237,11 @@ function ActionBar(props: ActionBarProps) {
   );
 }
 
-function ActionBarSelection(props: DivProps) {
-  const { className, asChild, ...selectionProps } = props;
-
-  const SelectionPrimitive = asChild ? Slot : "div";
+function ActionBarSelection(props: React.ComponentProps<"div">) {
+  const { className, ...selectionProps } = props;
 
   return (
-    <SelectionPrimitive
+    <div
       data-slot="action-bar-selection"
       {...selectionProps}
       className={cn(
@@ -261,13 +252,12 @@ function ActionBarSelection(props: DivProps) {
   );
 }
 
-function ActionBarGroup(props: DivProps) {
+function ActionBarGroup(props: React.ComponentProps<"div">) {
   const {
     onBlur: onBlurProp,
     onFocus: onFocusProp,
     onMouseDown: onMouseDownProp,
     className,
-    asChild,
     ref,
     ...groupProps
   } = props;
@@ -408,11 +398,9 @@ function ActionBarGroup(props: DivProps) {
     ]
   );
 
-  const GroupPrimitive = asChild ? Slot : "div";
-
   return (
     <FocusContext.Provider value={focusContextValue}>
-      <GroupPrimitive
+      <div
         data-orientation={orientation}
         data-slot="action-bar-group"
         dir={dir}
@@ -436,8 +424,15 @@ function ActionBarGroup(props: DivProps) {
 }
 
 interface ActionBarItemProps
-  extends Omit<React.ComponentProps<typeof Button>, "onSelect"> {
+  extends Omit<
+    React.ComponentProps<typeof Button>,
+    "onSelect" | "onClick" | "onFocus" | "onKeyDown" | "onMouseDown"
+  > {
   onSelect?: (event: Event) => void;
+  onClick?: React.MouseEventHandler<ItemElement>;
+  onFocus?: React.FocusEventHandler<ItemElement>;
+  onKeyDown?: React.KeyboardEventHandler<ItemElement>;
+  onMouseDown?: React.MouseEventHandler<ItemElement>;
 }
 
 function ActionBarItem(props: ActionBarItemProps) {
@@ -631,12 +626,8 @@ function ActionBarItem(props: ActionBarItemProps) {
   );
 }
 
-interface ActionBarCloseProps extends React.ComponentProps<"button"> {
-  asChild?: boolean;
-}
-
-function ActionBarClose(props: ActionBarCloseProps) {
-  const { asChild, className, onClick, ...closeProps } = props;
+function ActionBarClose(props: React.ComponentProps<"button">) {
+  const { className, onClick, ...closeProps } = props;
 
   const { onOpenChange } = useActionBarContext(CLOSE_NAME);
 
@@ -652,10 +643,8 @@ function ActionBarClose(props: ActionBarCloseProps) {
     [onOpenChange, onClick]
   );
 
-  const ClosePrimitive = asChild ? Slot : "button";
-
   return (
-    <ClosePrimitive
+    <button
       data-slot="action-bar-close"
       type="button"
       {...closeProps}
@@ -668,29 +657,20 @@ function ActionBarClose(props: ActionBarCloseProps) {
   );
 }
 
-interface ActionBarSeparatorProps extends DivProps {
+interface ActionBarSeparatorProps extends React.ComponentProps<"div"> {
   orientation?: Orientation;
 }
 
 function ActionBarSeparator(props: ActionBarSeparatorProps) {
-  const {
-    orientation: orientationProp,
-    asChild,
-    className,
-    ...separatorProps
-  } = props;
+  const { orientation: orientationProp, className, ...separatorProps } = props;
 
   const context = useActionBarContext(SEPARATOR_NAME);
   const orientation = orientationProp ?? context.orientation;
 
-  const SeparatorPrimitive = asChild ? Slot : "div";
-
   return (
-    <SeparatorPrimitive
-      aria-hidden="true"
-      aria-orientation={orientation}
+    <div
+      data-orientation={orientation}
       data-slot="action-bar-separator"
-      role="separator"
       {...separatorProps}
       className={cn(
         "in-data-[slot=action-bar-selection]:ml-0.5 in-data-[slot=action-bar-selection]:h-4 in-data-[slot=action-bar-selection]:w-px bg-border",
