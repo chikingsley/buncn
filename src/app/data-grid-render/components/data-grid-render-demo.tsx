@@ -89,11 +89,12 @@ export function DataGridRenderDemo() {
         header: ({ table }) => (
           <Checkbox
             aria-label="Select all"
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
+            checked={table.getIsAllPageRowsSelected()}
             className="relative transition-[shadow,border] after:absolute after:-inset-2.5 after:content-[''] hover:border-primary/40"
+            indeterminate={
+              table.getIsSomePageRowsSelected() &&
+              !table.getIsAllPageRowsSelected()
+            }
             onCheckedChange={(value) =>
               table.toggleAllPageRowsSelected(!!value)
             }

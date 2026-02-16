@@ -1,4 +1,4 @@
-import { useDirection } from "@radix-ui/react-direction";
+import { useDirection } from "@base-ui/react/direction-provider";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -92,7 +92,8 @@ function useDataGrid<TData>({
   initialState,
   ...props
 }: UseDataGridProps<TData>) {
-  const dir = useDirection(dirProp);
+  const contextDir = useDirection();
+  const dir = dirProp ?? contextDir;
   const dataGridRef = React.useRef<HTMLDivElement>(null);
   const tableRef = React.useRef<ReturnType<typeof useReactTable<TData>>>(null);
   const rowVirtualizerRef =

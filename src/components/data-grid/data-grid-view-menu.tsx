@@ -1,6 +1,6 @@
 "use client";
 
-import { useDirection } from "@radix-ui/react-direction";
+import { useDirection } from "@base-ui/react/direction-provider";
 import type { Table } from "@tanstack/react-table";
 import { Check, Settings2 } from "lucide-react";
 import * as React from "react";
@@ -47,19 +47,21 @@ export function DataGridViewMenu<TData>({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          aria-label="Toggle columns"
-          className="ms-auto hidden h-8 font-normal lg:flex"
-          dir={dir}
-          disabled={disabled}
-          role="combobox"
-          size="sm"
-          variant="outline"
-        >
-          <Settings2 className="text-muted-foreground" />
-          View
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label="Toggle columns"
+            className="ms-auto hidden h-8 font-normal lg:flex"
+            dir={dir}
+            disabled={disabled}
+            role="combobox"
+            size="sm"
+            variant="outline"
+          />
+        }
+      >
+        <Settings2 className="text-muted-foreground" />
+        View
       </PopoverTrigger>
       <PopoverContent
         className={cn("w-44 p-0", className)}

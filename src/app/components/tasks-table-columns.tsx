@@ -46,14 +46,16 @@ function TaskActionsCell({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label="Open menu"
-          className="flex size-8 p-0 data-[state=open]:bg-muted"
-          variant="ghost"
-        >
-          <Ellipsis aria-hidden="true" className="size-4" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            aria-label="Open menu"
+            className="flex size-8 p-0 data-[state=open]:bg-muted"
+            variant="ghost"
+          />
+        }
+      >
+        <Ellipsis aria-hidden="true" className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuItem
@@ -127,11 +129,12 @@ export function getTasksTableColumns({
       header: ({ table }) => (
         <Checkbox
           aria-label="Select all"
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
+          checked={table.getIsAllPageRowsSelected()}
           className="translate-y-0.5"
+          indeterminate={
+            table.getIsSomePageRowsSelected() &&
+            !table.getIsAllPageRowsSelected()
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
       ),

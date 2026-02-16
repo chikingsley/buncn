@@ -58,43 +58,49 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
       <div className="flex items-center p-2">
         <div className="flex items-center gap-2">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => onAction("archive", mail.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <Archive className="h-4 w-4" />
-                <span className="sr-only">Archive</span>
-              </Button>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("archive", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
+              <Archive className="h-4 w-4" />
+              <span className="sr-only">Archive</span>
             </TooltipTrigger>
             <TooltipContent>Archive</TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => onAction("junk", mail.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <ArchiveX className="h-4 w-4" />
-                <span className="sr-only">Move to junk</span>
-              </Button>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("junk", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
+              <ArchiveX className="h-4 w-4" />
+              <span className="sr-only">Move to junk</span>
             </TooltipTrigger>
             <TooltipContent>Move to junk</TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => onAction("trash", mail.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Move to trash</span>
-              </Button>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("trash", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Move to trash</span>
             </TooltipTrigger>
             <TooltipContent>Move to trash</TooltipContent>
           </Tooltip>
@@ -102,11 +108,9 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
           <Separator className="mx-1 h-6" orientation="vertical" />
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <Clock className="h-4 w-4" />
-                <span className="sr-only">Snooze</span>
-              </Button>
+            <TooltipTrigger render={<Button size="icon" variant="ghost" />}>
+              <Clock className="h-4 w-4" />
+              <span className="sr-only">Snooze</span>
             </TooltipTrigger>
             <TooltipContent>Snooze</TooltipContent>
           </Tooltip>
@@ -114,39 +118,41 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
 
         <div className="ml-auto flex items-center gap-2">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => onAction("reply", mail.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <Reply className="h-4 w-4" />
-                <span className="sr-only">Reply</span>
-              </Button>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("reply", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
+              <Reply className="h-4 w-4" />
+              <span className="sr-only">Reply</span>
             </TooltipTrigger>
             <TooltipContent>Reply</TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <ReplyAll className="h-4 w-4" />
-                <span className="sr-only">Reply all</span>
-              </Button>
+            <TooltipTrigger render={<Button size="icon" variant="ghost" />}>
+              <ReplyAll className="h-4 w-4" />
+              <span className="sr-only">Reply all</span>
             </TooltipTrigger>
             <TooltipContent>Reply all</TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => onAction("forward", mail.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <Forward className="h-4 w-4" />
-                <span className="sr-only">Forward</span>
-              </Button>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("forward", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
+              <Forward className="h-4 w-4" />
+              <span className="sr-only">Forward</span>
             </TooltipTrigger>
             <TooltipContent>Forward</TooltipContent>
           </Tooltip>
@@ -154,11 +160,11 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
           <Separator className="mx-1 h-6" orientation="vertical" />
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">More</span>
-              </Button>
+            <DropdownMenuTrigger
+              render={<Button size="icon" variant="ghost" />}
+            >
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">More</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Mark as unread</DropdownMenuItem>

@@ -132,12 +132,12 @@ function DataGridSelectHeader<TData>({
   return (
     <DataGridSelectCheckbox
       aria-label="Select all"
-      checked={
-        table.getIsAllPageRowsSelected() ||
-        (table.getIsSomePageRowsSelected() && "indeterminate")
-      }
+      checked={table.getIsAllPageRowsSelected()}
       debug={debug}
       hitboxSize={hitboxSize}
+      indeterminate={
+        table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
+      }
       onCheckedChange={onCheckedChange}
     />
   );
@@ -176,7 +176,7 @@ function DataGridSelectCell<TData>({
   );
 
   const onClick = React.useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: React.MouseEvent) => {
       if (event.shiftKey) {
         event.preventDefault();
         meta?.onRowSelect?.(row.index, !row.getIsSelected(), true);

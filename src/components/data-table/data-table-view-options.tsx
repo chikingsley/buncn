@@ -43,18 +43,20 @@ export function DataTableViewOptions<TData>({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          aria-label="Toggle columns"
-          className="ml-auto hidden h-8 font-normal lg:flex"
-          disabled={disabled}
-          role="combobox"
-          size="sm"
-          variant="outline"
-        >
-          <Settings2 className="text-muted-foreground" />
-          View
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label="Toggle columns"
+            className="ml-auto hidden h-8 font-normal lg:flex"
+            disabled={disabled}
+            role="combobox"
+            size="sm"
+            variant="outline"
+          />
+        }
+      >
+        <Settings2 className="text-muted-foreground" />
+        View
       </PopoverTrigger>
       <PopoverContent className="w-44 p-0" {...props}>
         <Command>

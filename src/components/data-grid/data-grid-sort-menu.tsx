@@ -1,6 +1,6 @@
 "use client";
 
-import { useDirection } from "@radix-ui/react-direction";
+import { useDirection } from "@base-ui/react/direction-provider";
 import type { ColumnSort, SortDirection, Table } from "@tanstack/react-table";
 import {
   ArrowDownUp,
@@ -9,7 +9,13 @@ import {
   Trash2,
 } from "lucide-react";
 import * as React from "react";
-
+import {
+  Sortable,
+  SortableContent,
+  SortableItem,
+  SortableItemHandle,
+  SortableOverlay,
+} from "@/components/sortable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,13 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sortable,
-  SortableContent,
-  SortableItem,
-  SortableItemHandle,
-  SortableOverlay,
-} from "@/components/ui/sortable";
 import { cn } from "@/lib/utils";
 
 const SORT_SHORTCUT_KEY = "s";
@@ -179,26 +178,28 @@ export function DataGridSortMenu<TData>({
       value={sorting}
     >
       <Popover onOpenChange={setOpen} open={open}>
-        <PopoverTrigger asChild>
-          <Button
-            className="font-normal"
-            dir={dir}
-            disabled={disabled}
-            onKeyDown={onTriggerKeyDown}
-            size="sm"
-            variant="outline"
-          >
-            <ArrowDownUp className="text-muted-foreground" />
-            Sort
-            {sorting.length > 0 && (
-              <Badge
-                className="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono font-normal text-[10.4px]"
-                variant="secondary"
-              >
-                {sorting.length}
-              </Badge>
-            )}
-          </Button>
+        <PopoverTrigger
+          render={
+            <Button
+              className="font-normal"
+              dir={dir}
+              disabled={disabled}
+              onKeyDown={onTriggerKeyDown}
+              size="sm"
+              variant="outline"
+            />
+          }
+        >
+          <ArrowDownUp className="text-muted-foreground" />
+          Sort
+          {sorting.length > 0 && (
+            <Badge
+              className="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono font-normal text-[10.4px]"
+              variant="secondary"
+            >
+              {sorting.length}
+            </Badge>
+          )}
         </PopoverTrigger>
         <PopoverContent
           aria-describedby={descriptionId}
@@ -224,24 +225,26 @@ export function DataGridSortMenu<TData>({
             </p>
           </div>
           {sorting.length > 0 && (
-            <SortableContent asChild>
-              <div
-                className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1"
-                role="list"
-              >
-                {sorting.map((sort) => (
-                  <DataTableSortItem
-                    columnLabels={columnLabels}
-                    columns={columns}
-                    dir={dir}
-                    key={sort.id}
-                    onSortRemove={onSortRemove}
-                    onSortUpdate={onSortUpdate}
-                    sort={sort}
-                    sortItemId={`${id}-sort-${sort.id}`}
-                  />
-                ))}
-              </div>
+            <SortableContent
+              render={
+                <div
+                  className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1"
+                  role="list"
+                />
+              }
+            >
+              {sorting.map((sort) => (
+                <DataTableSortItem
+                  columnLabels={columnLabels}
+                  columns={columns}
+                  dir={dir}
+                  key={sort.id}
+                  onSortRemove={onSortRemove}
+                  onSortUpdate={onSortUpdate}
+                  sort={sort}
+                  sortItemId={`${id}-sort-${sort.id}`}
+                />
+              ))}
             </SortableContent>
           )}
           <div className="flex w-full items-center gap-2">
@@ -328,96 +331,105 @@ function DataTableSortItem({
   );
 
   return (
-    <SortableItem asChild value={sort.id}>
-      <div
-        className="flex items-center gap-2"
-        id={sortItemId}
-        onKeyDown={onItemKeyDown}
-        role="listitem"
-        tabIndex={-1}
-      >
-        <Popover onOpenChange={setShowFieldSelector} open={showFieldSelector}>
-          <PopoverTrigger asChild>
+    <SortableItem
+      render={
+        <div
+          className="flex items-center gap-2"
+          id={sortItemId}
+          onKeyDown={onItemKeyDown}
+          role="listitem"
+          tabIndex={-1}
+        />
+      }
+      value={sort.id}
+    >
+      <Popover onOpenChange={setShowFieldSelector} open={showFieldSelector}>
+        <PopoverTrigger
+          render={
             <Button
               aria-controls={fieldListboxId}
               className="w-44 justify-between rounded font-normal"
               id={fieldTriggerId}
               size="sm"
               variant="outline"
-            >
-              <span className="truncate">{columnLabels.get(sort.id)}</span>
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-(--radix-popover-trigger-width) p-0"
-            dir={dir}
-            id={fieldListboxId}
-          >
-            <Command>
-              <CommandInput placeholder="Search fields..." />
-              <CommandList>
-                <CommandEmpty>No fields found.</CommandEmpty>
-                <CommandGroup>
-                  {columns.map((column) => (
-                    <CommandItem
-                      key={column.id}
-                      onSelect={(value) => onSortUpdate(sort.id, { id: value })}
-                      value={column.id}
-                    >
-                      <span className="truncate">{column.label}</span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        <Select
-          onOpenChange={setShowDirectionSelector}
-          onValueChange={(value: SortDirection) =>
-            onSortUpdate(sort.id, { desc: value === "desc" })
+            />
           }
-          open={showDirectionSelector}
-          value={sort.desc ? "desc" : "asc"}
         >
-          <SelectTrigger
-            aria-controls={directionListboxId}
-            className="w-24 rounded"
-            size="sm"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent
-            className="min-w-(--radix-select-trigger-width)"
-            id={directionListboxId}
-          >
-            {SORT_ORDERS.map((order) => (
-              <SelectItem key={order.value} value={order.value}>
-                {order.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          aria-controls={sortItemId}
-          className="size-8 shrink-0 rounded"
-          onClick={() => onSortRemove(sort.id)}
-          size="icon"
-          variant="outline"
+          <span className="truncate">{columnLabels.get(sort.id)}</span>
+          <ChevronsUpDown className="opacity-50" />
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-(--radix-popover-trigger-width) p-0"
+          dir={dir}
+          id={fieldListboxId}
         >
-          <Trash2 />
-        </Button>
-        <SortableItemHandle asChild>
+          <Command>
+            <CommandInput placeholder="Search fields..." />
+            <CommandList>
+              <CommandEmpty>No fields found.</CommandEmpty>
+              <CommandGroup>
+                {columns.map((column) => (
+                  <CommandItem
+                    key={column.id}
+                    onSelect={(value) => onSortUpdate(sort.id, { id: value })}
+                    value={column.id}
+                  >
+                    <span className="truncate">{column.label}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      <Select
+        onOpenChange={setShowDirectionSelector}
+        onValueChange={(value) => {
+          if (value !== null) {
+            onSortUpdate(sort.id, { desc: value === "desc" });
+          }
+        }}
+        open={showDirectionSelector}
+        value={sort.desc ? "desc" : "asc"}
+      >
+        <SelectTrigger
+          aria-controls={directionListboxId}
+          className="w-24 rounded"
+          size="sm"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent
+          className="min-w-(--radix-select-trigger-width)"
+          id={directionListboxId}
+        >
+          {SORT_ORDERS.map((order) => (
+            <SelectItem key={order.value} value={order.value}>
+              {order.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        aria-controls={sortItemId}
+        className="size-8 shrink-0 rounded"
+        onClick={() => onSortRemove(sort.id)}
+        size="icon"
+        variant="outline"
+      >
+        <Trash2 />
+      </Button>
+      <SortableItemHandle
+        render={
           <Button
             className="size-8 shrink-0 rounded"
             size="icon"
             variant="outline"
-          >
-            <GripVertical />
-          </Button>
-        </SortableItemHandle>
-      </div>
+          />
+        }
+      >
+        <GripVertical />
+      </SortableItemHandle>
     </SortableItem>
   );
 }

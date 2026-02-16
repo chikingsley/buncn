@@ -133,16 +133,6 @@ function ContextMenuImpl<TData>({
     [contextMenu.x, contextMenu.y]
   );
 
-  const onCloseAutoFocus: NonNullable<
-    React.ComponentProps<typeof DropdownMenuContent>["onCloseAutoFocus"]
-  > = React.useCallback(
-    (event) => {
-      event.preventDefault();
-      propsRef.current.dataGridRef?.current?.focus();
-    },
-    [propsRef]
-  );
-
   const onCopy = React.useCallback(() => {
     propsRef.current.onCellsCopy?.();
   }, [propsRef]);
@@ -227,12 +217,7 @@ function ContextMenuImpl<TData>({
       open={contextMenu.open}
     >
       <DropdownMenuTrigger style={triggerStyle} />
-      <DropdownMenuContent
-        align="start"
-        className="w-48"
-        data-grid-popover=""
-        onCloseAutoFocus={onCloseAutoFocus}
-      >
+      <DropdownMenuContent align="start" className="w-48" data-grid-popover="">
         <DropdownMenuItem onSelect={onCopy}>
           <CopyIcon />
           Copy

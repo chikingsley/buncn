@@ -7,6 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { type FlagConfig, flagConfig } from "@/config/flag";
@@ -57,10 +58,10 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
   );
 
   const onFilterFlagChange = React.useCallback(
-    (value: FilterFlag) => {
-      setFilterFlag(value);
+    (groupValue: string[]) => {
+      setFilterFlag((groupValue[0] as FilterFlag) ?? filterFlag);
     },
-    [setFilterFlag]
+    [setFilterFlag, filterFlag]
   );
 
   const contextValue = React.useMemo<FeatureFlagsContextValue>(
@@ -79,34 +80,33 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
           className="w-fit gap-0"
           onValueChange={onFilterFlagChange}
           size="sm"
-          type="single"
-          value={filterFlag}
+          value={filterFlag ? [filterFlag] : []}
           variant="outline"
         >
           {flagConfig.featureFlags.map((flag) => (
-            <Tooltip delayDuration={700} key={flag.value}>
-              <ToggleGroupItem
-                asChild
-                className="whitespace-nowrap px-3 text-xs data-[state=on]:bg-accent/70 data-[state=on]:hover:bg-accent/90"
-                value={flag.value}
-              >
-                <TooltipTrigger>
+            <TooltipProvider delay={700} key={flag.value}>
+              <Tooltip>
+                <ToggleGroupItem
+                  className="whitespace-nowrap px-3 text-xs data-[state=on]:bg-accent/70 data-[state=on]:hover:bg-accent/90"
+                  render={<TooltipTrigger />}
+                  value={flag.value}
+                >
                   <flag.icon className="size-3.5 shrink-0" />
                   {flag.label}
-                </TooltipTrigger>
-              </ToggleGroupItem>
-              <TooltipContent
-                align="start"
-                className="flex flex-col gap-1.5 border bg-background py-2 font-semibold text-foreground [&>span]:hidden"
-                side="bottom"
-                sideOffset={6}
-              >
-                <div>{flag.tooltipTitle}</div>
-                <p className="text-balance text-muted-foreground text-xs">
-                  {flag.tooltipDescription}
-                </p>
-              </TooltipContent>
-            </Tooltip>
+                </ToggleGroupItem>
+                <TooltipContent
+                  align="start"
+                  className="flex flex-col gap-1.5 border bg-background py-2 font-semibold text-foreground [&>span]:hidden"
+                  side="bottom"
+                  sideOffset={6}
+                >
+                  <div>{flag.tooltipTitle}</div>
+                  <p className="text-balance text-muted-foreground text-xs">
+                    {flag.tooltipDescription}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </ToggleGroup>
       </div>

@@ -25,7 +25,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <NextThemesProvider {...props}>
-        <TooltipProvider delayDuration={120}>
+        <TooltipProvider delay={120}>
           <NuqsAdapter>{children}</NuqsAdapter>
         </TooltipProvider>
       </NextThemesProvider>

@@ -11,7 +11,7 @@ import {
   ActionBarItem,
   ActionBarSelection,
   ActionBarSeparator,
-} from "@/components/ui/action-bar";
+} from "@/components/action-bar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,11 +69,11 @@ export function DataGridActionBar<TData>({
       <ActionBarGroup>
         {statusOptions && statusOptions.length > 0 && onStatusUpdate && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <ActionBarItem size="sm" variant="secondary">
-                <CheckCircle2 />
-                Status
-              </ActionBarItem>
+            <DropdownMenuTrigger
+              render={<ActionBarItem size="sm" variant="secondary" />}
+            >
+              <CheckCircle2 />
+              Status
             </DropdownMenuTrigger>
             <DropdownMenuContent data-grid-popover>
               {statusOptions.map((option) => (
@@ -89,11 +89,11 @@ export function DataGridActionBar<TData>({
         )}
         {styleOptions && styleOptions.length > 0 && onStyleUpdate && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <ActionBarItem size="sm" variant="secondary">
-                <Palette />
-                Style
-              </ActionBarItem>
+            <DropdownMenuTrigger
+              render={<ActionBarItem size="sm" variant="secondary" />}
+            >
+              <Palette />
+              Style
             </DropdownMenuTrigger>
             <DropdownMenuContent data-grid-popover>
               {styleOptions.map((option) => (

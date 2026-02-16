@@ -1,5 +1,5 @@
 import { DataGridRenderDemo } from "@/app/data-grid-render/components/data-grid-render-demo";
-import { Fps } from "@/components/ui/fps";
+import { Fps } from "@/components/fps";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMounted } from "@/hooks/use-mounted";
 

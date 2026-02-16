@@ -11,10 +11,13 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
       <div className="container flex h-14 items-center">
-        <Button asChild className="size-8" size="icon" variant="ghost">
-          <Link to="/">
-            <LayoutGrid />
-          </Link>
+        <Button
+          className="size-8"
+          render={<Link to="/" />}
+          size="icon"
+          variant="ghost"
+        >
+          <LayoutGrid />
         </Button>
         <nav className="flex w-full items-center text-sm">
           <ActiveLink href="/data-grid">Data Grid</ActiveLink>
@@ -23,15 +26,21 @@ export function SiteHeader() {
           <DocsLink />
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
-          <Button asChild className="size-8" size="icon" variant="ghost">
-            <a
-              aria-label="GitHub repo"
-              href={siteConfig.links.github}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Icons.gitHub aria-hidden="true" className="size-4" />
-            </a>
+          <Button
+            className="size-8"
+            render={
+              // biome-ignore lint/a11y/useAnchorContent: aria-label is on the anchor
+              <a
+                aria-label="GitHub repo"
+                href={siteConfig.links.github}
+                rel="noopener noreferrer"
+                target="_blank"
+              />
+            }
+            size="icon"
+            variant="ghost"
+          >
+            <Icons.gitHub aria-hidden="true" className="size-4" />
           </Button>
           <ModeToggle />
         </nav>

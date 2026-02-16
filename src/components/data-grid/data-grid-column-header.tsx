@@ -105,7 +105,7 @@ export function DataGridColumnHeader<TData, TValue>({
 
   const onTriggerPointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      onPointerDown?.(event);
+      (onPointerDown as React.PointerEventHandler<HTMLButtonElement>)?.(event);
       if (event.defaultPrevented) {
         return;
       }
@@ -132,10 +132,12 @@ export function DataGridColumnHeader<TData, TValue>({
         >
           <div className="flex min-w-0 flex-1 items-center gap-1.5">
             {columnVariant && (
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <columnVariant.icon className="size-3.5 shrink-0 text-muted-foreground" />
-                </TooltipTrigger>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <columnVariant.icon className="size-3.5 shrink-0 text-muted-foreground" />
+                  }
+                />
                 <TooltipContent side="top">
                   <p>{columnVariant.label}</p>
                 </TooltipContent>

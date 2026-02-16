@@ -245,19 +245,21 @@ export function DataTableFilterMenu<TData>({
         </Button>
       )}
       <Popover onOpenChange={onOpenChange} open={open}>
-        <PopoverTrigger asChild>
-          <Button
-            aria-label="Open filter command menu"
-            className={cn(filters.length > 0 && "size-8", "h-8 font-normal")}
-            disabled={disabled}
-            onKeyDown={onTriggerKeyDown}
-            ref={triggerRef}
-            size={filters.length > 0 ? "icon" : "sm"}
-            variant="outline"
-          >
-            <ListFilter className="text-muted-foreground" />
-            {filters.length > 0 ? null : "Filter"}
-          </Button>
+        <PopoverTrigger
+          render={
+            <Button
+              aria-label="Open filter command menu"
+              className={cn(filters.length > 0 && "size-8", "h-8 font-normal")}
+              disabled={disabled}
+              onKeyDown={onTriggerKeyDown}
+              ref={triggerRef}
+              size={filters.length > 0 ? "icon" : "sm"}
+              variant="outline"
+            />
+          }
+        >
+          <ListFilter className="text-muted-foreground" />
+          {filters.length > 0 ? null : "Filter"}
         </PopoverTrigger>
         <PopoverContent
           className="w-full max-w-(--radix-popover-content-available-width) p-0"
@@ -394,17 +396,19 @@ function DataTableFilterItem<TData>({
         role="listitem"
       >
         <Popover onOpenChange={setShowFieldSelector} open={showFieldSelector}>
-          <PopoverTrigger asChild>
-            <Button
-              className="rounded-none rounded-l-md border border-r-0 font-normal dark:bg-input/30"
-              size="sm"
-              variant="ghost"
-            >
-              {columnMeta?.icon && (
-                <columnMeta.icon className="text-muted-foreground" />
-              )}
-              {columnMeta?.label ?? column.id}
-            </Button>
+          <PopoverTrigger
+            render={
+              <Button
+                className="rounded-none rounded-l-md border border-r-0 font-normal dark:bg-input/30"
+                size="sm"
+                variant="ghost"
+              />
+            }
+          >
+            {columnMeta?.icon && (
+              <columnMeta.icon className="text-muted-foreground" />
+            )}
+            {columnMeta?.label ?? column.id}
           </PopoverTrigger>
           <PopoverContent align="start" className="w-48 p-0">
             <Command loop>
@@ -450,15 +454,17 @@ function DataTableFilterItem<TData>({
         </Popover>
         <Select
           onOpenChange={setShowOperatorSelector}
-          onValueChange={(value: FilterOperator) =>
-            onFilterUpdate(filter.filterId, {
-              operator: value,
-              value:
-                value === "isEmpty" || value === "isNotEmpty"
-                  ? ""
-                  : filter.value,
-            })
-          }
+          onValueChange={(value: FilterOperator | null) => {
+            if (value !== null) {
+              onFilterUpdate(filter.filterId, {
+                operator: value,
+                value:
+                  value === "isEmpty" || value === "isNotEmpty"
+                    ? ""
+                    : filter.value,
+              });
+            }
+          }}
           open={showOperatorSelector}
           value={filter.operator}
         >
@@ -665,9 +671,13 @@ function onFilterInputRender<TData>({
       return (
         <Select
           onOpenChange={setShowValueSelector}
-          onValueChange={(value: "true" | "false") =>
-            onFilterUpdate(filter.filterId, { value })
-          }
+          onValueChange={(value) => {
+            if (value !== null) {
+              onFilterUpdate(filter.filterId, {
+                value: value as "true" | "false",
+              });
+            }
+          }}
           open={showValueSelector}
           value={typeof filter.value === "string" ? filter.value : "true"}
         >
@@ -701,42 +711,44 @@ function onFilterInputRender<TData>({
 
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>
-          <PopoverTrigger asChild>
-            <Button
-              aria-controls={inputListboxId}
-              className="h-full min-w-16 rounded-none border px-1.5 font-normal dark:bg-input/30"
-              id={inputId}
-              size="sm"
-              variant="ghost"
-            >
-              {selectedOptions.length === 0 ? (
-                filter.variant === "multiSelect" ? (
-                  "Select options..."
-                ) : (
-                  "Select option..."
-                )
+          <PopoverTrigger
+            render={
+              <Button
+                aria-controls={inputListboxId}
+                className="h-full min-w-16 rounded-none border px-1.5 font-normal dark:bg-input/30"
+                id={inputId}
+                size="sm"
+                variant="ghost"
+              />
+            }
+          >
+            {selectedOptions.length === 0 ? (
+              filter.variant === "multiSelect" ? (
+                "Select options..."
               ) : (
-                <>
-                  <div className="flex items-center -space-x-2 rtl:space-x-reverse">
-                    {selectedOptions.map((selectedOption) =>
-                      selectedOption.icon ? (
-                        <div
-                          className="rounded-full border bg-background p-0.5"
-                          key={selectedOption.value}
-                        >
-                          <selectedOption.icon className="size-3.5" />
-                        </div>
-                      ) : null
-                    )}
-                  </div>
-                  <span className="truncate">
-                    {selectedOptions.length > 1
-                      ? `${selectedOptions.length} selected`
-                      : selectedOptions[0]?.label}
-                  </span>
-                </>
-              )}
-            </Button>
+                "Select option..."
+              )
+            ) : (
+              <>
+                <div className="flex items-center -space-x-2 rtl:space-x-reverse">
+                  {selectedOptions.map((selectedOption) =>
+                    selectedOption.icon ? (
+                      <div
+                        className="rounded-full border bg-background p-0.5"
+                        key={selectedOption.value}
+                      >
+                        <selectedOption.icon className="size-3.5" />
+                      </div>
+                    ) : null
+                  )}
+                </div>
+                <span className="truncate">
+                  {selectedOptions.length > 1
+                    ? `${selectedOptions.length} selected`
+                    : selectedOptions[0]?.label}
+                </span>
+              </>
+            )}
           </PopoverTrigger>
           <PopoverContent
             align="start"
@@ -811,20 +823,22 @@ function onFilterInputRender<TData>({
 
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>
-          <PopoverTrigger asChild>
-            <Button
-              aria-controls={inputListboxId}
-              className={cn(
-                "h-full rounded-none border px-1.5 font-normal dark:bg-input/30",
-                !filter.value && "text-muted-foreground"
-              )}
-              id={inputId}
-              size="sm"
-              variant="ghost"
-            >
-              <CalendarIcon className="size-3.5" />
-              <span className="truncate">{displayValue}</span>
-            </Button>
+          <PopoverTrigger
+            render={
+              <Button
+                aria-controls={inputListboxId}
+                className={cn(
+                  "h-full rounded-none border px-1.5 font-normal dark:bg-input/30",
+                  !filter.value && "text-muted-foreground"
+                )}
+                id={inputId}
+                size="sm"
+                variant="ghost"
+              />
+            }
+          >
+            <CalendarIcon className="size-3.5" />
+            <span className="truncate">{displayValue}</span>
           </PopoverTrigger>
           <PopoverContent
             align="start"

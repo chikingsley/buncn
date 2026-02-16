@@ -180,7 +180,7 @@ export function Mail({
   );
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider delay={0}>
       <ResizablePanelGroup
         className="h-full items-stretch"
         onLayoutChanged={(layout) => {

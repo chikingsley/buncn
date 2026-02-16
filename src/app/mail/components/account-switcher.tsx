@@ -31,7 +31,14 @@ export function AccountSwitcher({
   );
 
   return (
-    <Select defaultValue={selectedAccount} onValueChange={setSelectedAccount}>
+    <Select
+      defaultValue={selectedAccount}
+      onValueChange={(value) => {
+        if (value !== null) {
+          setSelectedAccount(value);
+        }
+      }}
+    >
       <SelectTrigger
         aria-label="Select account"
         className={cn(

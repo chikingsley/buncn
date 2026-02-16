@@ -11,7 +11,7 @@ import {
   ActionBarItem,
   ActionBarSelection,
   ActionBarSeparator,
-} from "@/components/ui/action-bar";
+} from "@/components/action-bar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,11 +95,9 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
       <ActionBarSeparator />
       <ActionBarGroup>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <ActionBarItem>
-              <CheckCircle2 />
-              Status
-            </ActionBarItem>
+          <DropdownMenuTrigger render={<ActionBarItem />}>
+            <CheckCircle2 />
+            Status
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {tasks.status.enumValues.map((status) => (
@@ -114,11 +112,9 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <ActionBarItem>
-              <ArrowUp />
-              Priority
-            </ActionBarItem>
+          <DropdownMenuTrigger render={<ActionBarItem />}>
+            <ArrowUp />
+            Priority
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {tasks.priority.enumValues.map((priority) => (

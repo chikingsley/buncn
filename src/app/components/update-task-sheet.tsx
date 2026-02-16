@@ -21,12 +21,17 @@ import { updateTask } from "../lib/actions";
 import { type UpdateTaskSchema, updateTaskSchema } from "../lib/validations";
 import { TaskForm } from "./task-form";
 
-interface UpdateTaskSheetProps
-  extends React.ComponentPropsWithRef<typeof Sheet> {
+interface UpdateTaskSheetProps {
   task: Task | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function UpdateTaskSheet({ task, ...props }: UpdateTaskSheetProps) {
+export function UpdateTaskSheet({
+  task,
+  open,
+  onOpenChange,
+}: UpdateTaskSheetProps) {
   const [isPending, startTransition] = React.useTransition();
 
   const form = useForm<UpdateTaskSchema>({
@@ -56,13 +61,16 @@ export function UpdateTaskSheet({ task, ...props }: UpdateTaskSheetProps) {
       }
 
       form.reset(input);
-      props.onOpenChange?.(false);
+      onOpenChange?.(false);
       toast.success("Task updated");
     });
   }
 
   return (
-    <Sheet {...props}>
+    <Sheet
+      onOpenChange={(_open, _details) => onOpenChange?.(_open)}
+      open={open}
+    >
       <SheetContent className="flex flex-col gap-6 sm:max-w-md">
         <SheetHeader className="text-left">
           <SheetTitle>Update task</SheetTitle>
@@ -72,10 +80,8 @@ export function UpdateTaskSheet({ task, ...props }: UpdateTaskSheetProps) {
         </SheetHeader>
         <TaskForm<UpdateTaskSchema> form={form} onSubmit={onSubmit}>
           <SheetFooter className="gap-2 pt-2 sm:space-x-0">
-            <SheetClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <SheetClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </SheetClose>
             <Button disabled={isPending}>
               {isPending && (

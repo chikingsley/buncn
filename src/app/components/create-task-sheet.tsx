@@ -48,11 +48,9 @@ export function CreateTaskSheet() {
 
   return (
     <Sheet onOpenChange={setOpen} open={open}>
-      <SheetTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Plus />
-          New task
-        </Button>
+      <SheetTrigger render={<Button size="sm" variant="outline" />}>
+        <Plus />
+        New task
       </SheetTrigger>
       <SheetContent className="flex flex-col gap-6 sm:max-w-md">
         <SheetHeader className="text-left">
@@ -63,10 +61,8 @@ export function CreateTaskSheet() {
         </SheetHeader>
         <TaskForm form={form} onSubmit={onSubmit}>
           <SheetFooter className="gap-2 pt-2 sm:space-x-0">
-            <SheetClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <SheetClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </SheetClose>
             <Button disabled={isPending}>
               {isPending && <Loader className="animate-spin" />}

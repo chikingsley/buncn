@@ -1,6 +1,6 @@
 "use client";
 
-import { DirectionProvider } from "@radix-ui/react-direction";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Languages } from "lucide-react";
 import * as React from "react";
@@ -464,7 +464,7 @@ export function DataGridDemo() {
   const height = Math.max(400, windowSize.height - 150);
 
   return (
-    <DirectionProvider dir={dir}>
+    <DirectionProvider direction={dir}>
       <DataGridDemoImpl
         columns={columns}
         data={data}

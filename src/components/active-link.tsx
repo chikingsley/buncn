@@ -26,22 +26,33 @@ export function ActiveLink({
   const currentSegment = location.pathname.split("/").filter(Boolean)[0] ?? "";
   const isActive = isExternal ? false : hrefSegment === currentSegment;
 
+  if (isExternal) {
+    return (
+      <Button
+        render={
+          // biome-ignore lint/a11y/useAnchorContent: content provided via Button children
+          <a
+            className={cn(
+              "font-normal text-foreground/60 data-[state=active]:text-accent-foreground",
+              className
+            )}
+            data-state={isActive ? "active" : "inactive"}
+            href={href}
+            rel={rel}
+            target={target}
+          />
+        }
+        size="sm"
+        variant="ghost"
+      >
+        {children}
+      </Button>
+    );
+  }
+
   return (
-    <Button asChild size="sm" variant="ghost">
-      {isExternal ? (
-        <a
-          className={cn(
-            "font-normal text-foreground/60 data-[state=active]:text-accent-foreground",
-            className
-          )}
-          data-state={isActive ? "active" : "inactive"}
-          href={href}
-          rel={rel}
-          target={target}
-        >
-          {children}
-        </a>
-      ) : (
+    <Button
+      render={
         <Link
           className={cn(
             "font-normal text-foreground/60 data-[state=active]:text-accent-foreground",
@@ -49,10 +60,12 @@ export function ActiveLink({
           )}
           data-state={isActive ? "active" : "inactive"}
           to={href}
-        >
-          {children}
-        </Link>
-      )}
+        />
+      }
+      size="sm"
+      variant="ghost"
+    >
+      {children}
     </Button>
   );
 }

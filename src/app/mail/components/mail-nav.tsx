@@ -30,23 +30,25 @@ export function MailNav({ isCollapsed, links, onSelect }: MailNavProps) {
         {isCollapsed
           ? links.map((link) => (
               <Tooltip key={link.title}>
-                <TooltipTrigger asChild>
-                  <button
-                    className={cn(
-                      buttonVariants({
-                        variant: link.variant,
-                        size: "icon",
-                      }),
-                      "h-9 w-9",
-                      link.variant === "default" &&
-                        "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
-                    )}
-                    onClick={() => onSelect?.(link.title)}
-                    type="button"
-                  >
-                    <link.icon className="h-4 w-4" />
-                    <span className="sr-only">{link.title}</span>
-                  </button>
+                <TooltipTrigger
+                  render={
+                    <button
+                      className={cn(
+                        buttonVariants({
+                          variant: link.variant,
+                          size: "icon",
+                        }),
+                        "h-9 w-9",
+                        link.variant === "default" &&
+                          "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
+                      )}
+                      onClick={() => onSelect?.(link.title)}
+                      type="button"
+                    />
+                  }
+                >
+                  <link.icon className="h-4 w-4" />
+                  <span className="sr-only">{link.title}</span>
                 </TooltipTrigger>
                 <TooltipContent
                   className="flex items-center gap-4"

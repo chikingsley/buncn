@@ -44,12 +44,16 @@ export function DataTablePagination<TData>({
           <p className="whitespace-nowrap font-medium text-sm">Rows per page</p>
           <Select
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              if (value !== null) {
+                table.setPageSize(Number(value));
+              }
             }}
             value={`${table.getState().pagination.pageSize}`}
           >
             <SelectTrigger className="h-8 w-18 data-size:h-8">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue
+                placeholder={`${table.getState().pagination.pageSize}`}
+              />
             </SelectTrigger>
             <SelectContent side="top">
               {pageSizeOptions.map((pageSize) => (
