@@ -174,18 +174,24 @@ function useDataGridNavigation<TData>(
 
         if (!targetRow) {
           if (rowVirtualizer) {
-            const align =
+            let align: "start" | "end" | "center";
+            if (
               direction === "up" ||
               direction === "pageup" ||
               direction === "ctrl+up" ||
               direction === "ctrl+home"
-                ? "start"
-                : direction === "down" ||
-                    direction === "pagedown" ||
-                    direction === "ctrl+down" ||
-                    direction === "ctrl+end"
-                  ? "end"
-                  : "center";
+            ) {
+              align = "start";
+            } else if (
+              direction === "down" ||
+              direction === "pagedown" ||
+              direction === "ctrl+down" ||
+              direction === "ctrl+end"
+            ) {
+              align = "end";
+            } else {
+              align = "center";
+            }
 
             rowVirtualizer.scrollToIndex(newRowIndex, { align });
 

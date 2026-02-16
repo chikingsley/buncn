@@ -34,6 +34,18 @@ export function DataTableColumnHeader<TData, TValue>({
     return <div className={cn(className)}>{label}</div>;
   }
 
+  const sortDirection = column.getIsSorted();
+  let sortIcon: React.ReactNode = null;
+  if (column.getCanSort()) {
+    if (sortDirection === "desc") {
+      sortIcon = <ChevronDown />;
+    } else if (sortDirection === "asc") {
+      sortIcon = <ChevronUp />;
+    } else {
+      sortIcon = <ChevronsUpDown />;
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -44,14 +56,7 @@ export function DataTableColumnHeader<TData, TValue>({
         {...props}
       >
         {label}
-        {column.getCanSort() &&
-          (column.getIsSorted() === "desc" ? (
-            <ChevronDown />
-          ) : column.getIsSorted() === "asc" ? (
-            <ChevronUp />
-          ) : (
-            <ChevronsUpDown />
-          ))}
+        {sortIcon}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-28">
         {column.getCanSort() && (

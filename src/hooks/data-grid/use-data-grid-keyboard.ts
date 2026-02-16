@@ -189,17 +189,19 @@ function useDataGridKeyboard<TData>(
         !isCtrlPressed &&
         !propsRef.current.readOnly
       ) {
-        const cellsToClear =
-          currentState.selectionState.selectedCells.size > 0
-            ? Array.from(currentState.selectionState.selectedCells)
-            : currentState.focusedCell
-              ? [
-                  getCellKey(
-                    currentState.focusedCell.rowIndex,
-                    currentState.focusedCell.columnId
-                  ),
-                ]
-              : [];
+        let cellsToClear: string[];
+        if (currentState.selectionState.selectedCells.size > 0) {
+          cellsToClear = Array.from(currentState.selectionState.selectedCells);
+        } else if (currentState.focusedCell) {
+          cellsToClear = [
+            getCellKey(
+              currentState.focusedCell.rowIndex,
+              currentState.focusedCell.columnId
+            ),
+          ];
+        } else {
+          cellsToClear = [];
+        }
 
         if (cellsToClear.length > 0) {
           event.preventDefault();

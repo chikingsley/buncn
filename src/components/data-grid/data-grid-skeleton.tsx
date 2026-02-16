@@ -43,6 +43,7 @@ function DataGridSkeletonToolbar({
       {...props}
     >
       {Array.from({ length: actionCount }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders have no stable identity
         <Skeleton className="h-7 w-20 shrink-0" key={i} />
       ))}
     </div>

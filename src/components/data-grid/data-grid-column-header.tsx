@@ -47,11 +47,12 @@ export function DataGridColumnHeader<TData, TValue>({
   ...props
 }: DataGridColumnHeaderProps<TData, TValue>) {
   const column = header.column;
-  const label = column.columnDef.meta?.label
-    ? column.columnDef.meta.label
-    : typeof column.columnDef.header === "string"
-      ? column.columnDef.header
-      : column.id;
+  let label = column.id;
+  if (column.columnDef.meta?.label) {
+    label = column.columnDef.meta.label;
+  } else if (typeof column.columnDef.header === "string") {
+    label = column.columnDef.header;
+  }
 
   const isAnyColumnResizing =
     table.getState().columnSizingInfo.isResizingColumn;

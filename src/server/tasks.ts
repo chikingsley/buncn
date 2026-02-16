@@ -94,12 +94,12 @@ export async function getTasks(input: GetTasksSchema) {
       ? input.sort
           .filter((item) => sortable.has(item.id))
           .map((item) => {
-            const column =
-              item.id === "estimatedHours"
-                ? "estimated_hours"
-                : item.id === "createdAt"
-                  ? "created_at"
-                  : item.id;
+            let column = item.id;
+            if (item.id === "estimatedHours") {
+              column = "estimated_hours";
+            } else if (item.id === "createdAt") {
+              column = "created_at";
+            }
             return `${column} ${item.desc ? "DESC" : "ASC"}`;
           })
           .join(", ")

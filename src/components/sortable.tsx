@@ -254,16 +254,25 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [value]
   );
 
-  const screenReaderInstructions: ScreenReaderInstructions = React.useMemo(
-    () => ({
-      draggable: `
+  const screenReaderInstructions: ScreenReaderInstructions =
+    React.useMemo(() => {
+      let directionKeys: string;
+      if (orientation === "vertical") {
+        directionKeys = "up and down";
+      } else if (orientation === "horizontal") {
+        directionKeys = "left and right";
+      } else {
+        directionKeys = "arrow";
+      }
+
+      return {
+        draggable: `
         To pick up a sortable item, press space or enter.
-        While dragging, use the ${orientation === "vertical" ? "up and down" : orientation === "horizontal" ? "left and right" : "arrow"} keys to move the item.
+        While dragging, use the ${directionKeys} keys to move the item.
         Press space or enter again to drop the item in its new position, or press escape to cancel.
       `,
-    }),
-    [orientation]
-  );
+      };
+    }, [orientation]);
 
   const contextValue = React.useMemo(
     () => ({
@@ -566,11 +575,10 @@ function SortableOverlay(props: SortableOverlayProps) {
       {...overlayProps}
     >
       <SortableOverlayContext.Provider value={true}>
-        {context.activeId
-          ? typeof children === "function"
+        {context.activeId &&
+          (typeof children === "function"
             ? children({ value: context.activeId })
-            : children
-          : null}
+            : children)}
       </SortableOverlayContext.Provider>
     </DragOverlay>,
     container

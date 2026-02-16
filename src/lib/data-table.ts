@@ -19,14 +19,17 @@ export function getColumnPinningStyle<TData>({
   const isFirstRightPinnedColumn =
     isPinned === "right" && column.getIsFirstColumn("right");
 
+  let boxShadow: string | undefined;
+  if (withBorder) {
+    if (isLastLeftPinnedColumn) {
+      boxShadow = "-4px 0 4px -4px var(--border) inset";
+    } else if (isFirstRightPinnedColumn) {
+      boxShadow = "4px 0 4px -4px var(--border) inset";
+    }
+  }
+
   return {
-    boxShadow: withBorder
-      ? isLastLeftPinnedColumn
-        ? "-4px 0 4px -4px var(--border) inset"
-        : isFirstRightPinnedColumn
-          ? "4px 0 4px -4px var(--border) inset"
-          : undefined
-      : undefined,
+    boxShadow,
     left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
     opacity: isPinned ? 0.97 : 1,

@@ -234,10 +234,8 @@ function DataGridSearchImpl({
           <span>
             {matchIndex + 1} of {searchMatches.length}
           </span>
-        ) : searchQuery ? (
-          <span>No results</span>
         ) : (
-          <span>Type to search</span>
+          <span>{searchQuery ? "No results" : "Type to search"}</span>
         )}
       </div>
     </div>

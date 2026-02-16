@@ -153,18 +153,19 @@ export function DataGrid<TData>({
                     isLastColumn,
                   });
 
+                let ariaSort: "ascending" | "descending" | "none" | undefined;
+                if (currentSort?.desc === false) {
+                  ariaSort = "ascending";
+                } else if (currentSort?.desc === true) {
+                  ariaSort = "descending";
+                } else if (isSortable) {
+                  ariaSort = "none";
+                }
+
                 return (
                   <div
                     aria-colindex={colIndex + 1}
-                    aria-sort={
-                      currentSort?.desc === false
-                        ? "ascending"
-                        : currentSort?.desc === true
-                          ? "descending"
-                          : isSortable
-                            ? "none"
-                            : undefined
-                    }
+                    aria-sort={ariaSort}
                     className={cn("relative", {
                       grow: stretchColumns && header.column.id !== "select",
                       "border-e":
@@ -181,17 +182,17 @@ export function DataGrid<TData>({
                     }}
                     tabIndex={-1}
                   >
-                    {header.isPlaceholder ? null : typeof header.column
-                        .columnDef.header === "function" ? (
-                      <div className="size-full px-3 py-1.5">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </div>
-                    ) : (
-                      <DataGridColumnHeader header={header} table={table} />
-                    )}
+                    {!header.isPlaceholder &&
+                      (typeof header.column.columnDef.header === "function" ? (
+                        <div className="size-full px-3 py-1.5">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </div>
+                      ) : (
+                        <DataGridColumnHeader header={header} table={table} />
+                      ))}
                   </div>
                 );
               })}

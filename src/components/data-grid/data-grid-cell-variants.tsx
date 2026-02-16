@@ -42,6 +42,20 @@ import {
 import { cn } from "@/lib/utils";
 import type { DataGridCellProps, FileCellData } from "@/types/data-grid";
 
+function getFileUploadDescription(
+  maxFileSize: number | undefined,
+  maxFiles: number | undefined
+): string {
+  if (maxFileSize) {
+    const suffix = maxFiles ? ` • Max ${maxFiles} files` : "";
+    return `Max size: ${formatFileSize(maxFileSize)}${suffix}`;
+  }
+  if (maxFiles) {
+    return `Max ${maxFiles} files`;
+  }
+  return "Select files to upload";
+}
+
 export function ShortTextCell<TData>({
   cell,
   tableMeta,
@@ -967,15 +981,17 @@ export function SelectCell<TData>({
             ))}
           </SelectContent>
         </Select>
-      ) : displayLabel ? (
-        <Badge
-          className="whitespace-pre-wrap px-1.5 py-px"
-          data-slot="grid-cell-content"
-          variant="secondary"
-        >
-          {displayLabel}
-        </Badge>
-      ) : null}
+      ) : (
+        displayLabel && (
+          <Badge
+            className="whitespace-pre-wrap px-1.5 py-px"
+            data-slot="grid-cell-content"
+            variant="secondary"
+          >
+            {displayLabel}
+          </Badge>
+        )
+      )}
     </DataGridCellWrapper>
   );
 }
@@ -1977,11 +1993,7 @@ export function FileCell<TData>({
                   </p>
                 </div>
                 <p className="text-muted-foreground text-xs" id={descriptionId}>
-                  {maxFileSize
-                    ? `Max size: ${formatFileSize(maxFileSize)}${maxFiles ? ` • Max ${maxFiles} files` : ""}`
-                    : maxFiles
-                      ? `Max ${maxFiles} files`
-                      : "Select files to upload"}
+                  {getFileUploadDescription(maxFileSize, maxFiles)}
                 </p>
               </div>
               <input
@@ -2018,6 +2030,13 @@ export function FileCell<TData>({
                       const isFileDeleting = deletingFiles.has(file.id);
                       const isFilePending = isFileUploading || isFileDeleting;
 
+                      let fileStatus = formatFileSize(file.size);
+                      if (isFileUploading) {
+                        fileStatus = "Uploading...";
+                      } else if (isFileDeleting) {
+                        fileStatus = "Deleting...";
+                      }
+
                       return (
                         <div
                           className="flex items-center gap-2 rounded-md border bg-muted/50 px-2 py-1.5 data-pending:opacity-60"
@@ -2030,11 +2049,7 @@ export function FileCell<TData>({
                           <div className="flex-1 overflow-hidden">
                             <p className="truncate text-sm">{file.name}</p>
                             <p className="text-muted-foreground text-xs">
-                              {isFileUploading
-                                ? "Uploading..."
-                                : isFileDeleting
-                                  ? "Deleting..."
-                                  : formatFileSize(file.size)}
+                              {fileStatus}
                             </p>
                           </div>
                           <Button
@@ -2057,12 +2072,13 @@ export function FileCell<TData>({
           </PopoverContent>
         </Popover>
       ) : null}
-      {isDraggingOver ? (
+      {isDraggingOver && (
         <div className="flex items-center justify-center gap-2 text-primary text-sm">
           <Upload className="size-4" />
           <span>Drop files here</span>
         </div>
-      ) : files.length > 0 ? (
+      )}
+      {!isDraggingOver && files.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 overflow-hidden">
           {visibleFiles.map((file) => {
             const isUploading = uploadingFiles.has(file.id);
@@ -2101,7 +2117,7 @@ export function FileCell<TData>({
             </Badge>
           )}
         </div>
-      ) : null}
+      )}
     </DataGridCellWrapper>
   );
 }

@@ -55,11 +55,13 @@ function getDirectionAwareKey(key: string, dir?: Direction) {
   if (dir !== "rtl") {
     return key;
   }
-  return key === "ArrowLeft"
-    ? "ArrowRight"
-    : key === "ArrowRight"
-      ? "ArrowLeft"
-      : key;
+  if (key === "ArrowLeft") {
+    return "ArrowRight";
+  }
+  if (key === "ArrowRight") {
+    return "ArrowLeft";
+  }
+  return key;
 }
 
 interface ItemData {

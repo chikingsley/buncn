@@ -83,12 +83,14 @@ export function DataTableSliderFilter<TData>({
     }
 
     const rangeSize = maxValue - minValue;
-    const step =
-      rangeSize <= 20
-        ? 1
-        : rangeSize <= 100
-          ? Math.ceil(rangeSize / 20)
-          : Math.ceil(rangeSize / 50);
+    let step: number;
+    if (rangeSize <= 20) {
+      step = 1;
+    } else if (rangeSize <= 100) {
+      step = Math.ceil(rangeSize / 20);
+    } else {
+      step = Math.ceil(rangeSize / 50);
+    }
 
     return { min: minValue, max: maxValue, step };
   }, [column, defaultRange]);

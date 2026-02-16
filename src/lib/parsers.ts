@@ -16,11 +16,14 @@ const sortingItemSchema = z.object({
 export const getSortingStateParser = <TData>(
   columnIds?: string[] | Set<string>
 ) => {
-  const validKeys = columnIds
-    ? columnIds instanceof Set
-      ? columnIds
-      : new Set(columnIds)
-    : null;
+  let validKeys: Set<string> | null;
+  if (!columnIds) {
+    validKeys = null;
+  } else if (columnIds instanceof Set) {
+    validKeys = columnIds;
+  } else {
+    validKeys = new Set(columnIds);
+  }
 
   return createParser({
     parse: (value) => {
@@ -64,11 +67,14 @@ export type FilterItemSchema = z.infer<typeof filterItemSchema>;
 export const getFiltersStateParser = <TData>(
   columnIds?: string[] | Set<string>
 ) => {
-  const validKeys = columnIds
-    ? columnIds instanceof Set
-      ? columnIds
-      : new Set(columnIds)
-    : null;
+  let validKeys: Set<string> | null;
+  if (!columnIds) {
+    validKeys = null;
+  } else if (columnIds instanceof Set) {
+    validKeys = columnIds;
+  } else {
+    validKeys = new Set(columnIds);
+  }
 
   return createParser({
     parse: (value) => {

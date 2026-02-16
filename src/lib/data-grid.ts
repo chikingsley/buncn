@@ -150,18 +150,21 @@ export function getColumnPinningStyle<TData>(params: {
   const rightPosition =
     isPinned === "right" ? `${column.getAfter("right")}px` : undefined;
 
+  let boxShadow: string | undefined;
+  if (withBorder) {
+    if (isLastLeftPinnedColumn) {
+      boxShadow = isRtl
+        ? "4px 0 4px -4px var(--border) inset"
+        : "-4px 0 4px -4px var(--border) inset";
+    } else if (isFirstRightPinnedColumn) {
+      boxShadow = isRtl
+        ? "-4px 0 4px -4px var(--border) inset"
+        : "4px 0 4px -4px var(--border) inset";
+    }
+  }
+
   return {
-    boxShadow: withBorder
-      ? isLastLeftPinnedColumn
-        ? isRtl
-          ? "4px 0 4px -4px var(--border) inset"
-          : "-4px 0 4px -4px var(--border) inset"
-        : isFirstRightPinnedColumn
-          ? isRtl
-            ? "-4px 0 4px -4px var(--border) inset"
-            : "4px 0 4px -4px var(--border) inset"
-          : undefined
-      : undefined,
+    boxShadow,
     left: isRtl ? rightPosition : leftPosition,
     right: isRtl ? leftPosition : rightPosition,
     opacity: isPinned ? 0.97 : 1,

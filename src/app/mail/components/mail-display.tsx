@@ -9,6 +9,7 @@ import {
   ReplyAll,
   Trash2,
 } from "lucide-react";
+import * as React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +44,8 @@ function getInitials(name: string): string {
 }
 
 export function MailDisplay({ mail, onAction }: MailDisplayProps) {
+  const muteId = React.useId();
+
   if (!mail) {
     return (
       <div className="flex h-full items-center justify-center p-8">
@@ -215,8 +218,8 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
             />
             <div className="flex items-center">
               <div className="flex items-center gap-2">
-                <Switch id="mute" />
-                <Label htmlFor="mute">Mute this thread</Label>
+                <Switch id={muteId} />
+                <Label htmlFor={muteId}>Mute this thread</Label>
               </div>
               <Button className="ml-auto" size="sm">
                 Send

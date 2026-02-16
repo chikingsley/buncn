@@ -709,6 +709,11 @@ function onFilterInputRender<TData>({
         selectedValues.includes(option.value)
       );
 
+      const placeholder =
+        filter.variant === "multiSelect"
+          ? "Select options..."
+          : "Select option...";
+
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>
           <PopoverTrigger
@@ -723,11 +728,7 @@ function onFilterInputRender<TData>({
             }
           >
             {selectedOptions.length === 0 ? (
-              filter.variant === "multiSelect" ? (
-                "Select options..."
-              ) : (
-                "Select option..."
-              )
+              placeholder
             ) : (
               <>
                 <div className="flex items-center -space-x-2 rtl:space-x-reverse">
@@ -764,12 +765,14 @@ function onFilterInputRender<TData>({
                     <CommandItem
                       key={option.value}
                       onSelect={() => {
-                        const value =
-                          filter.variant === "multiSelect"
-                            ? selectedValues.includes(option.value)
-                              ? selectedValues.filter((v) => v !== option.value)
-                              : [...selectedValues, option.value]
-                            : option.value;
+                        let value: string | string[];
+                        if (filter.variant === "multiSelect") {
+                          value = selectedValues.includes(option.value)
+                            ? selectedValues.filter((v) => v !== option.value)
+                            : [...selectedValues, option.value];
+                        } else {
+                          value = option.value;
+                        }
                         onFilterUpdate(filter.filterId, { value });
                       }}
                       value={option.value}
@@ -814,12 +817,18 @@ function onFilterInputRender<TData>({
         endDate &&
         startDate.toDateString() === endDate.toDateString();
 
-      const displayValue =
-        filter.operator === "isBetween" && dateValue.length === 2 && !isSameDate
-          ? `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`
-          : startDate
-            ? formatDate(startDate, { month: "short" })
-            : "Pick date...";
+      let displayValue: string;
+      if (
+        filter.operator === "isBetween" &&
+        dateValue.length === 2 &&
+        !isSameDate
+      ) {
+        displayValue = `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`;
+      } else if (startDate) {
+        displayValue = formatDate(startDate, { month: "short" });
+      } else {
+        displayValue = "Pick date...";
+      }
 
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>

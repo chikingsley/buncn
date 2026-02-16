@@ -411,9 +411,10 @@ function DataTableFilterItem<TData>({
       value={filter.filterId}
     >
       <div className="min-w-[72px] text-center">
-        {index === 0 ? (
+        {index === 0 && (
           <span className="text-muted-foreground text-sm">Where</span>
-        ) : index === 1 ? (
+        )}
+        {index === 1 && (
           <Select
             onValueChange={(value: JoinOperator | null) => {
               if (value !== null) {
@@ -441,7 +442,8 @@ function DataTableFilterItem<TData>({
               ))}
             </SelectContent>
           </Select>
-        ) : (
+        )}
+        {index > 1 && (
           <span className="text-muted-foreground text-sm">{joinOperator}</span>
         )}
       </div>
@@ -687,13 +689,13 @@ function onFilterInputRender<TData>({
       const inputListboxId = `${inputId}-listbox`;
 
       const multiple = filter.variant === "multiSelect";
-      const selectedValues = multiple
-        ? Array.isArray(filter.value)
-          ? filter.value
-          : []
-        : typeof filter.value === "string"
-          ? filter.value
-          : undefined;
+      let selectedValues: string[] | string | undefined;
+      if (multiple) {
+        selectedValues = Array.isArray(filter.value) ? filter.value : [];
+      } else {
+        selectedValues =
+          typeof filter.value === "string" ? filter.value : undefined;
+      }
 
       return (
         <Faceted
@@ -771,12 +773,18 @@ function onFilterInputRender<TData>({
         endDate &&
         startDate.toDateString() === endDate.toDateString();
 
-      const displayValue =
-        filter.operator === "isBetween" && dateValue.length === 2 && !isSameDate
-          ? `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`
-          : startDate
-            ? formatDate(startDate, { month: "short" })
-            : "Pick a date";
+      let displayValue: string;
+      if (
+        filter.operator === "isBetween" &&
+        dateValue.length === 2 &&
+        !isSameDate
+      ) {
+        displayValue = `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`;
+      } else if (startDate) {
+        displayValue = formatDate(startDate, { month: "short" });
+      } else {
+        displayValue = "Pick a date";
+      }
 
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>

@@ -700,12 +700,21 @@ function DataGridFilterInput<TData>({
         endDate &&
         startDate.toDateString() === endDate.toDateString();
 
-      const displayValue =
-        startDate && endDate && !isSameDate
-          ? `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`
-          : startDate
-            ? formatDate(startDate, { month: "short" })
-            : "Pick a range";
+      let displayValue: string;
+      if (startDate && endDate && !isSameDate) {
+        displayValue = `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`;
+      } else if (startDate) {
+        displayValue = formatDate(startDate, { month: "short" });
+      } else {
+        displayValue = "Pick a range";
+      }
+
+      let calendarSelected: { from: Date; to: Date } | undefined;
+      if (startDate && endDate) {
+        calendarSelected = { from: startDate, to: endDate };
+      } else if (startDate) {
+        calendarSelected = { from: startDate, to: startDate };
+      }
 
       return (
         <Popover onOpenChange={setShowValueSelector} open={showValueSelector}>
@@ -747,13 +756,7 @@ function DataGridFilterInput<TData>({
                 onValueChange(fromValue);
                 onEndValueChange?.(toValue);
               }}
-              selected={
-                startDate && endDate
-                  ? { from: startDate, to: endDate }
-                  : startDate
-                    ? { from: startDate, to: startDate }
-                    : undefined
-              }
+              selected={calendarSelected}
             />
           </PopoverContent>
         </Popover>
