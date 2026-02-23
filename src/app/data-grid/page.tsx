@@ -6,7 +6,7 @@ import {
 } from "@/components/data-grid/data-grid-skeleton";
 import { DataGridDemo } from "./components/data-grid-demo";
 
-export default async function DataGridPage() {
+export default function DataGridPage() {
   return (
     <Suspense
       fallback={

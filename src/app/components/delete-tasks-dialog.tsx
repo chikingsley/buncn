@@ -2,7 +2,7 @@
 
 import type { Row } from "@tanstack/react-table";
 import { Loader, Trash } from "lucide-react";
-import * as React from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +45,7 @@ export function DeleteTasksDialog({
   open,
   onOpenChange,
 }: DeleteTasksDialogProps) {
-  const [isDeletePending, startDeleteTransition] = React.useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
   const isDesktop = useMediaQuery("(min-width: 640px)");
 
   function onDelete() {

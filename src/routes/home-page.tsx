@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FeatureFlagsProvider } from "@/app/components/feature-flags-provider";
 import { TasksTable } from "@/app/components/tasks-table";
@@ -10,7 +10,6 @@ import {
 } from "@/app/lib/queries";
 import { subscribeToTasksChanged } from "@/app/lib/tasks-events";
 import { parseTasksSearchParams } from "@/app/lib/validations";
-import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Shell } from "@/components/shell";
 import type { Task } from "@/db/schema";
 import { getValidFilters } from "@/lib/data-table";
@@ -22,11 +21,18 @@ interface TasksData {
   estimatedHoursRange: Awaited<ReturnType<typeof getEstimatedHoursRange>>;
 }
 
+const EMPTY_TASKS_DATA: TasksData = {
+  tasks: { data: [], pageCount: 0 },
+  statusCounts: { todo: 0, "in-progress": 0, done: 0, canceled: 0 },
+  priorityCounts: { low: 0, medium: 0, high: 0 },
+  estimatedHoursRange: { min: 0, max: 0 },
+};
+
 function useTasksData(searchParams: URLSearchParams) {
-  const [data, setData] = React.useState<TasksData | null>(null);
+  const [data, setData] = useState<TasksData>(EMPTY_TASKS_DATA);
   const searchParamsKey = searchParams.toString();
 
-  const fetchData = React.useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const search = parseTasksSearchParams(new URLSearchParams(searchParamsKey));
     const validFilters = getValidFilters(search.filters);
 
@@ -41,7 +47,7 @@ function useTasksData(searchParams: URLSearchParams) {
     setData({ tasks, statusCounts, priorityCounts, estimatedHoursRange });
   }, [searchParamsKey]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let stale = false;
     const run = async () => {
       await fetchData();
@@ -54,7 +60,7 @@ function useTasksData(searchParams: URLSearchParams) {
     };
   }, [fetchData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return subscribeToTasksChanged(fetchData);
   }, [fetchData]);
 
@@ -64,27 +70,6 @@ function useTasksData(searchParams: URLSearchParams) {
 export function HomePage() {
   const [searchParams] = useSearchParams();
   const data = useTasksData(searchParams);
-
-  if (!data) {
-    return (
-      <Shell>
-        <DataTableSkeleton
-          cellWidths={[
-            "10rem",
-            "30rem",
-            "10rem",
-            "10rem",
-            "6rem",
-            "6rem",
-            "6rem",
-          ]}
-          columnCount={7}
-          filterCount={2}
-          shrinkZero
-        />
-      </Shell>
-    );
-  }
 
   return (
     <Shell>

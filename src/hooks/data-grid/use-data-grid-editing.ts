@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback } from "react";
 
 import { getCellKey } from "@/lib/data-grid";
 import type {
@@ -34,7 +34,7 @@ function useDataGridEditing<TData>(
     navigableColumnIds,
   } = ctx;
 
-  const onDataUpdate = React.useCallback(
+  const onDataUpdate = useCallback(
     (updates: CellUpdate | CellUpdate[]) => {
       if (propsRef.current.readOnly) {
         return;
@@ -106,7 +106,7 @@ function useDataGridEditing<TData>(
     [propsRef, tableRef]
   );
 
-  const onRowsDelete = React.useCallback(
+  const onRowsDelete = useCallback(
     async (rowIndices: number[]) => {
       if (
         propsRef.current.readOnly ||
@@ -163,7 +163,7 @@ function useDataGridEditing<TData>(
     [propsRef, store, navigableColumnIds, focusCell, tableRef]
   );
 
-  const onCellEditingStart = React.useCallback(
+  const onCellEditingStart = useCallback(
     (rowIndex: number, columnId: string) => {
       if (propsRef.current.readOnly) {
         return;
@@ -177,7 +177,7 @@ function useDataGridEditing<TData>(
     [store, propsRef]
   );
 
-  const onCellEditingStop = React.useCallback(
+  const onCellEditingStop = useCallback(
     (opts?: { moveToNextRow?: boolean; direction?: NavigationDirection }) => {
       const currentState = store.getState();
       const currentEditing = currentState.editingCell;
@@ -210,7 +210,7 @@ function useDataGridEditing<TData>(
     [store, propsRef, focusCell, navigateCell, focusCellWrapper, tableRef]
   );
 
-  const onScrollToRow = React.useCallback(
+  const onScrollToRow = useCallback(
     async (opts: Partial<CellPosition>) => {
       const rowIndex = opts?.rowIndex ?? 0;
       const columnId = opts?.columnId;
@@ -332,7 +332,7 @@ function useDataGridEditing<TData>(
     ]
   );
 
-  const onRowAdd = React.useCallback(
+  const onRowAdd = useCallback(
     async (event?: React.MouseEvent<HTMLDivElement>) => {
       if (propsRef.current.readOnly || !propsRef.current.onRowAdd) {
         return;

@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback } from "react";
 
 import { getCellKey } from "@/lib/data-grid";
 
@@ -7,7 +7,7 @@ import type { DataGridContext } from "./types";
 function useDataGridFocus<TData>(ctx: DataGridContext<TData>) {
   const { store, dataGridRef, cellMapRef, focusGuardRef } = ctx;
 
-  const releaseFocusGuard = React.useCallback(
+  const releaseFocusGuard = useCallback(
     (immediate = false) => {
       if (immediate) {
         focusGuardRef.current = false;
@@ -21,7 +21,7 @@ function useDataGridFocus<TData>(ctx: DataGridContext<TData>) {
     [focusGuardRef]
   );
 
-  const focusCellWrapper = React.useCallback(
+  const focusCellWrapper = useCallback(
     (rowIndex: number, columnId: string) => {
       focusGuardRef.current = true;
 
@@ -45,7 +45,7 @@ function useDataGridFocus<TData>(ctx: DataGridContext<TData>) {
     [focusGuardRef, cellMapRef, dataGridRef, releaseFocusGuard]
   );
 
-  const focusCell = React.useCallback(
+  const focusCell = useCallback(
     (rowIndex: number, columnId: string) => {
       store.batch(() => {
         store.setState("focusedCell", { rowIndex, columnId });
@@ -63,7 +63,7 @@ function useDataGridFocus<TData>(ctx: DataGridContext<TData>) {
     [store, focusCellWrapper]
   );
 
-  const blurCell = React.useCallback(() => {
+  const blurCell = useCallback(() => {
     const currentState = store.getState();
     if (
       currentState.editingCell &&
@@ -78,7 +78,7 @@ function useDataGridFocus<TData>(ctx: DataGridContext<TData>) {
     });
   }, [store]);
 
-  const restoreFocus = React.useCallback((element: HTMLDivElement | null) => {
+  const restoreFocus = useCallback((element: HTMLDivElement | null) => {
     if (element && document.activeElement !== element) {
       requestAnimationFrame(() => {
         element.focus();

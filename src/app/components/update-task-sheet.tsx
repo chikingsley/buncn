@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
-import * as React from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export function UpdateTaskSheet({
   open,
   onOpenChange,
 }: UpdateTaskSheetProps) {
-  const [isPending, startTransition] = React.useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<UpdateTaskSchema>({
     resolver: zodResolver(updateTaskSchema),

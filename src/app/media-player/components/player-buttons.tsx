@@ -1,10 +1,17 @@
-import { useMediaRemote, useMediaState } from "@vidstack/react";
 import {
+  useCaptionOptions,
+  useMediaRemote,
+  useMediaState,
+} from "@vidstack/react";
+import {
+  Captions,
   Maximize,
   Minimize,
   Pause,
   PictureInPicture2,
   Play,
+  RotateCcw,
+  RotateCw,
   Volume1,
   Volume2,
   VolumeX,
@@ -119,6 +126,75 @@ export function PIPButton({ variant }: ButtonProps) {
       </TooltipTrigger>
       <TooltipContent side="top">
         {isPiP ? "Exit PiP" : "Picture-in-Picture"}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function SeekBackwardButton({ variant }: ButtonProps) {
+  const currentTime = useMediaState("currentTime");
+  const remote = useMediaRemote();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        className={buttonClass(variant)}
+        onClick={() => remote.seek(Math.max(0, currentTime - 10))}
+      >
+        <RotateCcw className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="top">Back 10s</TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function SeekForwardButton({ variant }: ButtonProps) {
+  const currentTime = useMediaState("currentTime");
+  const duration = useMediaState("duration");
+  const remote = useMediaRemote();
+  const nextTime = Number.isFinite(duration)
+    ? Math.min(duration, currentTime + 10)
+    : currentTime + 10;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        className={buttonClass(variant)}
+        onClick={() => remote.seek(nextTime)}
+      >
+        <RotateCw className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="top">Forward 10s</TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function PlayerCaptionButton({ variant }: ButtonProps) {
+  const options = useCaptionOptions();
+  const remote = useMediaRemote();
+  const textTrack = useMediaState("textTrack");
+  const captionsOn = textTrack !== null;
+
+  if (options.disabled) {
+    return null;
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        className={cn(
+          buttonClass(variant),
+          captionsOn &&
+            (variant === "video"
+              ? "bg-white/20 text-white"
+              : "bg-accent text-accent-foreground")
+        )}
+        onClick={() => remote.toggleCaptions()}
+      >
+        <Captions className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="top">
+        {captionsOn ? "Hide captions (c)" : "Captions (c)"}
       </TooltipContent>
     </Tooltip>
   );

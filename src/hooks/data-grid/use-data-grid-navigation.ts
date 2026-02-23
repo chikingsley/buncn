@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback } from "react";
 
 import {
   getCellKey,
@@ -31,7 +31,7 @@ function useDataGridNavigation<TData>(
     dir,
   } = ctx;
 
-  const navigateCell = React.useCallback(
+  const navigateCell = useCallback(
     (direction: NavigationDirection) => {
       const currentState = store.getState();
       if (!currentState.focusedCell) {

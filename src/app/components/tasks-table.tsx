@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
@@ -40,10 +40,11 @@ export function TasksTable({
 }: TasksTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags();
 
-  const [rowAction, setRowAction] =
-    React.useState<DataTableRowAction<Task> | null>(null);
+  const [rowAction, setRowAction] = useState<DataTableRowAction<Task> | null>(
+    null
+  );
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () =>
       getTasksTableColumns({
         statusCounts,

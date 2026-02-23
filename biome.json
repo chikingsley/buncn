@@ -1,20 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite/biome/core", "ultracite/biome/react"],
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": {
-          "level": "on"
-        }
-      }
-    }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentWidth": 2,
-    "indentStyle": "space"
-  },
   "css": {
     "parser": {
       "cssModules": true,
@@ -24,65 +10,9 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "a11y": {
-        "noSvgWithoutTitle": "off",
-        "useKeyWithClickEvents": "off",
-        "useSemanticElements": "off",
-        "noLabelWithoutControl": "off",
-        "noNoninteractiveElementInteractions": "off"
-      },
-      "correctness": {
-        "noNestedComponentDefinitions": "warn",
-        "useUniqueElementIds": "warn",
-        "noUnusedImports": "warn",
-        "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "warn"
-      },
-      "complexity": {
-        "noBannedTypes": "warn",
-        "noExcessiveCognitiveComplexity": "off",
-        "noVoid": "off"
-      },
-      "style": {
-        "useImportType": "warn",
-        "useSelfClosingElements": "off",
-        "noNestedTernary": "warn",
-        "useDefaultSwitchClause": "off"
-      },
-      "security": {
-        "noDangerouslySetInnerHtml": "warn"
-      },
-      "suspicious": {
-        "noAssignInExpressions": "error",
-        "noUnknownAtRules": "off",
-        "noArrayIndexKey": "warn",
-        "useAwait": "off",
-        "noBitwiseOperators": "off",
-        "noEmptyBlockStatements": "warn"
-      },
-      "performance": {
-        "noNamespaceImport": "off",
-        "useTopLevelRegex": "off"
-      },
-      "nursery": {
-        "useSortedClasses": {
-          "level": "warn",
-          "fix": "safe",
-          "options": {
-            "attributes": ["classList"],
-            "functions": ["clsx", "cva", "tw"]
-          }
-        }
-      }
+      "recommended": true
     }
   },
-  "overrides": [
-    {
-      "includes": ["**/*.test.ts"]
-    }
-  ],
   "vcs": {
     "enabled": true,
     "clientKind": "git",

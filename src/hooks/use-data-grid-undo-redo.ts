@@ -1,4 +1,10 @@
-import * as React from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { toast } from "sonner";
 
 import { useAsRef } from "@/hooks/use-as-ref";
@@ -44,12 +50,12 @@ function useStore<T>(
   store: Store<T>,
   selector: (state: StoreState<T>) => boolean
 ): boolean {
-  const getSnapshot = React.useCallback(
+  const getSnapshot = useCallback(
     () => selector(store.getState()),
     [store, selector]
   );
 
-  return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 }
 
 function buildIndexById<TData>(
@@ -112,7 +118,7 @@ function useDataGridUndoRedo<TData>({
     hasPendingChanges: false,
   }));
 
-  const pendingBatchRef = React.useRef<{
+  const pendingBatchRef = useRef<{
     byKey: Map<string, UndoRedoCellUpdate>;
     timeoutId: ReturnType<typeof setTimeout> | null;
   }>({
@@ -120,9 +126,9 @@ function useDataGridUndoRedo<TData>({
     timeoutId: null,
   });
 
-  const pendingNotifyRef = React.useRef(false);
+  const pendingNotifyRef = useRef(false);
 
-  const store = React.useMemo<Store<TData>>(() => {
+  const store = useMemo<Store<TData>>(() => {
     return {
       subscribe: (callback) => {
         listenersRef.current.add(callback);
@@ -221,7 +227,7 @@ function useDataGridUndoRedo<TData>({
   );
   const canRedo = useStore(store, (state) => state.redoStack.length > 0);
 
-  const onCommit = React.useCallback(() => {
+  const onCommit = useCallback(() => {
     const pending = pendingBatchRef.current;
     if (pending.byKey.size === 0) {
       return;
@@ -279,7 +285,7 @@ function useDataGridUndoRedo<TData>({
     store.push(entry);
   }, [store, propsRef]);
 
-  const onUndo = React.useCallback(() => {
+  const onUndo = useCallback(() => {
     if (!propsRef.current.enabled) {
       return;
     }
@@ -300,7 +306,7 @@ function useDataGridUndoRedo<TData>({
     );
   }, [store, propsRef, onCommit]);
 
-  const onRedo = React.useCallback(() => {
+  const onRedo = useCallback(() => {
     if (!propsRef.current.enabled) {
       return;
     }
@@ -321,7 +327,7 @@ function useDataGridUndoRedo<TData>({
     );
   }, [store, propsRef, onCommit]);
 
-  const onClear = React.useCallback(() => {
+  const onClear = useCallback(() => {
     const pending = pendingBatchRef.current;
     if (pending.timeoutId) {
       clearTimeout(pending.timeoutId);
@@ -332,7 +338,7 @@ function useDataGridUndoRedo<TData>({
     store.clear();
   }, [store]);
 
-  const trackCellsUpdate = React.useCallback(
+  const trackCellsUpdate = useCallback(
     (updates: UndoRedoCellUpdate[]) => {
       if (!propsRef.current.enabled || updates.length === 0) {
         return;
@@ -368,7 +374,7 @@ function useDataGridUndoRedo<TData>({
     [store, propsRef, onCommit]
   );
 
-  const trackRowsAdd = React.useCallback(
+  const trackRowsAdd = useCallback(
     (rows: TData[]) => {
       if (!propsRef.current.enabled || rows.length === 0) {
         return;
@@ -398,7 +404,7 @@ function useDataGridUndoRedo<TData>({
     [store, propsRef, onCommit]
   );
 
-  const trackRowsDelete = React.useCallback(
+  const trackRowsDelete = useCallback(
     (rows: TData[]) => {
       if (!propsRef.current.enabled || rows.length === 0) {
         return;
@@ -448,7 +454,7 @@ function useDataGridUndoRedo<TData>({
     [store, propsRef, onCommit]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const pending = pendingBatchRef.current;
     return () => {
       if (pending.timeoutId) {
@@ -457,7 +463,7 @@ function useDataGridUndoRedo<TData>({
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!enabled) {
       return;
     }
@@ -500,7 +506,7 @@ function useDataGridUndoRedo<TData>({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [enabled, onUndo, onRedo]);
 
-  return React.useMemo(
+  return useMemo(
     () => ({
       canUndo,
       canRedo,

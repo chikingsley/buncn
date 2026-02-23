@@ -1,7 +1,7 @@
 "use client";
 
 import type { TableMeta } from "@tanstack/react-table";
-import * as React from "react";
+import { memo, useCallback, useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -44,7 +44,7 @@ interface PasteDialogProps
   extends Pick<TableMeta<unknown>, "onPasteDialogOpenChange" | "onCellsPaste">,
     Required<Pick<TableMeta<unknown>, "pasteDialog">> {}
 
-const PasteDialog = React.memo(PasteDialogImpl, (prev, next) => {
+const PasteDialog = memo(PasteDialogImpl, (prev, next) => {
   if (prev.pasteDialog.open !== next.pasteDialog.open) {
     return false;
   }
@@ -68,22 +68,25 @@ function PasteDialogImpl({
     onCellsPaste,
   });
 
-  const expandRadioRef = React.useRef<HTMLInputElement | null>(null);
+  const expandRadioRef = useRef<HTMLInputElement | null>(null);
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       propsRef.current.onPasteDialogOpenChange?.(open);
     },
     [propsRef]
   );
 
-  const onCancel = React.useCallback(() => {
+  const onCancel = useCallback(() => {
     propsRef.current.onPasteDialogOpenChange?.(false);
   }, [propsRef]);
 
-  const onContinue = React.useCallback(() => {
+  const onContinue = useCallback(() => {
     propsRef.current.onCellsPaste?.(expandRadioRef.current?.checked ?? false);
   }, [propsRef]);
+
+  const expandOptionId = useId();
+  const keepRowsOptionId = useId();
 
   return (
     <Dialog onOpenChange={onOpenChange} open={pasteDialog.open}>
@@ -97,9 +100,13 @@ function PasteDialogImpl({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-1">
-          <label className="flex cursor-pointer items-start gap-3">
+          <label
+            className="flex cursor-pointer items-start gap-3"
+            htmlFor={expandOptionId}
+          >
             <RadioItem
               defaultChecked
+              id={expandOptionId}
               name="expand-option"
               ref={expandRadioRef}
               value="expand"
@@ -115,8 +122,15 @@ function PasteDialogImpl({
               </span>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-3">
-            <RadioItem name="expand-option" value="no-expand" />
+          <label
+            className="flex cursor-pointer items-start gap-3"
+            htmlFor={keepRowsOptionId}
+          >
+            <RadioItem
+              id={keepRowsOptionId}
+              name="expand-option"
+              value="no-expand"
+            />
             <div className="flex flex-col gap-1">
               <span className="font-medium text-sm leading-none">
                 Keep current rows

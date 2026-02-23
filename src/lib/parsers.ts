@@ -16,6 +16,8 @@ const sortingItemSchema = z.object({
 export const getSortingStateParser = <TData>(
   columnIds?: string[] | Set<string>
 ) => {
+  type SortArray = ExtendedColumnSort<TData>[];
+
   let validKeys: Set<string> | null;
   if (!columnIds) {
     validKeys = null;
@@ -25,8 +27,8 @@ export const getSortingStateParser = <TData>(
     validKeys = new Set(columnIds);
   }
 
-  return createParser({
-    parse: (value) => {
+  return createParser<SortArray>({
+    parse: (value: string): SortArray | null => {
       try {
         const parsed = JSON.parse(value);
         const result = z.array(sortingItemSchema).safeParse(parsed);
@@ -39,13 +41,13 @@ export const getSortingStateParser = <TData>(
           return null;
         }
 
-        return result.data as ExtendedColumnSort<TData>[];
+        return result.data as SortArray;
       } catch {
         return null;
       }
     },
-    serialize: (value) => JSON.stringify(value),
-    eq: (a, b) =>
+    serialize: (value: SortArray): string => JSON.stringify(value),
+    eq: (a: SortArray, b: SortArray): boolean =>
       a.length === b.length &&
       a.every(
         (item, index) =>
@@ -67,6 +69,8 @@ export type FilterItemSchema = z.infer<typeof filterItemSchema>;
 export const getFiltersStateParser = <TData>(
   columnIds?: string[] | Set<string>
 ) => {
+  type FilterArray = ExtendedColumnFilter<TData>[];
+
   let validKeys: Set<string> | null;
   if (!columnIds) {
     validKeys = null;
@@ -76,8 +80,8 @@ export const getFiltersStateParser = <TData>(
     validKeys = new Set(columnIds);
   }
 
-  return createParser({
-    parse: (value) => {
+  return createParser<FilterArray>({
+    parse: (value: string): FilterArray | null => {
       try {
         const parsed = JSON.parse(value);
         const result = z.array(filterItemSchema).safeParse(parsed);
@@ -90,13 +94,13 @@ export const getFiltersStateParser = <TData>(
           return null;
         }
 
-        return result.data as ExtendedColumnFilter<TData>[];
+        return result.data as FilterArray;
       } catch {
         return null;
       }
     },
-    serialize: (value) => JSON.stringify(value),
-    eq: (a, b) =>
+    serialize: (value: FilterArray): string => JSON.stringify(value),
+    eq: (a: FilterArray, b: FilterArray): boolean =>
       a.length === b.length &&
       a.every(
         (filter, index) =>

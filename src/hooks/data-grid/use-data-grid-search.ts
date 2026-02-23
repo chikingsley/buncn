@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback, useMemo } from "react";
 
 import { getCellKey } from "@/lib/data-grid";
 import type { CellPosition, SearchState } from "@/types/data-grid";
@@ -24,7 +24,7 @@ function useDataGridSearch<TData>(
   const searchOpen = useStore(store, (state) => state.searchOpen);
   const searchQuery = useStore(store, (state) => state.searchQuery);
 
-  const onSearchOpenChange = React.useCallback(
+  const onSearchOpenChange = useCallback(
     (open: boolean) => {
       if (open) {
         store.setState("searchOpen", true);
@@ -60,7 +60,7 @@ function useDataGridSearch<TData>(
     [store, dataGridRef]
   );
 
-  const onSearch = React.useCallback(
+  const onSearch = useCallback(
     (query: string) => {
       if (!query.trim()) {
         store.batch(() => {
@@ -116,12 +116,12 @@ function useDataGridSearch<TData>(
     [columnIds, store, tableRef, rowVirtualizerRef]
   );
 
-  const onSearchQueryChange = React.useCallback(
+  const onSearchQueryChange = useCallback(
     (query: string) => store.setState("searchQuery", query),
     [store]
   );
 
-  const onNavigateToPrevMatch = React.useCallback(() => {
+  const onNavigateToPrevMatch = useCallback(() => {
     const currentState = store.getState();
     if (currentState.searchMatches.length === 0) {
       return;
@@ -147,7 +147,7 @@ function useDataGridSearch<TData>(
     }
   }, [store, focusCell, rowVirtualizerRef]);
 
-  const onNavigateToNextMatch = React.useCallback(() => {
+  const onNavigateToNextMatch = useCallback(() => {
     const currentState = store.getState();
     if (currentState.searchMatches.length === 0) {
       return;
@@ -171,20 +171,20 @@ function useDataGridSearch<TData>(
     }
   }, [store, focusCell, rowVirtualizerRef]);
 
-  const searchMatchSet = React.useMemo(() => {
+  const searchMatchSet = useMemo(() => {
     return new Set(
       searchMatches.map((m) => getCellKey(m.rowIndex, m.columnId))
     );
   }, [searchMatches]);
 
-  const getIsSearchMatch = React.useCallback(
+  const getIsSearchMatch = useCallback(
     (rowIndex: number, columnId: string) => {
       return searchMatchSet.has(getCellKey(rowIndex, columnId));
     },
     [searchMatchSet]
   );
 
-  const getIsActiveSearchMatch = React.useCallback(
+  const getIsActiveSearchMatch = useCallback(
     (rowIndex: number, columnId: string) => {
       const currentState = store.getState();
       if (currentState.matchIndex < 0) {
@@ -199,7 +199,7 @@ function useDataGridSearch<TData>(
     [store]
   );
 
-  const searchMatchesByRow = React.useMemo(() => {
+  const searchMatchesByRow = useMemo(() => {
     if (searchMatches.length === 0) {
       return null;
     }
@@ -215,14 +215,14 @@ function useDataGridSearch<TData>(
     return rowMap;
   }, [searchMatches]);
 
-  const activeSearchMatch = React.useMemo<CellPosition | null>(() => {
+  const activeSearchMatch = useMemo<CellPosition | null>(() => {
     if (matchIndex < 0 || searchMatches.length === 0) {
       return null;
     }
     return searchMatches[matchIndex] ?? null;
   }, [searchMatches, matchIndex]);
 
-  const searchState = React.useMemo<SearchState | undefined>(() => {
+  const searchState = useMemo<SearchState | undefined>(() => {
     if (!propsRef.current.enableSearch) {
       return undefined;
     }

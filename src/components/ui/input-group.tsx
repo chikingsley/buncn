@@ -1,7 +1,7 @@
 "use client";
 
 import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,6 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
         className
       )}
       data-slot="input-group"
-      role="group"
       {...props}
     />
   );
@@ -45,20 +44,26 @@ const inputGroupAddonVariants = cva(
 function InputGroupAddon({
   className,
   align = "inline-start",
+  onMouseDown,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    <div
+    <button
       className={cn(inputGroupAddonVariants({ align }), className)}
       data-align={align}
       data-slot="input-group-addon"
-      onClick={(e) => {
-        if ((e.target as HTMLElement).closest("button")) {
+      onMouseDown={(event) => {
+        onMouseDown?.(event);
+        if (event.defaultPrevented) {
           return;
         }
-        e.currentTarget.parentElement?.querySelector("input")?.focus();
+
+        event.preventDefault();
+        event.currentTarget.parentElement?.querySelector("input")?.focus();
+        event.currentTarget.parentElement?.querySelector("textarea")?.focus();
       }}
-      role="group"
+      type="button"
       {...props}
     />
   );

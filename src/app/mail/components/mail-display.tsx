@@ -9,7 +9,7 @@ import {
   ReplyAll,
   Trash2,
 } from "lucide-react";
-import * as React from "react";
+import { useId } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ function getInitials(name: string): string {
 }
 
 export function MailDisplay({ mail, onAction }: MailDisplayProps) {
-  const muteId = React.useId();
+  const muteId = useId();
 
   if (!mail) {
     return (
@@ -107,7 +107,10 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
             <TooltipContent>Move to trash</TooltipContent>
           </Tooltip>
 
-          <Separator className="mx-1 h-6" orientation="vertical" />
+          <div
+            aria-hidden="true"
+            className="mx-1 h-5 w-px self-center bg-border"
+          />
 
           <Tooltip>
             <TooltipTrigger render={<Button size="icon" variant="ghost" />}>
@@ -159,7 +162,10 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
             <TooltipContent>Forward</TooltipContent>
           </Tooltip>
 
-          <Separator className="mx-1 h-6" orientation="vertical" />
+          <div
+            aria-hidden="true"
+            className="mx-1 h-5 w-px self-center bg-border"
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger

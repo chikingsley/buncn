@@ -12,6 +12,7 @@ export function SiteHeader() {
       <div className="container flex h-14 items-center">
         <Button
           className="size-8"
+          nativeButton={false}
           render={<Link to="/" />}
           size="icon"
           variant="ghost"
@@ -27,6 +28,7 @@ export function SiteHeader() {
         <nav className="flex flex-1 items-center md:justify-end">
           <Button
             className="size-8"
+            nativeButton={false}
             render={
               // biome-ignore lint/a11y/useAnchorContent: aria-label is on the anchor
               <a

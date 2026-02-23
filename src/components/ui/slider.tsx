@@ -1,7 +1,7 @@
 "use client";
 
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
-import * as React from "react";
+import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ function Slider({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
-  const _values = React.useMemo(() => {
+  const _values = useMemo(() => {
     if (Array.isArray(value)) {
       return value;
     }
@@ -23,14 +23,17 @@ function Slider({
     return [min, max];
   }, [value, defaultValue, min, max]);
 
-  const thumbKeys = React.useMemo(
+  const thumbKeys = useMemo(
     () => Array.from({ length: _values.length }, (_, i) => `thumb-${i}`),
     [_values.length]
   );
 
   return (
     <SliderPrimitive.Root
-      className={cn("data-vertical:h-full data-horizontal:w-full", className)}
+      className={cn(
+        "data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full",
+        className
+      )}
       data-slot="slider"
       defaultValue={defaultValue}
       max={max}
@@ -39,13 +42,13 @@ function Slider({
       value={value}
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex w-full touch-none select-none items-center data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col data-disabled:opacity-50">
+      <SliderPrimitive.Control className="relative flex w-full touch-none select-none items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-40 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col data-disabled:opacity-50">
         <SliderPrimitive.Track
-          className="relative grow select-none overflow-hidden rounded-full bg-muted data-horizontal:h-1.5 data-vertical:h-full data-horizontal:w-full data-vertical:w-1.5"
+          className="relative grow select-none overflow-hidden rounded-full bg-muted data-[orientation=horizontal]:h-1.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-1.5"
           data-slot="slider-track"
         >
           <SliderPrimitive.Indicator
-            className="select-none bg-primary data-horizontal:h-full data-vertical:w-full"
+            className="select-none bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
             data-slot="slider-range"
           />
         </SliderPrimitive.Track>

@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2025 Chieji Mofor
+Copyright (c) 2026 Chibuzor Ejimofor
 Copyright (c) 2024 Sadman Sakib (original work)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

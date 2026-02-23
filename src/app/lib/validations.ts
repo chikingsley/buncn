@@ -1,4 +1,10 @@
-import * as z from "zod";
+import {
+  number,
+  object,
+  string,
+  type infer as ZodInfer,
+  enum as zodEnum,
+} from "zod";
 import { flagConfig } from "@/config/flag";
 import { type Task, tasks } from "@/db/schema";
 import type {
@@ -42,6 +48,22 @@ function parseStringArray(value: string | null): string[] {
     .filter(Boolean);
 }
 
+function normalizeEnumArray<T extends string>(
+  values: string[],
+  validValues: readonly T[]
+): T[] {
+  const uniqueValues = [...new Set(values)].filter((value): value is T =>
+    validValues.includes(value as T)
+  );
+
+  // Treat "all selected" as equivalent to "no filter".
+  if (uniqueValues.length === validValues.length) {
+    return [];
+  }
+
+  return uniqueValues;
+}
+
 function parseJson<T>(value: string | null, fallback: T): T {
   if (!value) {
     return fallback;
@@ -72,10 +94,14 @@ export function parseTasksSearchParams(
       { id: "createdAt", desc: true },
     ]),
     title: searchParams.get("title") ?? "",
-    status: parseStringArray(searchParams.get("status")) as Task["status"][],
-    priority: parseStringArray(
-      searchParams.get("priority")
-    ) as Task["priority"][],
+    status: normalizeEnumArray(
+      parseStringArray(searchParams.get("status")),
+      tasks.status.enumValues
+    ),
+    priority: normalizeEnumArray(
+      parseStringArray(searchParams.get("priority")),
+      tasks.priority.enumValues
+    ),
     estimatedHours: parseNumberArray(searchParams.get("estimatedHours")),
     createdAt: parseNumberArray(searchParams.get("createdAt")),
     filters: parseJson<ExtendedColumnFilter<Task>[]>(
@@ -86,21 +112,21 @@ export function parseTasksSearchParams(
   };
 }
 
-export const createTaskSchema = z.object({
-  title: z.string(),
-  label: z.enum(tasks.label.enumValues),
-  status: z.enum(tasks.status.enumValues),
-  priority: z.enum(tasks.priority.enumValues),
-  estimatedHours: z.number().optional(),
+export const createTaskSchema = object({
+  title: string(),
+  label: zodEnum(tasks.label.enumValues),
+  status: zodEnum(tasks.status.enumValues),
+  priority: zodEnum(tasks.priority.enumValues),
+  estimatedHours: number().optional(),
 });
 
-export const updateTaskSchema = z.object({
-  title: z.string().optional(),
-  label: z.enum(tasks.label.enumValues).optional(),
-  status: z.enum(tasks.status.enumValues).optional(),
-  priority: z.enum(tasks.priority.enumValues).optional(),
-  estimatedHours: z.number().optional(),
+export const updateTaskSchema = object({
+  title: string().optional(),
+  label: zodEnum(tasks.label.enumValues).optional(),
+  status: zodEnum(tasks.status.enumValues).optional(),
+  priority: zodEnum(tasks.priority.enumValues).optional(),
+  estimatedHours: number().optional(),
 });
 
-export type CreateTaskSchema = z.infer<typeof createTaskSchema>;
-export type UpdateTaskSchema = z.infer<typeof updateTaskSchema>;
+export type CreateTaskSchema = ZodInfer<typeof createTaskSchema>;
+export type UpdateTaskSchema = ZodInfer<typeof updateTaskSchema>;

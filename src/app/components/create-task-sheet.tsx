@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader, Plus } from "lucide-react";
-import * as React from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -24,8 +24,8 @@ import { createTaskSchema } from "../lib/validations";
 import { TaskForm } from "./task-form";
 
 export function CreateTaskSheet() {
-  const [open, setOpen] = React.useState(false);
-  const [isPending, startTransition] = React.useTransition();
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<CreateTaskSchema>({
     resolver: zodResolver(createTaskSchema),

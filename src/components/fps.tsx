@@ -1,8 +1,15 @@
 "use client";
 
 import { cva, type VariantProps } from "class-variance-authority";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import {
+  type ComponentProps,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 const fpsVariants = cva(
@@ -34,7 +41,7 @@ const fpsVariants = cva(
 );
 
 interface FpsProps
-  extends React.ComponentProps<"div">,
+  extends ComponentProps<"div">,
     Omit<VariantProps<typeof fpsVariants>, "status"> {
   label?: string;
   updateInterval?: number;
@@ -58,18 +65,16 @@ function Fps(props: FpsProps) {
     ...fpsProps
   } = props;
 
-  const [mounted, setMounted] = React.useState(false);
-  const [fps, setFps] = React.useState(0);
-  const frameCountRef = React.useRef(0);
-  const lastTimeRef = React.useRef(performance.now());
-  const animationFrameRef = React.useRef<number | null>(null);
-  const updateTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const [mounted, setMounted] = useState(false);
+  const [fps, setFps] = useState(0);
+  const frameCountRef = useRef(0);
+  const lastTimeRef = useRef(performance.now());
+  const animationFrameRef = useRef<number | null>(null);
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  React.useLayoutEffect(() => setMounted(true), []);
+  useLayoutEffect(() => setMounted(true), []);
 
-  const status = React.useMemo(() => {
+  const status = useMemo(() => {
     if (fps < errorThreshold) {
       return "error";
     }
@@ -79,7 +84,7 @@ function Fps(props: FpsProps) {
     return "good";
   }, [fps, errorThreshold, warningThreshold]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!enabled || typeof window === "undefined") {
       return;
     }
@@ -136,7 +141,7 @@ function Fps(props: FpsProps) {
     </div>
   );
 
-  return portalContainer ? ReactDOM.createPortal(Comp, portalContainer) : Comp;
+  return portalContainer ? createPortal(Comp, portalContainer) : Comp;
 }
 
 export { Fps };

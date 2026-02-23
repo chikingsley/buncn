@@ -1,7 +1,14 @@
 "use client";
 
 import { Check, Upload, X } from "lucide-react";
-import * as React from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { DataGridCellWrapper } from "@/components/data-grid/data-grid-cell-wrapper";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +49,303 @@ import {
 import { cn } from "@/lib/utils";
 import type { DataGridCellProps, FileCellData } from "@/types/data-grid";
 
+type CellEditDirection = "left" | "right";
+type DataGridTableMeta = DataGridCellProps<unknown>["tableMeta"];
+
+interface RejectedUploadFile {
+  name: string;
+  reason: string;
+}
+
+interface UploadValidationResult {
+  filesToUpload: File[];
+  rejectedFiles: RejectedUploadFile[];
+}
+
+const FILE_NAME_PREVIEW_LENGTH = 20;
+const FILE_ERROR_RESET_DELAY_MS = 2000;
+
+function isTypingKey(event: React.KeyboardEvent) {
+  return event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+}
+
+function commitCellValue<TValue>({
+  tableMeta,
+  rowIndex,
+  columnId,
+  currentValue,
+  previousValue,
+  readOnly,
+  stopOptions,
+}: {
+  tableMeta: DataGridTableMeta;
+  rowIndex: number;
+  columnId: string;
+  currentValue: TValue;
+  previousValue: TValue;
+  readOnly: boolean;
+  stopOptions?: {
+    moveToNextRow?: boolean;
+    direction?: CellEditDirection;
+  };
+}) {
+  if (!readOnly && currentValue !== previousValue) {
+    tableMeta?.onDataUpdate?.({
+      rowIndex,
+      columnId,
+      value: currentValue,
+    });
+  }
+  tableMeta?.onCellEditingStop?.(stopOptions);
+}
+
+function prefillEditableCell({
+  event,
+  cellRef,
+  setValue,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  cellRef: React.RefObject<HTMLDivElement | null>;
+  setValue: (value: string) => void;
+}) {
+  setValue(event.key);
+
+  queueMicrotask(() => {
+    if (cellRef.current && cellRef.current.contentEditable === "true") {
+      cellRef.current.textContent = event.key;
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(cellRef.current);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  });
+}
+
+function handleNumberCellKeyDown({
+  event,
+  isEditing,
+  isFocused,
+  value,
+  initialValue,
+  tableMeta,
+  rowIndex,
+  columnId,
+  readOnly,
+  onSetValue,
+  inputRef,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  isEditing: boolean;
+  isFocused: boolean;
+  value: string;
+  initialValue: number;
+  tableMeta: DataGridTableMeta;
+  rowIndex: number;
+  columnId: string;
+  readOnly: boolean;
+  onSetValue: (value: string) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+}) {
+  if (!isEditing) {
+    if (!isFocused) {
+      return;
+    }
+
+    if (event.key === "Backspace") {
+      onSetValue("");
+      return;
+    }
+
+    if (isTypingKey(event)) {
+      onSetValue(event.key);
+    }
+    return;
+  }
+
+  const numValue = value === "" ? null : Number(value);
+  if (event.key === "Enter") {
+    event.preventDefault();
+    commitCellValue({
+      tableMeta,
+      rowIndex,
+      columnId,
+      currentValue: numValue,
+      previousValue: initialValue,
+      readOnly,
+      stopOptions: { moveToNextRow: true },
+    });
+    return;
+  }
+
+  if (event.key === "Tab") {
+    event.preventDefault();
+    commitCellValue({
+      tableMeta,
+      rowIndex,
+      columnId,
+      currentValue: numValue,
+      previousValue: initialValue,
+      readOnly,
+      stopOptions: { direction: event.shiftKey ? "left" : "right" },
+    });
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    onSetValue(String(initialValue ?? ""));
+    inputRef.current?.blur();
+  }
+}
+
+function handleUrlCellKeyDown({
+  event,
+  isEditing,
+  isFocused,
+  initialValue,
+  tableMeta,
+  rowIndex,
+  columnId,
+  readOnly,
+  onSetValue,
+  cellRef,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  isEditing: boolean;
+  isFocused: boolean;
+  initialValue: string;
+  tableMeta: DataGridTableMeta;
+  rowIndex: number;
+  columnId: string;
+  readOnly: boolean;
+  onSetValue: (value: string) => void;
+  cellRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const getCurrentValue = () => cellRef.current?.textContent?.trim() ?? "";
+
+  if (!isEditing) {
+    if (!isFocused || readOnly || !isTypingKey(event)) {
+      return;
+    }
+    prefillEditableCell({ event, cellRef, setValue: onSetValue });
+    return;
+  }
+
+  if (event.key === "Enter") {
+    event.preventDefault();
+    const currentValue = getCurrentValue();
+    commitCellValue({
+      tableMeta,
+      rowIndex,
+      columnId,
+      currentValue: currentValue || null,
+      previousValue: initialValue ?? null,
+      readOnly,
+      stopOptions: { moveToNextRow: true },
+    });
+    return;
+  }
+
+  if (event.key === "Tab") {
+    event.preventDefault();
+    const currentValue = getCurrentValue();
+    commitCellValue({
+      tableMeta,
+      rowIndex,
+      columnId,
+      currentValue: currentValue || null,
+      previousValue: initialValue ?? null,
+      readOnly,
+      stopOptions: { direction: event.shiftKey ? "left" : "right" },
+    });
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    onSetValue(initialValue ?? "");
+    cellRef.current?.blur();
+  }
+}
+
+function splitValidatedFiles(
+  files: File[],
+  validateFile: (file: File) => string | null
+): UploadValidationResult {
+  const filesToUpload: File[] = [];
+  const rejectedFiles: RejectedUploadFile[] = [];
+
+  for (const file of files) {
+    const validationError = validateFile(file);
+    if (validationError) {
+      rejectedFiles.push({ name: file.name, reason: validationError });
+      continue;
+    }
+    filesToUpload.push(file);
+  }
+
+  return { filesToUpload, rejectedFiles };
+}
+
+function getTruncatedFileName(name: string): string {
+  return name.length > FILE_NAME_PREVIEW_LENGTH
+    ? `${name.slice(0, FILE_NAME_PREVIEW_LENGTH)}...`
+    : name;
+}
+
+function createTempFileData(files: File[]): FileCellData[] {
+  return files.map((file) => ({
+    id: crypto.randomUUID(),
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    url: undefined,
+  }));
+}
+
+function createUploadedFileData(
+  files: File[],
+  tempFiles: FileCellData[]
+): FileCellData[] {
+  return files.map((file, index) => ({
+    id: tempFiles[index]?.id ?? crypto.randomUUID(),
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    url: URL.createObjectURL(file),
+  }));
+}
+
+function createBlobFileData(files: File[]): FileCellData[] {
+  return files.map((file) => ({
+    id: crypto.randomUUID(),
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    url: URL.createObjectURL(file),
+  }));
+}
+
+function finalizeUploadedFiles(
+  previousFiles: FileCellData[],
+  uploadingFileIds: Set<string>,
+  uploadedFiles: FileCellData[]
+): FileCellData[] {
+  return previousFiles
+    .map((file) => {
+      if (!uploadingFileIds.has(file.id)) {
+        return file;
+      }
+      return (
+        uploadedFiles.find((uploadedFile) => uploadedFile.name === file.name) ??
+        file
+      );
+    })
+    .filter((file) => file.url !== undefined);
+}
+
 function getFileUploadDescription(
   maxFileSize: number | undefined,
   maxFiles: number | undefined
@@ -54,6 +358,855 @@ function getFileUploadDescription(
     return `Max ${maxFiles} files`;
   }
   return "Select files to upload";
+}
+
+function getFileUploadRejectionMessage(
+  rejectedFiles: RejectedUploadFile[]
+): { message: string; description: string } | null {
+  if (rejectedFiles.length === 0) {
+    return null;
+  }
+
+  const firstError = rejectedFiles[0];
+  if (!firstError) {
+    return null;
+  }
+
+  const truncatedName = getTruncatedFileName(firstError.name);
+  if (rejectedFiles.length === 1) {
+    return {
+      message: firstError.reason,
+      description: `"${truncatedName}" has been rejected`,
+    };
+  }
+
+  return {
+    message: firstError.reason,
+    description: `"${truncatedName}" and ${rejectedFiles.length - 1} more rejected`,
+  };
+}
+
+function getFileUploadError(error: unknown, fileCount: number): string {
+  return error instanceof Error
+    ? error.message
+    : `Failed to upload ${fileCount} file${fileCount !== 1 ? "s" : ""}`;
+}
+
+async function resolveUploadedFiles({
+  filesToUpload,
+  tableMeta,
+  rowIndex,
+  columnId,
+  tempFiles,
+}: {
+  filesToUpload: File[];
+  tableMeta: DataGridTableMeta | null | undefined;
+  rowIndex: number;
+  columnId: string;
+  tempFiles: FileCellData[];
+}): Promise<FileCellData[]> {
+  if (tableMeta?.onFilesUpload) {
+    return await tableMeta.onFilesUpload({
+      files: filesToUpload,
+      rowIndex,
+      columnId,
+    });
+  }
+  return createUploadedFileData(filesToUpload, tempFiles);
+}
+
+interface AddFilesContext {
+  newFiles: File[];
+  skipUpload: boolean;
+  files: FileCellData[];
+  maxFiles: number;
+  readOnly: boolean;
+  isPending: boolean;
+  validateFile: (file: File) => string | null;
+  showFileUploadError: (message: string, description?: string) => void;
+  tableMeta: DataGridTableMeta | null | undefined;
+  rowIndex: number;
+  columnId: string;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  setUploadingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+}
+
+async function handleAddFiles({
+  newFiles,
+  skipUpload,
+  files,
+  maxFiles,
+  readOnly,
+  isPending,
+  validateFile,
+  showFileUploadError,
+  tableMeta,
+  rowIndex,
+  columnId,
+  setError,
+  setFiles,
+  setUploadingFiles,
+}: AddFilesContext) {
+  if (readOnly || isPending) {
+    return;
+  }
+
+  setError(null);
+
+  if (maxFiles && files.length + newFiles.length > maxFiles) {
+    showFileUploadError(`Maximum ${maxFiles} files allowed`);
+    return;
+  }
+
+  const { filesToUpload, rejectedFiles } = splitValidatedFiles(
+    newFiles,
+    validateFile
+  );
+
+  const rejectionMessage = getFileUploadRejectionMessage(rejectedFiles);
+  if (rejectionMessage) {
+    showFileUploadError(rejectionMessage.message, rejectionMessage.description);
+  }
+
+  if (filesToUpload.length === 0) {
+    return;
+  }
+
+  if (skipUpload) {
+    const uploadedFiles = createBlobFileData(filesToUpload);
+    const updatedFiles = [...files, ...uploadedFiles];
+    setFiles(updatedFiles);
+    tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: updatedFiles });
+    return;
+  }
+
+  const tempFiles = createTempFileData(filesToUpload);
+  const filesWithTemp = [...files, ...tempFiles];
+  setFiles(filesWithTemp);
+
+  const uploadingIds = new Set<string>(tempFiles.map((file) => file.id));
+  setUploadingFiles(uploadingIds);
+
+  try {
+    const uploadedFiles = await resolveUploadedFiles({
+      filesToUpload,
+      tableMeta,
+      rowIndex,
+      columnId,
+      tempFiles,
+    });
+    const finalFiles = finalizeUploadedFiles(
+      filesWithTemp,
+      uploadingIds,
+      uploadedFiles
+    );
+
+    setFiles(finalFiles);
+    tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: finalFiles });
+  } catch (error) {
+    toast.error(getFileUploadError(error, filesToUpload.length));
+    setFiles((prev) => prev.filter((f) => !uploadingIds.has(f.id)));
+  } finally {
+    setUploadingFiles(new Set());
+  }
+}
+
+interface RemoveFileContext {
+  fileId: string;
+  readOnly: boolean;
+  isPending: boolean;
+  files: FileCellData[];
+  tableMeta: DataGridTableMeta | null | undefined;
+  rowIndex: number;
+  columnId: string;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setDeletingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+}
+
+async function handleRemoveFile({
+  fileId,
+  readOnly,
+  isPending,
+  files,
+  tableMeta,
+  rowIndex,
+  columnId,
+  setError,
+  setDeletingFiles,
+  setFiles,
+}: RemoveFileContext) {
+  if (readOnly || isPending) {
+    return;
+  }
+
+  setError(null);
+
+  const fileToRemove = files.find((f) => f.id === fileId);
+  if (!fileToRemove) {
+    return;
+  }
+
+  setDeletingFiles((prev) => new Set(prev).add(fileId));
+
+  if (tableMeta?.onFilesDelete) {
+    try {
+      await tableMeta.onFilesDelete({
+        fileIds: [fileId],
+        rowIndex,
+        columnId,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : `Failed to delete ${fileToRemove.name}`
+      );
+      setDeletingFiles((prev) => {
+        const next = new Set(prev);
+        next.delete(fileId);
+        return next;
+      });
+      return;
+    }
+  }
+
+  if (fileToRemove.url?.startsWith("blob:")) {
+    URL.revokeObjectURL(fileToRemove.url);
+  }
+
+  const updatedFiles = files.filter((f) => f.id !== fileId);
+  setFiles(updatedFiles);
+  setDeletingFiles((prev) => {
+    const next = new Set(prev);
+    next.delete(fileId);
+    return next;
+  });
+  tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: updatedFiles });
+}
+
+interface ClearAllFilesContext {
+  readOnly: boolean;
+  isPending: boolean;
+  files: FileCellData[];
+  tableMeta: DataGridTableMeta | null | undefined;
+  rowIndex: number;
+  columnId: string;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setDeletingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+}
+
+async function handleClearAllFiles({
+  readOnly,
+  isPending,
+  files,
+  tableMeta,
+  rowIndex,
+  columnId,
+  setError,
+  setDeletingFiles,
+  setFiles,
+}: ClearAllFilesContext) {
+  if (readOnly || isPending) {
+    return;
+  }
+
+  setError(null);
+
+  const fileIds = files.map((f) => f.id);
+  setDeletingFiles(new Set(fileIds));
+
+  if (tableMeta?.onFilesDelete && files.length > 0) {
+    try {
+      await tableMeta.onFilesDelete({
+        fileIds,
+        rowIndex,
+        columnId,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete files"
+      );
+      setDeletingFiles(new Set());
+      return;
+    }
+  }
+
+  for (const file of files) {
+    if (file.url?.startsWith("blob:")) {
+      URL.revokeObjectURL(file.url);
+    }
+  }
+
+  setFiles([]);
+  setDeletingFiles(new Set());
+  tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: [] });
+}
+
+interface DragLeaveContext {
+  event: React.DragEvent;
+  isDraggingStateSetter: (value: boolean) => void;
+}
+
+function updateDragStateOnLeave({
+  event,
+  isDraggingStateSetter,
+}: DragLeaveContext) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = event.clientX;
+  const y = event.clientY;
+
+  if (x <= rect.left || x >= rect.right || y <= rect.top || y >= rect.bottom) {
+    isDraggingStateSetter(false);
+  }
+}
+
+function handleFileWrapperKeyDown({
+  event,
+  isEditing,
+  isFocused,
+  cellValue,
+  tableMeta,
+  rowIndex,
+  columnId,
+  stopNavigation,
+  onDropzoneClick,
+  setFiles,
+  setError,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  isEditing: boolean;
+  isFocused: boolean;
+  cellValue: FileCellData[];
+  tableMeta: DataGridTableMeta;
+  rowIndex: number;
+  columnId: string;
+  stopNavigation: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  onDropzoneClick: () => void;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
+  if (isEditing) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setFiles(cellValue);
+      setError(null);
+      tableMeta?.onCellEditingStop?.();
+      return;
+    }
+    if (event.key === " ") {
+      event.preventDefault();
+      onDropzoneClick();
+      return;
+    }
+    if (event.key === "Tab") {
+      stopNavigation(event);
+    }
+    return;
+  }
+
+  if (!isFocused) {
+    return;
+  }
+
+  if (event.key === "Enter") {
+    event.preventDefault();
+    tableMeta?.onCellEditingStart?.(rowIndex, columnId);
+    return;
+  }
+
+  if (event.key === "Tab") {
+    stopNavigation(event);
+  }
+}
+
+interface FileCellStateSyncContext {
+  cellValue: FileCellData[];
+  files: FileCellData[];
+  cellKey: string;
+  prevCellValueRef: React.RefObject<FileCellData[]>;
+  prevCellKeyRef: React.RefObject<string>;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+function syncFileCellState({
+  cellValue,
+  files,
+  cellKey,
+  prevCellValueRef,
+  prevCellKeyRef,
+  setFiles,
+  setError,
+}: FileCellStateSyncContext) {
+  if (cellValue !== prevCellValueRef.current) {
+    prevCellValueRef.current = cellValue;
+    revokeTrackedFiles(files);
+
+    setFiles(cellValue);
+    setError(null);
+  }
+
+  if (prevCellKeyRef.current !== cellKey) {
+    prevCellKeyRef.current = cellKey;
+    setError(null);
+  }
+}
+
+function handleFileDropToCell({
+  event,
+  addFiles,
+  setIsDraggingOver,
+}: {
+  event: React.DragEvent;
+  addFiles: (newFiles: File[], skipUpload?: boolean) => Promise<void>;
+  setIsDraggingOver: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  event.preventDefault();
+  event.stopPropagation();
+  setIsDraggingOver(false);
+  const droppedFiles = Array.from(event.dataTransfer.files);
+  addFiles(droppedFiles, false);
+}
+
+function handleDropzoneFileDrop({
+  event,
+  addFiles,
+  setIsDragging,
+}: {
+  event: React.DragEvent;
+  addFiles: (newFiles: File[], skipUpload?: boolean) => Promise<void>;
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  event.preventDefault();
+  event.stopPropagation();
+  setIsDragging(false);
+  const droppedFiles = Array.from(event.dataTransfer.files);
+  addFiles(droppedFiles, false);
+}
+
+function handleFileDragOver(event: React.DragEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+interface DropzoneCellEnterContext {
+  event: React.DragEvent;
+  setIsDragging: (value: boolean) => void;
+  allowFilesOnly?: boolean;
+}
+
+function handleDropzoneCellEnter({
+  event,
+  setIsDragging,
+  allowFilesOnly = false,
+}: DropzoneCellEnterContext) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (allowFilesOnly && !event.dataTransfer.types.includes("Files")) {
+    return;
+  }
+  setIsDragging(true);
+}
+
+function handleDropzoneCellOpen({
+  open,
+  readOnly,
+  rowIndex,
+  columnId,
+  tableMeta,
+  setError,
+}: {
+  open: boolean;
+  readOnly: boolean;
+  rowIndex: number;
+  columnId: string;
+  tableMeta: DataGridTableMeta;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
+  if (open && !readOnly) {
+    setError(null);
+    tableMeta?.onCellEditingStart?.(rowIndex, columnId);
+    return;
+  }
+
+  setError(null);
+  tableMeta?.onCellEditingStop?.();
+}
+
+function focusDropzoneOnOpen(
+  isEditing: boolean,
+  dropzoneRef: React.RefObject<HTMLDivElement | null>
+) {
+  if (!isEditing) {
+    return;
+  }
+
+  queueMicrotask(() => {
+    dropzoneRef.current?.focus();
+  });
+}
+
+function revokeTrackedFiles(files: FileCellData[]) {
+  for (const file of files) {
+    if (file.url) {
+      URL.revokeObjectURL(file.url);
+    }
+  }
+}
+
+function getFileListStatus(
+  file: FileCellData,
+  isUploading: boolean,
+  isDeleting: boolean
+) {
+  let fileStatus = formatFileSize(file.size);
+  if (isUploading) {
+    fileStatus = "Uploading...";
+  } else if (isDeleting) {
+    fileStatus = "Deleting...";
+  }
+  return fileStatus;
+}
+
+function getFileValidationResult({
+  file,
+  maxFileSize,
+  acceptedTypes,
+}: {
+  file: File;
+  maxFileSize: number | undefined;
+  acceptedTypes: string[] | null;
+}): string | null {
+  if (maxFileSize && file.size > maxFileSize) {
+    return `File size exceeds ${formatFileSize(maxFileSize)}`;
+  }
+
+  if (!acceptedTypes) {
+    return null;
+  }
+
+  const fileExtension = `.${file.name.split(".").pop()}`;
+  const isAccepted = acceptedTypes.some((type) => {
+    if (type.endsWith("/*")) {
+      const baseType = type.slice(0, -2);
+      return file.type.startsWith(`${baseType}/`);
+    }
+    if (type.startsWith(".")) {
+      return fileExtension.toLowerCase() === type.toLowerCase();
+    }
+    return file.type === type;
+  });
+
+  if (isAccepted) {
+    return null;
+  }
+  return "File type not accepted";
+}
+
+function renderFileRow({
+  file,
+  uploadingFiles,
+  deletingFiles,
+  isPending,
+  onRemove,
+}: {
+  file: FileCellData;
+  uploadingFiles: Set<string>;
+  deletingFiles: Set<string>;
+  isPending: boolean;
+  onRemove: (fileId: string) => void;
+}) {
+  const FileIcon = getFileIcon(file.type);
+  const isFileUploading = uploadingFiles.has(file.id);
+  const isFileDeleting = deletingFiles.has(file.id);
+  const fileStatus = getFileListStatus(file, isFileUploading, isFileDeleting);
+
+  return (
+    <div
+      className="flex items-center gap-2 rounded-md border bg-muted/50 px-2 py-1.5 data-pending:opacity-60"
+      data-pending={isFileUploading || isFileDeleting ? "" : undefined}
+      key={file.id}
+    >
+      {FileIcon && (
+        <FileIcon className="size-4 shrink-0 text-muted-foreground" />
+      )}
+      <div className="flex-1 overflow-hidden">
+        <p className="truncate text-sm">{file.name}</p>
+        <p className="text-muted-foreground text-xs">{fileStatus}</p>
+      </div>
+      <Button
+        className="size-5 rounded-sm"
+        disabled={isPending}
+        onClick={() => onRemove(file.id)}
+        size="icon"
+        type="button"
+        variant="ghost"
+      >
+        <X className="size-3" />
+      </Button>
+    </div>
+  );
+}
+
+function renderCompactFileBadge({
+  file,
+  uploadingFiles,
+}: {
+  file: FileCellData;
+  uploadingFiles: Set<string>;
+}) {
+  const isUploading = uploadingFiles.has(file.id);
+  if (isUploading) {
+    return (
+      <Skeleton
+        className="h-5 shrink-0 px-1.5"
+        key={file.id}
+        style={{
+          width: `${Math.min(file.name.length * 8 + 30, 100)}px`,
+        }}
+      />
+    );
+  }
+
+  const FileIcon = getFileIcon(file.type);
+
+  return (
+    <Badge className="gap-1 px-1.5 py-px" key={file.id} variant="secondary">
+      {FileIcon && <FileIcon className="size-3 shrink-0" />}
+      <span className="max-w-[100px] truncate">{file.name}</span>
+    </Badge>
+  );
+}
+
+function handleDropzoneKeyDown({
+  event,
+  onDropzoneClick,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  onDropzoneClick: () => void;
+}) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+  event.preventDefault();
+  onDropzoneClick();
+}
+
+function stopFileCellNavigation({
+  event,
+  tableMeta,
+}: {
+  event: React.KeyboardEvent<HTMLDivElement>;
+  tableMeta: DataGridTableMeta;
+}) {
+  event.preventDefault();
+  tableMeta?.onCellEditingStop?.({
+    direction: event.shiftKey ? "left" : "right",
+  });
+}
+
+interface FileCellPopoverContext {
+  isEditing: boolean;
+  onOpenChange: (open: boolean) => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  sideOffset: number;
+  labelId: string;
+  descriptionId: string;
+  onDropzoneClick: () => void;
+  onDropzoneDragEnter: (event: React.DragEvent) => void;
+  onDropzoneDragLeave: (event: React.DragEvent) => void;
+  onDropzoneDragOver: (event: React.DragEvent) => void;
+  onDropzoneDrop: (event: React.DragEvent) => void;
+  onDropzoneKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  dropzoneRef: React.RefObject<HTMLDivElement | null>;
+  isPending: boolean;
+  isDragging: boolean;
+  error: string | null;
+  accept: string | undefined;
+  multiple: boolean;
+  onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  files: FileCellData[];
+  clearAll: () => void;
+  removeFile: (fileId: string) => void;
+  uploadingFiles: Set<string>;
+  deletingFiles: Set<string>;
+  maxFileSize: number | undefined;
+  maxFiles: number | undefined;
+}
+
+function renderFileCellPopover({
+  isEditing,
+  onOpenChange,
+  containerRef,
+  sideOffset,
+  labelId,
+  descriptionId,
+  onDropzoneClick,
+  onDropzoneDragEnter,
+  onDropzoneDragLeave,
+  onDropzoneDragOver,
+  onDropzoneDrop,
+  onDropzoneKeyDown,
+  dropzoneRef,
+  isPending,
+  isDragging,
+  error,
+  accept,
+  multiple,
+  onFileInputChange,
+  fileInputRef,
+  files,
+  clearAll,
+  removeFile,
+  uploadingFiles,
+  deletingFiles,
+  maxFileSize,
+  maxFiles,
+}: FileCellPopoverContext) {
+  if (!isEditing) {
+    return null;
+  }
+
+  return (
+    <Popover onOpenChange={onOpenChange} open={isEditing}>
+      <PopoverContent
+        align="start"
+        anchor={containerRef}
+        className="w-[400px] rounded-none p-0"
+        data-grid-cell-editor=""
+        sideOffset={sideOffset}
+      >
+        <div className="flex flex-col gap-2 p-3">
+          <span className="sr-only" id={labelId}>
+            File upload
+          </span>
+          {/* biome-ignore lint/a11y/useSemanticElements: Drag-drop upload area uses role-based button behavior inside a contenteditable grid container. */}
+          <div
+            aria-describedby={descriptionId}
+            aria-disabled={isPending}
+            aria-invalid={!!error}
+            aria-label="Upload files"
+            aria-labelledby={labelId}
+            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 outline-none transition-colors hover:bg-accent/30 focus-visible:border-ring/50 data-disabled:pointer-events-none data-dragging:border-primary/30 data-invalid:border-destructive data-dragging:bg-accent/30 data-disabled:opacity-50 data-invalid:ring-destructive/20"
+            data-disabled={isPending ? "" : undefined}
+            data-dragging={isDragging ? "" : undefined}
+            data-invalid={error ? "" : undefined}
+            onClick={onDropzoneClick}
+            onDragEnter={onDropzoneDragEnter}
+            onDragLeave={onDropzoneDragLeave}
+            onDragOver={onDropzoneDragOver}
+            onDrop={onDropzoneDrop}
+            onKeyDown={onDropzoneKeyDown}
+            ref={dropzoneRef}
+            role="button"
+            tabIndex={isDragging || isPending ? -1 : 0}
+          >
+            <Upload className="size-8 text-muted-foreground" />
+            <div className="text-center text-sm">
+              <p className="font-medium">
+                {isDragging ? "Drop files here" : "Drag files here"}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                or click to browse
+              </p>
+            </div>
+            <p className="text-muted-foreground text-xs" id={descriptionId}>
+              {getFileUploadDescription(maxFileSize, maxFiles)}
+            </p>
+          </div>
+          <input
+            accept={accept}
+            aria-describedby={descriptionId}
+            aria-labelledby={labelId}
+            className="sr-only"
+            multiple={multiple}
+            onChange={onFileInputChange}
+            ref={fileInputRef}
+            type="file"
+          />
+          {files.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-muted-foreground text-xs">
+                  {files.length} {files.length === 1 ? "file" : "files"}
+                </p>
+                <Button
+                  className="h-6 text-muted-foreground text-xs"
+                  disabled={isPending}
+                  onClick={clearAll}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  Clear all
+                </Button>
+              </div>
+              <div className="max-h-[200px] space-y-1 overflow-y-auto">
+                {files.map((file) =>
+                  renderFileRow({
+                    file,
+                    uploadingFiles,
+                    deletingFiles,
+                    isPending,
+                    onRemove: removeFile,
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+interface FileCellSummaryContext {
+  isDraggingOver: boolean;
+  files: FileCellData[];
+  visibleFiles: FileCellData[];
+  hiddenFileCount: number;
+  uploadingFiles: Set<string>;
+}
+
+function renderFileCellSummary({
+  isDraggingOver,
+  files,
+  visibleFiles,
+  hiddenFileCount,
+  uploadingFiles,
+}: FileCellSummaryContext) {
+  if (isDraggingOver) {
+    return (
+      <div className="flex items-center justify-center gap-2 text-primary text-sm">
+        <Upload className="size-4" />
+        <span>Drop files here</span>
+      </div>
+    );
+  }
+
+  if (files.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 overflow-hidden">
+      {visibleFiles.map((file) =>
+        renderCompactFileBadge({ file, uploadingFiles })
+      )}
+      {hiddenFileCount > 0 && (
+        <Badge className="px-1.5 py-px text-muted-foreground" variant="outline">
+          +{hiddenFileCount}
+        </Badge>
+      )}
+    </div>
+  );
 }
 
 export function ShortTextCell<TData>({
@@ -70,11 +1223,11 @@ export function ShortTextCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as string;
-  const [value, setValue] = React.useState(initialValue);
-  const cellRef = React.useRef<HTMLDivElement>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(initialValue);
+  const cellRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(initialValue);
@@ -83,7 +1236,7 @@ export function ShortTextCell<TData>({
     }
   }
 
-  const onBlur = React.useCallback(() => {
+  const onBlur = useCallback(() => {
     // Read the current value directly from the DOM to avoid stale state
     const currentValue = cellRef.current?.textContent ?? "";
     if (!readOnly && currentValue !== initialValue) {
@@ -92,72 +1245,58 @@ export function ShortTextCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, rowIndex, columnId, initialValue, readOnly]);
 
-  const onInput = React.useCallback(
-    (event: React.FormEvent<HTMLDivElement>) => {
-      const currentValue = event.currentTarget.textContent ?? "";
-      setValue(currentValue);
-    },
-    []
-  );
+  const onInput = useCallback((event: React.FormEvent<HTMLDivElement>) => {
+    const currentValue = event.currentTarget.textContent ?? "";
+    setValue(currentValue);
+  }, []);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (isEditing) {
         if (event.key === "Enter") {
           event.preventDefault();
-          const currentValue = cellRef.current?.textContent ?? "";
-          if (currentValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({
-              rowIndex,
-              columnId,
-              value: currentValue,
-            });
-          }
-          tableMeta?.onCellEditingStop?.({ moveToNextRow: true });
+          commitCellValue({
+            tableMeta,
+            rowIndex,
+            columnId,
+            currentValue: cellRef.current?.textContent ?? "",
+            previousValue: initialValue,
+            readOnly,
+            stopOptions: { moveToNextRow: true },
+          });
         } else if (event.key === "Tab") {
           event.preventDefault();
-          const currentValue = cellRef.current?.textContent ?? "";
-          if (currentValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({
-              rowIndex,
-              columnId,
-              value: currentValue,
-            });
-          }
-          tableMeta?.onCellEditingStop?.({
-            direction: event.shiftKey ? "left" : "right",
+          commitCellValue({
+            tableMeta,
+            rowIndex,
+            columnId,
+            currentValue: cellRef.current?.textContent ?? "",
+            previousValue: initialValue,
+            readOnly,
+            stopOptions: { direction: event.shiftKey ? "left" : "right" },
           });
         } else if (event.key === "Escape") {
           event.preventDefault();
           setValue(initialValue);
           cellRef.current?.blur();
         }
-      } else if (
-        isFocused &&
-        event.key.length === 1 &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
+      } else if (isFocused && isTypingKey(event)) {
         // Handle typing to pre-fill the value when editing starts
-        setValue(event.key);
-
-        queueMicrotask(() => {
-          if (cellRef.current && cellRef.current.contentEditable === "true") {
-            cellRef.current.textContent = event.key;
-            const range = document.createRange();
-            const selection = window.getSelection();
-            range.selectNodeContents(cellRef.current);
-            range.collapse(false);
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-          }
-        });
+        prefillEditableCell({ event, cellRef, setValue });
       }
     },
-    [isEditing, isFocused, initialValue, tableMeta, rowIndex, columnId]
+    [
+      isEditing,
+      isFocused,
+      initialValue,
+      tableMeta,
+      rowIndex,
+      columnId,
+      readOnly,
+    ]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditing && cellRef.current) {
       cellRef.current.focus();
 
@@ -194,7 +1333,9 @@ export function ShortTextCell<TData>({
       rowIndex={rowIndex}
       tableMeta={tableMeta}
     >
+      {/* biome-ignore lint/a11y/useSemanticElements: Editable content uses contentEditable and cannot be replaced by a semantic input while preserving virtualization layout. */}
       <div
+        aria-multiline="false"
         className={cn("size-full overflow-hidden outline-none", {
           "whitespace-nowrap **:inline **:whitespace-nowrap [&_br]:hidden":
             isEditing,
@@ -228,13 +1369,13 @@ export function LongTextCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as string;
-  const [value, setValue] = React.useState(initialValue ?? "");
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const pendingCharRef = React.useRef<string | null>(null);
+  const [value, setValue] = useState(initialValue ?? "");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pendingCharRef = useRef<string | null>(null);
   const sideOffset = -(containerRef.current?.clientHeight ?? 0);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(initialValue ?? "");
@@ -246,7 +1387,7 @@ export function LongTextCell<TData>({
     }
   }, 300);
 
-  const onSave = React.useCallback(() => {
+  const onSave = useCallback(() => {
     // Immediately save any pending changes and close the popover
     if (!readOnly && value !== initialValue) {
       tableMeta?.onDataUpdate?.({ rowIndex, columnId, value });
@@ -254,7 +1395,7 @@ export function LongTextCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, value, initialValue, rowIndex, columnId, readOnly]);
 
-  const onCancel = React.useCallback(() => {
+  const onCancel = useCallback(() => {
     // Restore the original value
     setValue(initialValue ?? "");
     if (!readOnly) {
@@ -263,7 +1404,7 @@ export function LongTextCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, initialValue, rowIndex, columnId, readOnly]);
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (open && !readOnly) {
         tableMeta?.onCellEditingStart?.(rowIndex, columnId);
@@ -278,7 +1419,7 @@ export function LongTextCell<TData>({
     [tableMeta, value, initialValue, rowIndex, columnId, readOnly]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditing && textareaRef.current) {
       textareaRef.current.focus();
       const length = textareaRef.current.value.length;
@@ -302,7 +1443,7 @@ export function LongTextCell<TData>({
     }
   }, [isEditing]);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (
         isFocused &&
@@ -320,7 +1461,7 @@ export function LongTextCell<TData>({
     [isFocused, isEditing, readOnly]
   );
 
-  const onBlur = React.useCallback(() => {
+  const onBlur = useCallback(() => {
     // Immediately save any pending changes on blur
     if (!readOnly && value !== initialValue) {
       tableMeta?.onDataUpdate?.({ rowIndex, columnId, value });
@@ -328,7 +1469,7 @@ export function LongTextCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, value, initialValue, rowIndex, columnId, readOnly]);
 
-  const onChange = React.useCallback(
+  const onChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = event.target.value;
       setValue(newValue);
@@ -337,7 +1478,7 @@ export function LongTextCell<TData>({
     [debouncedSave]
   );
 
-  const onKeyDown = React.useCallback(
+  const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -417,9 +1558,9 @@ export function NumberCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as number;
-  const [value, setValue] = React.useState(String(initialValue ?? ""));
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(String(initialValue ?? ""));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const cellOpts = cell.column.columnDef.meta?.cell;
   const numberCellOpts = cellOpts?.variant === "number" ? cellOpts : null;
@@ -427,15 +1568,15 @@ export function NumberCell<TData>({
   const max = numberCellOpts?.max;
   const step = numberCellOpts?.step;
 
-  const prevIsEditingRef = React.useRef(isEditing);
+  const prevIsEditingRef = useRef(isEditing);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(String(initialValue ?? ""));
   }
 
-  const onBlur = React.useCallback(() => {
+  const onBlur = useCallback(() => {
     const numValue = value === "" ? null : Number(value);
     if (!readOnly && numValue !== initialValue) {
       tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
@@ -443,51 +1584,39 @@ export function NumberCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, rowIndex, columnId, initialValue, value, readOnly]);
 
-  const onChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(event.target.value);
-    },
-    []
-  );
+  const onChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+  }, []);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isEditing) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          const numValue = value === "" ? null : Number(value);
-          if (numValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
-          }
-          tableMeta?.onCellEditingStop?.({ moveToNextRow: true });
-        } else if (event.key === "Tab") {
-          event.preventDefault();
-          const numValue = value === "" ? null : Number(value);
-          if (numValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
-          }
-          tableMeta?.onCellEditingStop?.({
-            direction: event.shiftKey ? "left" : "right",
-          });
-        } else if (event.key === "Escape") {
-          event.preventDefault();
-          setValue(String(initialValue ?? ""));
-          inputRef.current?.blur();
-        }
-      } else if (isFocused) {
-        // Handle Backspace to start editing with empty value
-        if (event.key === "Backspace") {
-          setValue("");
-        } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
-          // Handle typing to pre-fill the value when editing starts
-          setValue(event.key);
-        }
-      }
+      handleNumberCellKeyDown({
+        event,
+        isEditing,
+        isFocused,
+        value,
+        initialValue,
+        tableMeta,
+        rowIndex,
+        columnId,
+        readOnly,
+        onSetValue: setValue,
+        inputRef,
+      });
     },
-    [isEditing, isFocused, initialValue, tableMeta, rowIndex, columnId, value]
+    [
+      isEditing,
+      isFocused,
+      initialValue,
+      tableMeta,
+      rowIndex,
+      columnId,
+      value,
+      readOnly,
+    ]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const wasEditing = prevIsEditingRef.current;
     prevIsEditingRef.current = isEditing;
 
@@ -546,11 +1675,11 @@ export function UrlCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as string;
-  const [value, setValue] = React.useState(initialValue ?? "");
-  const cellRef = React.useRef<HTMLDivElement>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(initialValue ?? "");
+  const cellRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(initialValue ?? "");
@@ -559,7 +1688,7 @@ export function UrlCell<TData>({
     }
   }
 
-  const onBlur = React.useCallback(() => {
+  const onBlur = useCallback(() => {
     const currentValue = cellRef.current?.textContent?.trim() ?? "";
 
     if (!readOnly && currentValue !== initialValue) {
@@ -572,68 +1701,25 @@ export function UrlCell<TData>({
     tableMeta?.onCellEditingStop?.();
   }, [tableMeta, rowIndex, columnId, initialValue, readOnly]);
 
-  const onInput = React.useCallback(
-    (event: React.FormEvent<HTMLDivElement>) => {
-      const currentValue = event.currentTarget.textContent ?? "";
-      setValue(currentValue);
-    },
-    []
-  );
+  const onInput = useCallback((event: React.FormEvent<HTMLDivElement>) => {
+    const currentValue = event.currentTarget.textContent ?? "";
+    setValue(currentValue);
+  }, []);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isEditing) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          const currentValue = cellRef.current?.textContent?.trim() ?? "";
-          if (!readOnly && currentValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({
-              rowIndex,
-              columnId,
-              value: currentValue || null,
-            });
-          }
-          tableMeta?.onCellEditingStop?.({ moveToNextRow: true });
-        } else if (event.key === "Tab") {
-          event.preventDefault();
-          const currentValue = cellRef.current?.textContent?.trim() ?? "";
-          if (!readOnly && currentValue !== initialValue) {
-            tableMeta?.onDataUpdate?.({
-              rowIndex,
-              columnId,
-              value: currentValue || null,
-            });
-          }
-          tableMeta?.onCellEditingStop?.({
-            direction: event.shiftKey ? "left" : "right",
-          });
-        } else if (event.key === "Escape") {
-          event.preventDefault();
-          setValue(initialValue ?? "");
-          cellRef.current?.blur();
-        }
-      } else if (
-        isFocused &&
-        !readOnly &&
-        event.key.length === 1 &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
-        // Handle typing to pre-fill the value when editing starts
-        setValue(event.key);
-
-        queueMicrotask(() => {
-          if (cellRef.current && cellRef.current.contentEditable === "true") {
-            cellRef.current.textContent = event.key;
-            const range = document.createRange();
-            const selection = window.getSelection();
-            range.selectNodeContents(cellRef.current);
-            range.collapse(false);
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-          }
-        });
-      }
+      handleUrlCellKeyDown({
+        event,
+        isEditing,
+        isFocused,
+        initialValue: initialValue ?? "",
+        tableMeta,
+        rowIndex,
+        columnId,
+        readOnly,
+        onSetValue: setValue,
+        cellRef,
+      });
     },
     [
       isEditing,
@@ -646,7 +1732,7 @@ export function UrlCell<TData>({
     ]
   );
 
-  const onLinkClick = React.useCallback(
+  const onLinkClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {
       if (isEditing) {
         event.preventDefault();
@@ -670,7 +1756,7 @@ export function UrlCell<TData>({
     [isEditing, value]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditing && cellRef.current) {
       cellRef.current.focus();
 
@@ -727,22 +1813,26 @@ export function UrlCell<TData>({
           </a>
         </div>
       ) : (
-        <div
-          className={cn("size-full overflow-hidden outline-none", {
-            "whitespace-nowrap **:inline **:whitespace-nowrap [&_br]:hidden":
-              isEditing,
-          })}
-          contentEditable={isEditing}
-          data-slot="grid-cell-content"
-          onBlur={onBlur}
-          onInput={onInput}
-          ref={cellRef}
-          role="textbox"
-          suppressContentEditableWarning
-          tabIndex={-1}
-        >
-          {displayValue}
-        </div>
+        <>
+          {/* biome-ignore lint/a11y/useSemanticElements: Editable content uses contentEditable and cannot be replaced by a semantic input while preserving virtualization layout. */}
+          <div
+            aria-multiline="false"
+            className={cn("size-full overflow-hidden outline-none", {
+              "whitespace-nowrap **:inline **:whitespace-nowrap [&_br]:hidden":
+                isEditing,
+            })}
+            contentEditable={isEditing}
+            data-slot="grid-cell-content"
+            onBlur={onBlur}
+            onInput={onInput}
+            ref={cellRef}
+            role="textbox"
+            suppressContentEditableWarning
+            tabIndex={-1}
+          >
+            {displayValue}
+          </div>
+        </>
       )}
     </DataGridCellWrapper>
   );
@@ -761,16 +1851,16 @@ export function CheckboxCell<TData>({
   readOnly,
 }: Omit<DataGridCellProps<TData>, "isEditing">) {
   const initialValue = cell.getValue() as boolean;
-  const [value, setValue] = React.useState(Boolean(initialValue));
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(Boolean(initialValue));
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(Boolean(initialValue));
   }
 
-  const onCheckedChange = React.useCallback(
+  const onCheckedChange = useCallback(
     (checked: boolean) => {
       if (readOnly) {
         return;
@@ -781,7 +1871,7 @@ export function CheckboxCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (
         isFocused &&
@@ -801,7 +1891,7 @@ export function CheckboxCell<TData>({
     [isFocused, value, onCheckedChange, tableMeta, readOnly]
   );
 
-  const onWrapperClick = React.useCallback(
+  const onWrapperClick = useCallback(
     (event: React.MouseEvent) => {
       if (isFocused && !readOnly) {
         event.preventDefault();
@@ -812,15 +1902,15 @@ export function CheckboxCell<TData>({
     [isFocused, value, onCheckedChange, readOnly]
   );
 
-  const onCheckboxClick = React.useCallback((event: React.MouseEvent) => {
+  const onCheckboxClick = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
   }, []);
 
-  const onCheckboxMouseDown = React.useCallback((event: React.MouseEvent) => {
+  const onCheckboxMouseDown = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
   }, []);
 
-  const onCheckboxDoubleClick = React.useCallback((event: React.MouseEvent) => {
+  const onCheckboxDoubleClick = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
   }, []);
 
@@ -869,25 +1959,25 @@ export function SelectCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as string;
-  const [value, setValue] = React.useState(initialValue);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(initialValue);
+  const containerRef = useRef<HTMLDivElement>(null);
   const cellOpts = cell.column.columnDef.meta?.cell;
-  const options = React.useMemo(
+  const options = useMemo(
     () => (cellOpts?.variant === "select" ? cellOpts.options : []),
     [cellOpts]
   );
-  const optionByValue = React.useMemo(
+  const optionByValue = useMemo(
     () => new Map(options.map((option) => [option.value, option])),
     [options]
   );
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(initialValue);
   }
 
-  const onValueChange = React.useCallback(
+  const onValueChange = useCallback(
     (newValue: string | null) => {
       if (readOnly || newValue === null) {
         return;
@@ -899,7 +1989,7 @@ export function SelectCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (open && !readOnly) {
         tableMeta?.onCellEditingStart?.(rowIndex, columnId);
@@ -910,7 +2000,7 @@ export function SelectCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (isEditing && event.key === "Escape") {
         event.preventDefault();
@@ -1009,31 +2099,30 @@ export function MultiSelectCell<TData>({
   isActiveSearchMatch,
   readOnly,
 }: DataGridCellProps<TData>) {
-  const cellValue = React.useMemo(() => {
+  const cellValue = useMemo(() => {
     const value = cell.getValue() as string[];
     return value ?? [];
   }, [cell]);
 
   const cellKey = getCellKey(rowIndex, columnId);
-  const prevCellKeyRef = React.useRef(cellKey);
+  const prevCellKeyRef = useRef(cellKey);
 
-  const [selectedValues, setSelectedValues] =
-    React.useState<string[]>(cellValue);
-  const [searchValue, setSearchValue] = React.useState("");
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedValues, setSelectedValues] = useState<string[]>(cellValue);
+  const [searchValue, setSearchValue] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const cellOpts = cell.column.columnDef.meta?.cell;
-  const options = React.useMemo(
+  const options = useMemo(
     () => (cellOpts?.variant === "multi-select" ? cellOpts.options : []),
     [cellOpts]
   );
-  const optionByValue = React.useMemo(
+  const optionByValue = useMemo(
     () => new Map(options.map((option) => [option.value, option])),
     [options]
   );
   const sideOffset = -(containerRef.current?.clientHeight ?? 0);
 
-  const prevCellValueRef = React.useRef(cellValue);
+  const prevCellValueRef = useRef(cellValue);
   if (cellValue !== prevCellValueRef.current) {
     prevCellValueRef.current = cellValue;
     setSelectedValues(cellValue);
@@ -1044,7 +2133,7 @@ export function MultiSelectCell<TData>({
     setSearchValue("");
   }
 
-  const onValueChange = React.useCallback(
+  const onValueChange = useCallback(
     (value: string) => {
       if (readOnly) {
         return;
@@ -1065,7 +2154,7 @@ export function MultiSelectCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const removeValue = React.useCallback(
+  const removeValue = useCallback(
     (valueToRemove: string, event?: React.MouseEvent) => {
       if (readOnly) {
         return;
@@ -1085,7 +2174,7 @@ export function MultiSelectCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const clearAll = React.useCallback(() => {
+  const clearAll = useCallback(() => {
     if (readOnly) {
       return;
     }
@@ -1094,7 +2183,7 @@ export function MultiSelectCell<TData>({
     queueMicrotask(() => inputRef.current?.focus());
   }, [tableMeta, rowIndex, columnId, readOnly]);
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (open && !readOnly) {
         tableMeta?.onCellEditingStart?.(rowIndex, columnId);
@@ -1106,13 +2195,13 @@ export function MultiSelectCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus();
     }
   }, [isEditing]);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (isEditing && event.key === "Escape") {
         event.preventDefault();
@@ -1130,7 +2219,7 @@ export function MultiSelectCell<TData>({
     [isEditing, isFocused, cellValue, tableMeta]
   );
 
-  const onInputKeyDown = React.useCallback(
+  const onInputKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Backspace" && searchValue === "") {
         event.preventDefault();
@@ -1160,7 +2249,7 @@ export function MultiSelectCell<TData>({
     .map((val) => optionByValue.get(val)?.label ?? val)
     .filter(Boolean);
 
-  const selectedValuesSet = React.useMemo(
+  const selectedValuesSet = useMemo(
     () => new Set(selectedValues),
     [selectedValues]
   );
@@ -1318,10 +2407,10 @@ export function DateCell<TData>({
   readOnly,
 }: DataGridCellProps<TData>) {
   const initialValue = cell.getValue() as string;
-  const [value, setValue] = React.useState(initialValue ?? "");
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState(initialValue ?? "");
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const prevInitialValueRef = React.useRef(initialValue);
+  const prevInitialValueRef = useRef(initialValue);
   if (initialValue !== prevInitialValueRef.current) {
     prevInitialValueRef.current = initialValue;
     setValue(initialValue ?? "");
@@ -1330,7 +2419,7 @@ export function DateCell<TData>({
   // Parse date as local time to avoid timezone shifts
   const selectedDate = value ? (parseLocalDate(value) ?? undefined) : undefined;
 
-  const onDateSelect = React.useCallback(
+  const onDateSelect = useCallback(
     (date: Date | undefined) => {
       if (!date || readOnly) {
         return;
@@ -1345,7 +2434,7 @@ export function DateCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (open && !readOnly) {
         tableMeta?.onCellEditingStart?.(rowIndex, columnId);
@@ -1356,7 +2445,7 @@ export function DateCell<TData>({
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (isEditing && event.key === "Escape") {
         event.preventDefault();
@@ -1426,34 +2515,30 @@ export function FileCell<TData>({
   isActiveSearchMatch,
   readOnly,
 }: DataGridCellProps<TData>) {
-  const cellValue = React.useMemo(
+  const cellValue = useMemo(
     () => (cell.getValue() as FileCellData[]) ?? [],
     [cell]
   );
 
   const cellKey = getCellKey(rowIndex, columnId);
-  const prevCellKeyRef = React.useRef(cellKey);
+  const prevCellKeyRef = useRef(cellKey);
 
-  const labelId = React.useId();
-  const descriptionId = React.useId();
+  const labelId = useId();
+  const descriptionId = useId();
 
-  const [files, setFiles] = React.useState<FileCellData[]>(cellValue);
-  const [uploadingFiles, setUploadingFiles] = React.useState<Set<string>>(
-    new Set()
-  );
-  const [deletingFiles, setDeletingFiles] = React.useState<Set<string>>(
-    new Set()
-  );
-  const [isDraggingOver, setIsDraggingOver] = React.useState(false);
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [files, setFiles] = useState<FileCellData[]>(cellValue);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isUploading = uploadingFiles.size > 0;
   const isDeleting = deletingFiles.size > 0;
   const isPending = isUploading || isDeleting;
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const dropzoneRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropzoneRef = useRef<HTMLDivElement>(null);
   const cellOpts = cell.column.columnDef.meta?.cell;
   const sideOffset = -(containerRef.current?.clientHeight ?? 0);
 
@@ -1463,187 +2548,73 @@ export function FileCell<TData>({
   const accept = fileCellOpts?.accept;
   const multiple = fileCellOpts?.multiple ?? false;
 
-  const acceptedTypes = React.useMemo(
+  const acceptedTypes = useMemo(
     () => (accept ? accept.split(",").map((t) => t.trim()) : null),
     [accept]
   );
 
-  const prevCellValueRef = React.useRef(cellValue);
-  if (cellValue !== prevCellValueRef.current) {
-    prevCellValueRef.current = cellValue;
-    for (const file of files) {
-      if (file.url) {
-        URL.revokeObjectURL(file.url);
-      }
-    }
-    setFiles(cellValue);
-    setError(null);
-  }
+  const prevCellValueRef = useRef(cellValue);
+  syncFileCellState({
+    cellValue,
+    files,
+    cellKey,
+    prevCellValueRef,
+    prevCellKeyRef,
+    setFiles,
+    setError,
+  });
 
-  if (prevCellKeyRef.current !== cellKey) {
-    prevCellKeyRef.current = cellKey;
-    setError(null);
-  }
-
-  const validateFile = React.useCallback(
+  const validateFile = useCallback(
     (file: File): string | null => {
-      if (maxFileSize && file.size > maxFileSize) {
-        return `File size exceeds ${formatFileSize(maxFileSize)}`;
-      }
-      if (acceptedTypes) {
-        const fileExtension = `.${file.name.split(".").pop()}`;
-        const isAccepted = acceptedTypes.some((type) => {
-          if (type.endsWith("/*")) {
-            const baseType = type.slice(0, -2);
-            return file.type.startsWith(`${baseType}/`);
-          }
-          if (type.startsWith(".")) {
-            return fileExtension.toLowerCase() === type.toLowerCase();
-          }
-          return file.type === type;
-        });
-        if (!isAccepted) {
-          return "File type not accepted";
-        }
-      }
-      return null;
+      return getFileValidationResult({
+        file,
+        maxFileSize,
+        acceptedTypes,
+      });
     },
     [maxFileSize, acceptedTypes]
   );
 
-  const addFiles = React.useCallback(
+  const showFileUploadError = useCallback(
+    (message: string, description?: string) => {
+      setError(message);
+      if (description) {
+        toast(message, { description });
+      } else {
+        toast(message);
+      }
+
+      setTimeout(() => {
+        setError(null);
+      }, FILE_ERROR_RESET_DELAY_MS);
+    },
+    []
+  );
+
+  const addFiles = useCallback(
     async (newFiles: File[], skipUpload = false) => {
-      if (readOnly || isPending) {
-        return;
-      }
-      setError(null);
-
-      if (maxFiles && files.length + newFiles.length > maxFiles) {
-        const errorMessage = `Maximum ${maxFiles} files allowed`;
-        setError(errorMessage);
-        toast(errorMessage);
-        setTimeout(() => {
-          setError(null);
-        }, 2000);
-        return;
-      }
-
-      const rejectedFiles: Array<{ name: string; reason: string }> = [];
-      const filesToValidate: File[] = [];
-
-      for (const file of newFiles) {
-        const validationError = validateFile(file);
-        if (validationError) {
-          rejectedFiles.push({ name: file.name, reason: validationError });
-          continue;
-        }
-        filesToValidate.push(file);
-      }
-
-      if (rejectedFiles.length > 0) {
-        const firstError = rejectedFiles[0];
-        if (firstError) {
-          setError(firstError.reason);
-
-          const truncatedName =
-            firstError.name.length > 20
-              ? `${firstError.name.slice(0, 20)}...`
-              : firstError.name;
-
-          if (rejectedFiles.length === 1) {
-            toast(firstError.reason, {
-              description: `"${truncatedName}" has been rejected`,
-            });
-          } else {
-            toast(firstError.reason, {
-              description: `"${truncatedName}" and ${rejectedFiles.length - 1} more rejected`,
-            });
-          }
-
-          setTimeout(() => {
-            setError(null);
-          }, 2000);
-        }
-      }
-
-      if (filesToValidate.length > 0) {
-        if (skipUpload) {
-          const newFilesData: FileCellData[] = filesToValidate.map((f) => ({
-            id: crypto.randomUUID(),
-            name: f.name,
-            size: f.size,
-            type: f.type,
-            url: URL.createObjectURL(f),
-          }));
-          const updatedFiles = [...files, ...newFilesData];
-          setFiles(updatedFiles);
-          tableMeta?.onDataUpdate?.({
-            rowIndex,
-            columnId,
-            value: updatedFiles,
-          });
-        } else {
-          const tempFiles = filesToValidate.map((f) => ({
-            id: crypto.randomUUID(),
-            name: f.name,
-            size: f.size,
-            type: f.type,
-            url: undefined,
-          }));
-          const filesWithTemp = [...files, ...tempFiles];
-          setFiles(filesWithTemp);
-
-          const uploadingIds = new Set(tempFiles.map((f) => f.id));
-          setUploadingFiles(uploadingIds);
-
-          let uploadedFiles: FileCellData[] = [];
-
-          if (tableMeta?.onFilesUpload) {
-            try {
-              uploadedFiles = await tableMeta.onFilesUpload({
-                files: filesToValidate,
-                rowIndex,
-                columnId,
-              });
-            } catch (error) {
-              toast.error(
-                error instanceof Error
-                  ? error.message
-                  : `Failed to upload ${filesToValidate.length} file${filesToValidate.length !== 1 ? "s" : ""}`
-              );
-              setFiles((prev) => prev.filter((f) => !uploadingIds.has(f.id)));
-              setUploadingFiles(new Set());
-              return;
-            }
-          } else {
-            uploadedFiles = filesToValidate.map((f, i) => ({
-              id: tempFiles[i]?.id ?? crypto.randomUUID(),
-              name: f.name,
-              size: f.size,
-              type: f.type,
-              url: URL.createObjectURL(f),
-            }));
-          }
-
-          const finalFiles = filesWithTemp
-            .map((f) => {
-              if (uploadingIds.has(f.id)) {
-                return uploadedFiles.find((uf) => uf.name === f.name) ?? f;
-              }
-              return f;
-            })
-            .filter((f) => f.url !== undefined);
-
-          setFiles(finalFiles);
-          setUploadingFiles(new Set());
-          tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: finalFiles });
-        }
-      }
+      await handleAddFiles({
+        newFiles,
+        skipUpload,
+        files,
+        maxFiles,
+        readOnly,
+        isPending,
+        validateFile,
+        showFileUploadError,
+        tableMeta,
+        rowIndex,
+        columnId,
+        setError,
+        setFiles,
+        setUploadingFiles,
+      });
     },
     [
       files,
       maxFiles,
       validateFile,
+      showFileUploadError,
       tableMeta,
       rowIndex,
       columnId,
@@ -1652,192 +2623,122 @@ export function FileCell<TData>({
     ]
   );
 
-  const removeFile = React.useCallback(
+  const removeFile = useCallback(
     async (fileId: string) => {
-      if (readOnly || isPending) {
-        return;
-      }
-      setError(null);
-
-      const fileToRemove = files.find((f) => f.id === fileId);
-      if (!fileToRemove) {
-        return;
-      }
-
-      setDeletingFiles((prev) => new Set(prev).add(fileId));
-
-      if (tableMeta?.onFilesDelete) {
-        try {
-          await tableMeta.onFilesDelete({
-            fileIds: [fileId],
-            rowIndex,
-            columnId,
-          });
-        } catch (error) {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : `Failed to delete ${fileToRemove.name}`
-          );
-          setDeletingFiles((prev) => {
-            const next = new Set(prev);
-            next.delete(fileId);
-            return next;
-          });
-          return;
-        }
-      }
-
-      if (fileToRemove.url?.startsWith("blob:")) {
-        URL.revokeObjectURL(fileToRemove.url);
-      }
-
-      const updatedFiles = files.filter((f) => f.id !== fileId);
-      setFiles(updatedFiles);
-      setDeletingFiles((prev) => {
-        const next = new Set(prev);
-        next.delete(fileId);
-        return next;
+      await handleRemoveFile({
+        fileId,
+        readOnly,
+        isPending,
+        files,
+        tableMeta,
+        rowIndex,
+        columnId,
+        setError,
+        setDeletingFiles,
+        setFiles,
       });
-      tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: updatedFiles });
     },
     [files, tableMeta, rowIndex, columnId, readOnly, isPending]
   );
 
-  const clearAll = React.useCallback(async () => {
-    if (readOnly || isPending) {
-      return;
-    }
-    setError(null);
-
-    const fileIds = files.map((f) => f.id);
-    setDeletingFiles(new Set(fileIds));
-
-    if (tableMeta?.onFilesDelete && files.length > 0) {
-      try {
-        await tableMeta.onFilesDelete({
-          fileIds,
-          rowIndex,
-          columnId,
-        });
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to delete files"
-        );
-        setDeletingFiles(new Set());
-        return;
-      }
-    }
-
-    for (const file of files) {
-      if (file.url?.startsWith("blob:")) {
-        URL.revokeObjectURL(file.url);
-      }
-    }
-    setFiles([]);
-    setDeletingFiles(new Set());
-    tableMeta?.onDataUpdate?.({ rowIndex, columnId, value: [] });
+  const clearAll = useCallback(async () => {
+    await handleClearAllFiles({
+      readOnly,
+      isPending,
+      files,
+      tableMeta,
+      rowIndex,
+      columnId,
+      setError,
+      setDeletingFiles,
+      setFiles,
+    });
   }, [files, tableMeta, rowIndex, columnId, readOnly, isPending]);
 
-  const onCellDragEnter = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.dataTransfer.types.includes("Files")) {
-      setIsDraggingOver(true);
-    }
+  const onCellDragEnter = useCallback((event: React.DragEvent) => {
+    handleDropzoneCellEnter({
+      event,
+      setIsDragging: setIsDraggingOver,
+      allowFilesOnly: true,
+    });
   }, []);
 
-  const onCellDragLeave = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX;
-    const y = event.clientY;
-
-    if (
-      x <= rect.left ||
-      x >= rect.right ||
-      y <= rect.top ||
-      y >= rect.bottom
-    ) {
-      setIsDraggingOver(false);
-    }
+  const onCellDragLeave = useCallback((event: React.DragEvent) => {
+    updateDragStateOnLeave({
+      event,
+      isDraggingStateSetter: setIsDraggingOver,
+    });
   }, []);
 
-  const onCellDragOver = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const onCellDragOver = useCallback((event: React.DragEvent) => {
+    handleFileDragOver(event);
   }, []);
 
-  const onCellDrop = React.useCallback(
+  const onCellDrop = useCallback(
     (event: React.DragEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setIsDraggingOver(false);
-
-      const droppedFiles = Array.from(event.dataTransfer.files);
-      if (droppedFiles.length > 0) {
-        addFiles(droppedFiles, false);
-      }
+      handleFileDropToCell({
+        event,
+        addFiles,
+        setIsDraggingOver,
+      });
     },
     [addFiles]
   );
 
-  const onDropzoneDragEnter = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragging(true);
+  const onDropzoneDragEnter = useCallback((event: React.DragEvent) => {
+    handleDropzoneCellEnter({
+      event,
+      setIsDragging,
+    });
   }, []);
 
-  const onDropzoneDragLeave = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX;
-    const y = event.clientY;
-
-    if (
-      x <= rect.left ||
-      x >= rect.right ||
-      y <= rect.top ||
-      y >= rect.bottom
-    ) {
-      setIsDragging(false);
-    }
+  const onDropzoneDragLeave = useCallback((event: React.DragEvent) => {
+    updateDragStateOnLeave({
+      event,
+      isDraggingStateSetter: setIsDragging,
+    });
   }, []);
 
-  const onDropzoneDragOver = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const onDropzoneDragOver = useCallback((event: React.DragEvent) => {
+    handleFileDragOver(event);
   }, []);
 
-  const onDropzoneDrop = React.useCallback(
+  const onDropzoneDrop = useCallback(
     (event: React.DragEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setIsDragging(false);
-
-      const droppedFiles = Array.from(event.dataTransfer.files);
-      addFiles(droppedFiles, false);
+      handleDropzoneFileDrop({
+        event,
+        addFiles,
+        setIsDragging,
+      });
     },
     [addFiles]
   );
 
-  const onDropzoneClick = React.useCallback(() => {
+  const onDropzoneClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  const onDropzoneKeyDown = React.useCallback(
+  const stopNavigation = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        onDropzoneClick();
-      }
+      stopFileCellNavigation({
+        event,
+        tableMeta,
+      });
+    },
+    [tableMeta]
+  );
+
+  const onDropzoneKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      handleDropzoneKeyDown({
+        event,
+        onDropzoneClick,
+      });
     },
     [onDropzoneClick]
   );
 
-  const onFileInputChange = React.useCallback(
+  const onFileInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFiles = Array.from(event.target.files ?? []);
       addFiles(selectedFiles, false);
@@ -1846,58 +2747,45 @@ export function FileCell<TData>({
     [addFiles]
   );
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
-      if (open && !readOnly) {
-        setError(null);
-        tableMeta?.onCellEditingStart?.(rowIndex, columnId);
-      } else {
-        setError(null);
-        tableMeta?.onCellEditingStop?.();
-      }
+      handleDropzoneCellOpen({
+        open,
+        readOnly,
+        rowIndex,
+        columnId,
+        tableMeta,
+        setError,
+      });
     },
     [tableMeta, rowIndex, columnId, readOnly]
   );
 
-  React.useEffect(() => {
-    if (isEditing) {
-      queueMicrotask(() => {
-        dropzoneRef.current?.focus();
-      });
-    }
+  useEffect(() => {
+    focusDropzoneOnOpen(isEditing, dropzoneRef);
   }, [isEditing]);
 
-  const onWrapperKeyDown = React.useCallback(
+  const onWrapperKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isEditing) {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          setFiles(cellValue);
-          setError(null);
-          tableMeta?.onCellEditingStop?.();
-        } else if (event.key === " ") {
-          event.preventDefault();
-          onDropzoneClick();
-        } else if (event.key === "Tab") {
-          event.preventDefault();
-          tableMeta?.onCellEditingStop?.({
-            direction: event.shiftKey ? "left" : "right",
-          });
-        }
-      } else if (isFocused && event.key === "Enter") {
-        event.preventDefault();
-        tableMeta?.onCellEditingStart?.(rowIndex, columnId);
-      } else if (isFocused && event.key === "Tab") {
-        event.preventDefault();
-        tableMeta?.onCellEditingStop?.({
-          direction: event.shiftKey ? "left" : "right",
-        });
-      }
+      handleFileWrapperKeyDown({
+        event,
+        isEditing,
+        isFocused,
+        cellValue,
+        tableMeta,
+        rowIndex,
+        columnId,
+        stopNavigation,
+        onDropzoneClick,
+        setFiles,
+        setError,
+      });
     },
     [
       isEditing,
       isFocused,
       cellValue,
+      stopNavigation,
       tableMeta,
       onDropzoneClick,
       rowIndex,
@@ -1905,13 +2793,9 @@ export function FileCell<TData>({
     ]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
-      for (const file of files) {
-        if (file.url) {
-          URL.revokeObjectURL(file.url);
-        }
-      }
+      revokeTrackedFiles(files);
     };
   }, [files]);
 
@@ -1951,173 +2835,42 @@ export function FileCell<TData>({
       rowIndex={rowIndex}
       tableMeta={tableMeta}
     >
-      {isEditing ? (
-        <Popover onOpenChange={onOpenChange} open={isEditing}>
-          <PopoverContent
-            align="start"
-            anchor={containerRef}
-            className="w-[400px] rounded-none p-0"
-            data-grid-cell-editor=""
-            sideOffset={sideOffset}
-          >
-            <div className="flex flex-col gap-2 p-3">
-              <span className="sr-only" id={labelId}>
-                File upload
-              </span>
-              <div
-                aria-describedby={descriptionId}
-                aria-disabled={isPending}
-                aria-invalid={!!error}
-                aria-labelledby={labelId}
-                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 outline-none transition-colors hover:bg-accent/30 focus-visible:border-ring/50 data-disabled:pointer-events-none data-dragging:border-primary/30 data-invalid:border-destructive data-dragging:bg-accent/30 data-disabled:opacity-50 data-invalid:ring-destructive/20"
-                data-disabled={isPending ? "" : undefined}
-                data-dragging={isDragging ? "" : undefined}
-                data-invalid={error ? "" : undefined}
-                onClick={onDropzoneClick}
-                onDragEnter={onDropzoneDragEnter}
-                onDragLeave={onDropzoneDragLeave}
-                onDragOver={onDropzoneDragOver}
-                onDrop={onDropzoneDrop}
-                onKeyDown={onDropzoneKeyDown}
-                ref={dropzoneRef}
-                role="region"
-                tabIndex={isDragging || isPending ? -1 : 0}
-              >
-                <Upload className="size-8 text-muted-foreground" />
-                <div className="text-center text-sm">
-                  <p className="font-medium">
-                    {isDragging ? "Drop files here" : "Drag files here"}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    or click to browse
-                  </p>
-                </div>
-                <p className="text-muted-foreground text-xs" id={descriptionId}>
-                  {getFileUploadDescription(maxFileSize, maxFiles)}
-                </p>
-              </div>
-              <input
-                accept={accept}
-                aria-describedby={descriptionId}
-                aria-labelledby={labelId}
-                className="sr-only"
-                multiple={multiple}
-                onChange={onFileInputChange}
-                ref={fileInputRef}
-                type="file"
-              />
-              {files.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-muted-foreground text-xs">
-                      {files.length} {files.length === 1 ? "file" : "files"}
-                    </p>
-                    <Button
-                      className="h-6 text-muted-foreground text-xs"
-                      disabled={isPending}
-                      onClick={clearAll}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      Clear all
-                    </Button>
-                  </div>
-                  <div className="max-h-[200px] space-y-1 overflow-y-auto">
-                    {files.map((file) => {
-                      const FileIcon = getFileIcon(file.type);
-                      const isFileUploading = uploadingFiles.has(file.id);
-                      const isFileDeleting = deletingFiles.has(file.id);
-                      const isFilePending = isFileUploading || isFileDeleting;
-
-                      let fileStatus = formatFileSize(file.size);
-                      if (isFileUploading) {
-                        fileStatus = "Uploading...";
-                      } else if (isFileDeleting) {
-                        fileStatus = "Deleting...";
-                      }
-
-                      return (
-                        <div
-                          className="flex items-center gap-2 rounded-md border bg-muted/50 px-2 py-1.5 data-pending:opacity-60"
-                          data-pending={isFilePending ? "" : undefined}
-                          key={file.id}
-                        >
-                          {FileIcon && (
-                            <FileIcon className="size-4 shrink-0 text-muted-foreground" />
-                          )}
-                          <div className="flex-1 overflow-hidden">
-                            <p className="truncate text-sm">{file.name}</p>
-                            <p className="text-muted-foreground text-xs">
-                              {fileStatus}
-                            </p>
-                          </div>
-                          <Button
-                            className="size-5 rounded-sm"
-                            disabled={isPending}
-                            onClick={() => removeFile(file.id)}
-                            size="icon"
-                            type="button"
-                            variant="ghost"
-                          >
-                            <X className="size-3" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      ) : null}
-      {isDraggingOver && (
-        <div className="flex items-center justify-center gap-2 text-primary text-sm">
-          <Upload className="size-4" />
-          <span>Drop files here</span>
-        </div>
-      )}
-      {!isDraggingOver && files.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1 overflow-hidden">
-          {visibleFiles.map((file) => {
-            const isUploading = uploadingFiles.has(file.id);
-
-            if (isUploading) {
-              return (
-                <Skeleton
-                  className="h-5 shrink-0 px-1.5"
-                  key={file.id}
-                  style={{
-                    width: `${Math.min(file.name.length * 8 + 30, 100)}px`,
-                  }}
-                />
-              );
-            }
-
-            const FileIcon = getFileIcon(file.type);
-
-            return (
-              <Badge
-                className="gap-1 px-1.5 py-px"
-                key={file.id}
-                variant="secondary"
-              >
-                {FileIcon && <FileIcon className="size-3 shrink-0" />}
-                <span className="max-w-[100px] truncate">{file.name}</span>
-              </Badge>
-            );
-          })}
-          {hiddenFileCount > 0 && (
-            <Badge
-              className="px-1.5 py-px text-muted-foreground"
-              variant="outline"
-            >
-              +{hiddenFileCount}
-            </Badge>
-          )}
-        </div>
-      )}
+      {renderFileCellPopover({
+        isEditing,
+        onOpenChange,
+        containerRef,
+        sideOffset,
+        labelId,
+        descriptionId,
+        onDropzoneClick,
+        onDropzoneDragEnter,
+        onDropzoneDragLeave,
+        onDropzoneDragOver,
+        onDropzoneDrop,
+        onDropzoneKeyDown,
+        dropzoneRef,
+        isPending,
+        isDragging,
+        error,
+        accept,
+        multiple,
+        onFileInputChange,
+        fileInputRef,
+        files,
+        clearAll,
+        removeFile,
+        uploadingFiles,
+        deletingFiles,
+        maxFileSize,
+        maxFiles,
+      })}
+      {renderFileCellSummary({
+        isDraggingOver,
+        files,
+        visibleFiles,
+        hiddenFileCount,
+        uploadingFiles,
+      })}
     </DataGridCellWrapper>
   );
 }

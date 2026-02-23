@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const badgeWidthCache = new Map<string, number>();
 
@@ -91,9 +91,9 @@ export function useBadgeOverflow<T>({
   maxWidth,
   className,
 }: UseBadgeOverflowProps<T>): UseBadgeOverflowReturn<T> {
-  const [containerWidth, setContainerWidth] = React.useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!containerRef.current) {
       return;
     }
@@ -115,7 +115,7 @@ export function useBadgeOverflow<T>({
     };
   }, [containerRef, containerPadding]);
 
-  const result = React.useMemo(() => {
+  const result = useMemo(() => {
     if (!containerWidth || items.length === 0) {
       return { visibleItems: items, hiddenCount: 0, containerWidth };
     }

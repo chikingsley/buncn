@@ -2,7 +2,7 @@
 
 import type { Table } from "@tanstack/react-table";
 import { ArrowUp, CheckCircle2, Download, Trash2, X } from "lucide-react";
-import * as React from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import {
   ActionBar,
@@ -29,7 +29,7 @@ interface TasksTableActionBarProps {
 export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
   const rows = table.getFilteredSelectedRowModel().rows;
 
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
         table.toggleAllRowsSelected(false);
@@ -38,7 +38,7 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
     [table]
   );
 
-  const onTaskUpdate = React.useCallback(
+  const onTaskUpdate = useCallback(
     (
       field: "status" | "priority",
       value: Task["status"] | Task["priority"]
@@ -60,14 +60,14 @@ export function TasksTableActionBar({ table }: TasksTableActionBarProps) {
     [rows]
   );
 
-  const onTaskExport = React.useCallback(() => {
+  const onTaskExport = useCallback(() => {
     exportTableToCSV(table, {
       excludeColumns: ["select", "actions"],
       onlySelected: true,
     });
   }, [table]);
 
-  const onTaskDelete = React.useCallback(() => {
+  const onTaskDelete = useCallback(() => {
     async function remove() {
       const { error } = await deleteTasks({
         ids: rows.map((row) => row.original.id),

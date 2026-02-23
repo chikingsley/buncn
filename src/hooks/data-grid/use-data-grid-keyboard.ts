@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback } from "react";
 
 import {
   getCellKey,
@@ -67,7 +67,7 @@ function useDataGridKeyboard<TData>(
     onScrollToRow,
   } = handlers;
 
-  const onDataGridKeyDown = React.useCallback(
+  const onDataGridKeyDown = useCallback(
     (event: KeyboardEvent) => {
       const currentState = store.getState();
       const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
@@ -248,7 +248,7 @@ function useDataGridKeyboard<TData>(
         const currentColumnId = currentState.focusedCell.columnId;
 
         Promise.resolve(propsRef.current.onRowAdd())
-          .then(async (result) => {
+          .then((result) => {
             if (result === null) {
               return;
             }

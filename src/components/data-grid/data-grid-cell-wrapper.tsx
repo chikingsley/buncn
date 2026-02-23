@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type ComponentProps, useCallback } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
 import { getCellKey } from "@/lib/data-grid";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import type { DataGridCellProps } from "@/types/data-grid";
 
 interface DataGridCellWrapperProps<TData>
   extends DataGridCellProps<TData>,
-    React.ComponentProps<"div"> {}
+    ComponentProps<"div"> {}
 
 export function DataGridCellWrapper<TData>({
   tableMeta,
@@ -29,7 +29,7 @@ export function DataGridCellWrapper<TData>({
 }: DataGridCellWrapperProps<TData>) {
   const cellMapRef = tableMeta?.cellMapRef;
 
-  const onCellChange = React.useCallback(
+  const onCellChange = useCallback(
     (node: HTMLDivElement | null) => {
       if (!cellMapRef) {
         return;
@@ -48,7 +48,7 @@ export function DataGridCellWrapper<TData>({
 
   const composedRef = useComposedRefs(ref, onCellChange);
 
-  const onClick = React.useCallback(
+  const onClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (!isEditing) {
         event.preventDefault();
@@ -63,7 +63,7 @@ export function DataGridCellWrapper<TData>({
     [tableMeta, rowIndex, columnId, isEditing, isFocused, readOnly, onClickProp]
   );
 
-  const onContextMenu = React.useCallback(
+  const onContextMenu = useCallback(
     (event: React.MouseEvent) => {
       if (!isEditing) {
         tableMeta?.onCellContextMenu?.(rowIndex, columnId, event);
@@ -72,7 +72,7 @@ export function DataGridCellWrapper<TData>({
     [tableMeta, rowIndex, columnId, isEditing]
   );
 
-  const onDoubleClick = React.useCallback(
+  const onDoubleClick = useCallback(
     (event: React.MouseEvent) => {
       if (!isEditing) {
         event.preventDefault();
@@ -82,7 +82,7 @@ export function DataGridCellWrapper<TData>({
     [tableMeta, rowIndex, columnId, isEditing]
   );
 
-  const onKeyDown = React.useCallback(
+  const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       onKeyDownProp?.(event);
 
@@ -137,7 +137,7 @@ export function DataGridCellWrapper<TData>({
     ]
   );
 
-  const onMouseDown = React.useCallback(
+  const onMouseDown = useCallback(
     (event: React.MouseEvent) => {
       if (!isEditing) {
         tableMeta?.onCellMouseDown?.(rowIndex, columnId, event);
@@ -146,27 +146,21 @@ export function DataGridCellWrapper<TData>({
     [tableMeta, rowIndex, columnId, isEditing]
   );
 
-  const onMouseEnter = React.useCallback(() => {
+  const onMouseEnter = useCallback(() => {
     if (!isEditing) {
       tableMeta?.onCellMouseEnter?.(rowIndex, columnId);
     }
   }, [tableMeta, rowIndex, columnId, isEditing]);
 
-  const onMouseUp = React.useCallback(() => {
+  const onMouseUp = useCallback(() => {
     if (!isEditing) {
       tableMeta?.onCellMouseUp?.();
     }
   }, [tableMeta, isEditing]);
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: Wrapper needs keyboard focus state and custom pointer handlers for grid selection.
     <div
-      data-editing={isEditing ? "" : undefined}
-      data-focused={isFocused ? "" : undefined}
-      data-selected={isSelected ? "" : undefined}
-      data-slot="grid-cell-wrapper"
-      role="button"
-      tabIndex={isFocused && !isEditing ? 0 : -1}
-      {...props}
       className={cn(
         "size-full px-2 py-1.5 text-start text-sm outline-none has-data-[slot=checkbox]:pt-2.5",
         {
@@ -187,6 +181,10 @@ export function DataGridCellWrapper<TData>({
         },
         className
       )}
+      data-editing={isEditing ? "" : undefined}
+      data-focused={isFocused ? "" : undefined}
+      data-selected={isSelected ? "" : undefined}
+      data-slot="grid-cell-wrapper"
       onClick={onClick}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
@@ -195,6 +193,9 @@ export function DataGridCellWrapper<TData>({
       onMouseEnter={onMouseEnter}
       onMouseUp={onMouseUp}
       ref={composedRef}
+      role="button"
+      tabIndex={isFocused && !isEditing ? 0 : -1}
+      {...props}
     />
   );
 }

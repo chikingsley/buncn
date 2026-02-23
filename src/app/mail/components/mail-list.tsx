@@ -1,9 +1,10 @@
 import { formatDistanceToNow } from "date-fns";
 import { Search } from "lucide-react";
-import * as React from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Mail } from "@/db/schema";
 import { cn } from "@/lib/utils";
@@ -27,10 +28,10 @@ function getBadgeVariant(
 }
 
 export function MailList({ items, selectedMailId, onSelect }: MailListProps) {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [currentTab, setCurrentTab] = React.useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentTab, setCurrentTab] = useState("all");
 
-  const filteredItems = React.useMemo(() => {
+  const filteredItems = useMemo(() => {
     let result = items;
 
     if (currentTab === "unread") {
@@ -50,21 +51,21 @@ export function MailList({ items, selectedMailId, onSelect }: MailListProps) {
   }, [items, currentTab, searchQuery]);
 
   return (
-    <Tabs defaultValue="all" onValueChange={setCurrentTab} value={currentTab}>
+    <Tabs
+      className="h-full min-h-0 gap-0"
+      defaultValue="all"
+      onValueChange={setCurrentTab}
+      value={currentTab}
+    >
       <div className="flex items-center px-4 py-2">
         <h1 className="font-bold text-xl">Inbox</h1>
         <TabsList className="ml-auto">
-          <TabsTrigger className="text-zinc-600 dark:text-zinc-200" value="all">
-            All mail
-          </TabsTrigger>
-          <TabsTrigger
-            className="text-zinc-600 dark:text-zinc-200"
-            value="unread"
-          >
-            Unread
-          </TabsTrigger>
+          <TabsTrigger value="all">All mail</TabsTrigger>
+          <TabsTrigger value="unread">Unread</TabsTrigger>
         </TabsList>
       </div>
+
+      <Separator />
 
       <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <form onSubmit={(e) => e.preventDefault()}>
@@ -80,7 +81,7 @@ export function MailList({ items, selectedMailId, onSelect }: MailListProps) {
         </form>
       </div>
 
-      <TabsContent className="m-0" value="all">
+      <TabsContent className="m-0 min-h-0 flex-1" value="all">
         <MailItemList
           items={filteredItems}
           onSelect={onSelect}
@@ -88,7 +89,7 @@ export function MailList({ items, selectedMailId, onSelect }: MailListProps) {
         />
       </TabsContent>
 
-      <TabsContent className="m-0" value="unread">
+      <TabsContent className="m-0 min-h-0 flex-1" value="unread">
         <MailItemList
           items={filteredItems}
           onSelect={onSelect}
@@ -107,7 +108,7 @@ interface MailItemListProps {
 
 function MailItemList({ items, selectedMailId, onSelect }: MailItemListProps) {
   return (
-    <ScrollArea className="h-[calc(100vh-220px)]">
+    <ScrollArea className="h-full min-h-0">
       <div className="flex flex-col gap-2 p-4 pt-0">
         {items.map((item) => (
           <button
@@ -148,7 +149,20 @@ function MailItemList({ items, selectedMailId, onSelect }: MailItemListProps) {
             {item.labels.length > 0 && (
               <div className="flex items-center gap-2">
                 {item.labels.map((label) => (
-                  <Badge key={label} variant={getBadgeVariant(label)}>
+                  <Badge
+                    className={cn(
+                      "capitalize",
+                      label === "work" &&
+                        "!bg-foreground !text-background dark:!bg-background dark:!text-foreground",
+                      label === "personal" &&
+                        "!bg-zinc-700 !text-zinc-50 dark:!bg-zinc-300 dark:!text-zinc-950",
+                      label !== "work" &&
+                        label !== "personal" &&
+                        "!bg-zinc-600 !text-zinc-50 dark:!bg-zinc-400 dark:!text-zinc-950"
+                    )}
+                    key={label}
+                    variant={getBadgeVariant(label)}
+                  >
                     {label}
                   </Badge>
                 ))}

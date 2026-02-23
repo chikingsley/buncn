@@ -7,7 +7,7 @@ import {
   EqualIcon,
   MinusIcon,
 } from "lucide-react";
-import * as React from "react";
+import { type ComponentProps, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -40,7 +40,7 @@ const rowHeights = [
 ] as const;
 
 interface DataGridRowHeightMenuProps<TData>
-  extends React.ComponentProps<typeof SelectContent> {
+  extends ComponentProps<typeof SelectContent> {
   table: Table<TData>;
   disabled?: boolean;
 }
@@ -53,7 +53,7 @@ export function DataGridRowHeightMenu<TData>({
   const rowHeight = table.options.meta?.rowHeight;
   const onRowHeightChange = table.options.meta?.onRowHeightChange;
 
-  const selectedRowHeight = React.useMemo(() => {
+  const selectedRowHeight = useMemo(() => {
     return (
       rowHeights.find((opt) => opt.value === rowHeight) ?? {
         label: "Short",

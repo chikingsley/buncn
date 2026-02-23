@@ -94,7 +94,7 @@ export async function getTasks(input: GetTasksSchema) {
       ? input.sort
           .filter((item) => sortable.has(item.id))
           .map((item) => {
-            let column = item.id;
+            let column: string = item.id;
             if (item.id === "estimatedHours") {
               column = "estimated_hours";
             } else if (item.id === "createdAt") {

@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback } from "react";
 
 import { getCellKey } from "@/lib/data-grid";
 import type { CellPosition } from "@/types/data-grid";
@@ -8,7 +8,7 @@ import type { DataGridContext } from "./types";
 function useDataGridSelection<TData>(ctx: DataGridContext<TData>) {
   const { store, propsRef, tableRef, columnIds } = ctx;
 
-  const getIsCellSelected = React.useCallback(
+  const getIsCellSelected = useCallback(
     (rowIndex: number, columnId: string) => {
       const currentSelectionState = store.getState().selectionState;
       return currentSelectionState.selectedCells.has(
@@ -18,7 +18,7 @@ function useDataGridSelection<TData>(ctx: DataGridContext<TData>) {
     [store]
   );
 
-  const onSelectionClear = React.useCallback(() => {
+  const onSelectionClear = useCallback(() => {
     store.batch(() => {
       store.setState("selectionState", {
         selectedCells: new Set(),
@@ -29,7 +29,7 @@ function useDataGridSelection<TData>(ctx: DataGridContext<TData>) {
     });
   }, [store]);
 
-  const selectAll = React.useCallback(() => {
+  const selectAll = useCallback(() => {
     const allCells = new Set<string>();
     const currentTable = tableRef.current;
     const rows = currentTable?.getRowModel().rows ?? [];
@@ -57,7 +57,7 @@ function useDataGridSelection<TData>(ctx: DataGridContext<TData>) {
     });
   }, [columnIds, propsRef, store, tableRef]);
 
-  const selectColumn = React.useCallback(
+  const selectColumn = useCallback(
     (columnId: string) => {
       const currentTable = tableRef.current;
       const rows = currentTable?.getRowModel().rows ?? [];
@@ -85,7 +85,7 @@ function useDataGridSelection<TData>(ctx: DataGridContext<TData>) {
     [propsRef, store, tableRef]
   );
 
-  const selectRange = React.useCallback(
+  const selectRange = useCallback(
     (start: CellPosition, end: CellPosition, isSelecting = false) => {
       const startColIndex = columnIds.indexOf(start.columnId);
       const endColIndex = columnIds.indexOf(end.columnId);

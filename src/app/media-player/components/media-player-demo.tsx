@@ -1,7 +1,8 @@
 import "@vidstack/react/player/styles/base.css";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DEMO_AUDIO, DEMO_HLS, DEMO_VIDEO } from "../lib/media-data";
+import { DEMO_HLS, DEMO_VIDEO } from "../lib/media-data";
+import { AudioShowcase } from "./audio-showcase";
 import { VideoPlayer } from "./video-player";
 
 export function MediaPlayerDemo() {
@@ -17,7 +18,7 @@ export function MediaPlayerDemo() {
       <Tabs defaultValue="video">
         <TabsList>
           <TabsTrigger value="video">Video</TabsTrigger>
-          <TabsTrigger value="hls">HLS Stream</TabsTrigger>
+          <TabsTrigger value="hls">HLS</TabsTrigger>
           <TabsTrigger value="audio">Audio</TabsTrigger>
         </TabsList>
         <TabsContent className="pt-4" value="video">
@@ -27,7 +28,7 @@ export function MediaPlayerDemo() {
           <VideoPlayer {...DEMO_HLS} />
         </TabsContent>
         <TabsContent className="pt-4" value="audio">
-          <VideoPlayer {...DEMO_AUDIO} variant="audio" />
+          <AudioShowcase />
         </TabsContent>
       </Tabs>
     </div>

@@ -2,7 +2,7 @@
 
 import type { ColumnDef, TableMeta } from "@tanstack/react-table";
 import { CopyIcon, EraserIcon, ScissorsIcon, Trash2Icon } from "lucide-react";
-import * as React from "react";
+import { memo, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -71,7 +71,7 @@ interface ContextMenuProps<TData>
   columns: ColumnDef<TData>[];
 }
 
-const ContextMenu = React.memo(ContextMenuImpl, (prev, next) => {
+const ContextMenu = memo(ContextMenuImpl, (prev, next) => {
   if (prev.contextMenu.open !== next.contextMenu.open) {
     return false;
   }
@@ -116,7 +116,7 @@ function ContextMenuImpl<TData>({
     columns,
   });
 
-  const triggerStyle = React.useMemo<React.CSSProperties>(
+  const triggerStyle = useMemo<React.CSSProperties>(
     () => ({
       position: "fixed",
       left: `${contextMenu.x}px`,
@@ -133,15 +133,15 @@ function ContextMenuImpl<TData>({
     [contextMenu.x, contextMenu.y]
   );
 
-  const onCopy = React.useCallback(() => {
+  const onCopy = useCallback(() => {
     propsRef.current.onCellsCopy?.();
   }, [propsRef]);
 
-  const onCut = React.useCallback(() => {
+  const onCut = useCallback(() => {
     propsRef.current.onCellsCut?.();
   }, [propsRef]);
 
-  const onClear = React.useCallback(() => {
+  const onClear = useCallback(() => {
     const { selectionState, columns, onDataUpdate } = propsRef.current;
 
     if (
@@ -187,7 +187,7 @@ function ContextMenuImpl<TData>({
     );
   }, [propsRef]);
 
-  const onDelete = React.useCallback(async () => {
+  const onDelete = useCallback(async () => {
     const { selectionState, onRowsDelete } = propsRef.current;
 
     if (

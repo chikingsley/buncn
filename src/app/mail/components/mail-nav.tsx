@@ -23,7 +23,7 @@ interface MailNavProps {
 export function MailNav({ isCollapsed, links, onSelect }: MailNavProps) {
   return (
     <div
-      className={cn("flex flex-col gap-1", isCollapsed && "items-center")}
+      className={cn("flex flex-col gap-1 py-2", isCollapsed && "items-center")}
       data-collapsed={isCollapsed}
     >
       <nav className="grid gap-1 px-2">
@@ -70,9 +70,9 @@ export function MailNav({ isCollapsed, links, onSelect }: MailNavProps) {
                     variant: link.variant,
                     size: "sm",
                   }),
-                  "justify-start",
+                  "justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground",
                   link.variant === "default" &&
-                    "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white"
+                    "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white"
                 )}
                 key={link.title}
                 onClick={() => onSelect?.(link.title)}

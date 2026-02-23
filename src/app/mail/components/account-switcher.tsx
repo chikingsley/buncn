@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import * as React from "react";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ export function AccountSwitcher({
   isCollapsed,
   accounts,
 }: AccountSwitcherProps) {
-  const [selectedAccount, setSelectedAccount] = React.useState<string>(
+  const [selectedAccount, setSelectedAccount] = useState<string>(
     accounts[0]?.email ?? ""
   );
 
@@ -42,7 +42,7 @@ export function AccountSwitcher({
       <SelectTrigger
         aria-label="Select account"
         className={cn(
-          "flex items-center gap-2 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
+          "flex w-full items-center gap-2 pr-8 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
           isCollapsed &&
             "flex h-9 w-9 shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden"
         )}

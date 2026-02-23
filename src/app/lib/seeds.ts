@@ -23,7 +23,7 @@ export async function seedTasks(input: { count: number }) {
       await db.unsafe(
         `INSERT INTO ${DB_TABLES.tasks} (id, code, title, status, priority, label, estimated_hours, archived)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         ON CONFLICT (id) DO NOTHING`,
+         ON CONFLICT (code) DO NOTHING`,
         [
           task.id,
           task.code,

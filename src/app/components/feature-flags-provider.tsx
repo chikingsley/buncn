@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryState } from "nuqs";
-import * as React from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -19,11 +19,12 @@ interface FeatureFlagsContextValue {
   enableAdvancedFilter: boolean;
 }
 
-const FeatureFlagsContext =
-  React.createContext<FeatureFlagsContextValue | null>(null);
+const FeatureFlagsContext = createContext<FeatureFlagsContextValue | null>(
+  null
+);
 
 export function useFeatureFlags() {
-  const context = React.useContext(FeatureFlagsContext);
+  const context = useContext(FeatureFlagsContext);
   if (!context) {
     throw new Error(
       "useFeatureFlags must be used within a FeatureFlagsProvider"
@@ -57,14 +58,14 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
     }
   );
 
-  const onFilterFlagChange = React.useCallback(
+  const onFilterFlagChange = useCallback(
     (groupValue: string[]) => {
-      setFilterFlag((groupValue[0] as FilterFlag) ?? filterFlag);
+      setFilterFlag((groupValue[0] as FilterFlag) ?? null);
     },
-    [setFilterFlag, filterFlag]
+    [setFilterFlag]
   );
 
-  const contextValue = React.useMemo<FeatureFlagsContextValue>(
+  const contextValue = useMemo<FeatureFlagsContextValue>(
     () => ({
       filterFlag,
       enableAdvancedFilter:

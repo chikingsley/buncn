@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { memo } from "react";
 
 import {
   CheckboxCell,
@@ -15,7 +15,7 @@ import {
 } from "@/components/data-grid/data-grid-cell-variants";
 import type { DataGridCellProps } from "@/types/data-grid";
 
-export const DataGridCell = React.memo(DataGridCellImpl, (prev, next) => {
+export const DataGridCell = memo(DataGridCellImpl, (prev, next) => {
   // Fast path: check stable primitive props first
   if (prev.isFocused !== next.isFocused) {
     return false;

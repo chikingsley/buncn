@@ -7,7 +7,7 @@ import type {
   VisibilityState,
 } from "@tanstack/react-table";
 import type { VirtualItem } from "@tanstack/react-virtual";
-import * as React from "react";
+import { type ComponentProps, memo, useCallback, useMemo } from "react";
 import { DataGridCell } from "@/components/data-grid/data-grid-cell";
 import { useComposedRefs } from "@/lib/compose-refs";
 import {
@@ -24,7 +24,7 @@ import type {
   RowHeightValue,
 } from "@/types/data-grid";
 
-interface DataGridRowProps<TData> extends React.ComponentProps<"div"> {
+interface DataGridRowProps<TData> extends ComponentProps<"div"> {
   row: Row<TData>;
   tableMeta: TableMeta<TData>;
   virtualItem: VirtualItem;
@@ -44,7 +44,7 @@ interface DataGridRowProps<TData> extends React.ComponentProps<"div"> {
   adjustLayout: boolean;
 }
 
-export const DataGridRow = React.memo(DataGridRowImpl, (prev, next) => {
+export const DataGridRow = memo(DataGridRowImpl, (prev, next) => {
   const prevRowIndex = prev.virtualItem.index;
   const nextRowIndex = next.virtualItem.index;
 
@@ -177,7 +177,7 @@ function DataGridRowImpl<TData>({
 }: DataGridRowProps<TData>) {
   const virtualRowIndex = virtualItem.index;
 
-  const onRowChange = React.useCallback(
+  const onRowChange = useCallback(
     (node: HTMLDivElement | null) => {
       if (typeof virtualRowIndex === "undefined") {
         return;
@@ -200,27 +200,26 @@ function DataGridRowImpl<TData>({
   // Memoize visible cells to avoid recreating cell array on every render
   // Though TanStack returns new Cell wrappers, memoizing the array helps React's reconciliation
   // biome-ignore lint/correctness/useExhaustiveDependencies: columnVisibility and columnPinning are used for calculating the visible cells
-  const visibleCells = React.useMemo(
+  const visibleCells = useMemo(
     () => row.getVisibleCells(),
     [row, columnVisibility, columnPinning]
   );
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: Virtualized row virtualization uses role-based ARIA APIs for custom grid interactions.
     <div
       aria-rowindex={virtualRowIndex + 2}
       aria-selected={isRowSelected}
+      className={cn(
+        "absolute flex w-full border-b [content-visibility:auto]",
+        { "will-change-transform": !adjustLayout },
+        className
+      )}
       data-index={virtualRowIndex}
       data-slot="grid-row"
       key={row.id}
-      role="row"
-      tabIndex={-1}
-      {...props}
-      className={cn(
-        "absolute flex w-full border-b [content-visibility:auto]",
-        !adjustLayout && "will-change-transform",
-        className
-      )}
       ref={rowRef}
+      role="row"
       style={{
         height: `${getRowHeightValue(rowHeight)}px`,
         ...(adjustLayout
@@ -228,6 +227,8 @@ function DataGridRowImpl<TData>({
           : { transform: `translateY(${virtualItem.start}px)` }),
         ...style,
       }}
+      tabIndex={-1}
+      {...props}
     >
       {visibleCells.map((cell, colIndex) => {
         const columnId = cell.column.id;
@@ -254,6 +255,7 @@ function DataGridRowImpl<TData>({
         });
 
         return (
+          // biome-ignore lint/a11y/useSemanticElements: Virtualized cells are rendered as role-based rows for a11y grid interactions.
           <div
             aria-colindex={colIndex + 1}
             className={cn({

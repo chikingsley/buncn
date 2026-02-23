@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import * as React from "react";
+import { Fragment, useCallback } from "react";
 import { DataGridColumnHeader } from "@/components/data-grid/data-grid-column-header";
 import { DataGridContextMenu } from "@/components/data-grid/data-grid-context-menu";
 import { DataGridPasteDialog } from "@/components/data-grid/data-grid-paste-dialog";
@@ -63,21 +63,21 @@ export function DataGrid<TData>({
 
   const onRowAddRef = useAsRef(onRowAddProp);
 
-  const onRowAdd = React.useCallback(
+  const onRowAdd = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       onRowAddRef.current?.(event);
     },
     [onRowAddRef]
   );
 
-  const onDataGridContextMenu = React.useCallback(
+  const onDataGridContextMenu = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault();
     },
     []
   );
 
-  const onFooterCellKeyDown = React.useCallback(
+  const onFooterCellKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (!onRowAddRef.current) {
         return;
@@ -105,6 +105,7 @@ export function DataGrid<TData>({
         tableMeta={tableMeta}
       />
       <DataGridPasteDialog pasteDialog={pasteDialog} tableMeta={tableMeta} />
+      {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
       <div
         aria-colcount={columns.length}
         aria-label="Data grid"
@@ -120,85 +121,106 @@ export function DataGrid<TData>({
         }}
         tabIndex={0}
       >
+        {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
         <div
           className="sticky top-0 z-10 grid border-b bg-background"
           data-slot="grid-header"
           ref={headerRef}
           role="rowgroup"
         >
-          {table.getHeaderGroups().map((headerGroup, rowIndex) => (
-            <div
-              aria-rowindex={rowIndex + 1}
-              className="flex w-full"
-              data-slot="grid-header-row"
-              key={headerGroup.id}
-              role="row"
-              tabIndex={-1}
-            >
-              {headerGroup.headers.map((header, colIndex) => {
-                const sorting = table.getState().sorting;
-                const currentSort = sorting.find(
-                  (sort) => sort.id === header.column.id
-                );
-                const isSortable = header.column.getCanSort();
+          {table.getHeaderGroups().map((headerGroup, rowIndex) => {
+            return (
+              <Fragment key={headerGroup.id}>
+                {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
+                <div
+                  aria-rowindex={rowIndex + 1}
+                  className="flex w-full"
+                  data-slot="grid-header-row"
+                  role="row"
+                  tabIndex={-1}
+                >
+                  {headerGroup.headers.map((header, colIndex) => {
+                    const sorting = table.getState().sorting;
+                    const currentSort = sorting.find(
+                      (sort) => sort.id === header.column.id
+                    );
+                    const isSortable = header.column.getCanSort();
 
-                const nextHeader = headerGroup.headers[colIndex + 1];
-                const isLastColumn =
-                  colIndex === headerGroup.headers.length - 1;
+                    const nextHeader = headerGroup.headers[colIndex + 1];
+                    const isLastColumn =
+                      colIndex === headerGroup.headers.length - 1;
 
-                const { showEndBorder, showStartBorder } =
-                  getColumnBorderVisibility({
-                    column: header.column,
-                    nextColumn: nextHeader?.column,
-                    isLastColumn,
-                  });
+                    const { showEndBorder, showStartBorder } =
+                      getColumnBorderVisibility({
+                        column: header.column,
+                        nextColumn: nextHeader?.column,
+                        isLastColumn,
+                      });
 
-                let ariaSort: "ascending" | "descending" | "none" | undefined;
-                if (currentSort?.desc === false) {
-                  ariaSort = "ascending";
-                } else if (currentSort?.desc === true) {
-                  ariaSort = "descending";
-                } else if (isSortable) {
-                  ariaSort = "none";
-                }
+                    let ariaSort:
+                      | "ascending"
+                      | "descending"
+                      | "none"
+                      | undefined;
+                    if (currentSort?.desc === false) {
+                      ariaSort = "ascending";
+                    } else if (currentSort?.desc === true) {
+                      ariaSort = "descending";
+                    } else if (isSortable) {
+                      ariaSort = "none";
+                    }
 
-                return (
-                  <div
-                    aria-colindex={colIndex + 1}
-                    aria-sort={ariaSort}
-                    className={cn("relative", {
-                      grow: stretchColumns && header.column.id !== "select",
-                      "border-e":
-                        showEndBorder && header.column.id !== "select",
-                      "border-s":
-                        showStartBorder && header.column.id !== "select",
-                    })}
-                    data-slot="grid-header-cell"
-                    key={header.id}
-                    role="columnheader"
-                    style={{
-                      ...getColumnPinningStyle({ column: header.column, dir }),
-                      width: `calc(var(--header-${header.id}-size) * 1px)`,
-                    }}
-                    tabIndex={-1}
-                  >
-                    {!header.isPlaceholder &&
-                      (typeof header.column.columnDef.header === "function" ? (
-                        <div className="size-full px-3 py-1.5">
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                    return (
+                      <>
+                        {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
+                        <div
+                          aria-colindex={colIndex + 1}
+                          aria-sort={ariaSort}
+                          className={cn("relative", {
+                            grow:
+                              stretchColumns && header.column.id !== "select",
+                            "border-e":
+                              showEndBorder && header.column.id !== "select",
+                            "border-s":
+                              showStartBorder && header.column.id !== "select",
+                          })}
+                          data-slot="grid-header-cell"
+                          key={header.id}
+                          role="columnheader"
+                          style={{
+                            ...getColumnPinningStyle({
+                              column: header.column,
+                              dir,
+                            }),
+                            width: `calc(var(--header-${header.id}-size) * 1px)`,
+                          }}
+                          tabIndex={-1}
+                        >
+                          {!header.isPlaceholder &&
+                            (typeof header.column.columnDef.header ===
+                            "function" ? (
+                              <div className="size-full px-3 py-1.5">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                              </div>
+                            ) : (
+                              <DataGridColumnHeader
+                                header={header}
+                                table={table}
+                              />
+                            ))}
                         </div>
-                      ) : (
-                        <DataGridColumnHeader header={header} table={table} />
-                      ))}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+                      </>
+                    );
+                  })}
+                </div>
+              </Fragment>
+            );
+          })}
         </div>
+        {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
         <div
           className="relative grid"
           data-slot="grid-body"
@@ -248,12 +270,14 @@ export function DataGrid<TData>({
           })}
         </div>
         {!readOnly && onRowAdd && (
+          // biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior.
           <div
             className="sticky bottom-0 z-10 grid border-t bg-background"
             data-slot="grid-footer"
             ref={footerRef}
             role="rowgroup"
           >
+            {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
             <div
               aria-rowindex={rows.length + 2}
               className="flex w-full"
@@ -261,6 +285,7 @@ export function DataGrid<TData>({
               role="row"
               tabIndex={-1}
             >
+              {/* biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior. */}
               <div
                 className="relative flex h-9 grow items-center bg-muted/30 transition-colors hover:bg-muted/50 focus:bg-muted/50 focus:outline-none"
                 onClick={onRowAdd}

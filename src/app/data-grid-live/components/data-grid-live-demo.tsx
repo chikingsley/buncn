@@ -2,7 +2,7 @@
 
 import { useLiveQuery } from "@tanstack/react-db";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   generateRandomSkater,
@@ -72,14 +72,14 @@ const trickSelectOptions = trickOptions.map((trick) => ({
 }));
 
 export function DataGridLiveDemo() {
-  const [preloaded, setPreloaded] = React.useState(false);
+  const [preloaded, setPreloaded] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     skatersCollection.preload().then(() => setPreloaded(true));
   }, []);
 
   const windowSize = useWindowSize();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data = [] } = useLiveQuery(
     (q) => {
@@ -100,9 +100,9 @@ export function DataGridLiveDemo() {
     [sorting]
   );
 
-  const filterFn = React.useMemo(() => getFilterFn<SkaterSchema>(), []);
+  const filterFn = useMemo(() => getFilterFn<SkaterSchema>(), []);
 
-  const columns = React.useMemo<ColumnDef<SkaterSchema>[]>(
+  const columns = useMemo<ColumnDef<SkaterSchema>[]>(
     () => [
       getDataGridSelectColumn<SkaterSchema>({ enableRowMarkers: true }),
       {
@@ -252,7 +252,7 @@ export function DataGridLiveDemo() {
 
   // Undo/redo support - wraps data changes to track history
   // and allows reverting changes via keyboard shortcuts
-  const undoRedoOnDataChange = React.useCallback(
+  const undoRedoOnDataChange = useCallback(
     (newData: SkaterSchema[]) => {
       const currentIds = new Set(data.map((s) => s.id));
       const newIds = new Set(newData.map((s) => s.id));
@@ -311,7 +311,7 @@ export function DataGridLiveDemo() {
 
   const onDataChange: NonNullable<
     UseDataGridProps<SkaterSchema>["onDataChange"]
-  > = React.useCallback(
+  > = useCallback(
     (newData) => {
       // Track cell updates for undo/redo
       const cellUpdates: UndoRedoCellUpdate[] = [];
@@ -364,7 +364,7 @@ export function DataGridLiveDemo() {
   );
 
   const onRowAdd: NonNullable<UseDataGridProps<SkaterSchema>["onRowAdd"]> =
-    React.useCallback(() => {
+    useCallback(() => {
       const maxOrder = data.reduce((max, s) => Math.max(max, s.order), 0);
       const newSkater = generateRandomSkater();
       const skaterWithOrder = { ...newSkater, order: maxOrder + 1 };
@@ -381,7 +381,7 @@ export function DataGridLiveDemo() {
     }, [data, trackRowsAdd]);
 
   const onRowsAdd: NonNullable<UseDataGridProps<SkaterSchema>["onRowsAdd"]> =
-    React.useCallback(
+    useCallback(
       (count: number) => {
         const maxOrder = data.reduce((max, s) => Math.max(max, s.order), 0);
         const newRows: SkaterSchema[] = [];
@@ -415,7 +415,7 @@ export function DataGridLiveDemo() {
 
   const onRowsDelete: NonNullable<
     UseDataGridProps<SkaterSchema>["onRowsDelete"]
-  > = React.useCallback(
+  > = useCallback(
     (rowsToDelete) => {
       // Track for undo/redo (before deletion to capture the rows)
       trackRowsDelete(rowsToDelete);
@@ -428,7 +428,7 @@ export function DataGridLiveDemo() {
 
   const onFilesUpload: NonNullable<
     UseDataGridProps<SkaterSchema>["onFilesUpload"]
-  > = React.useCallback(async ({ files }) => {
+  > = useCallback(async ({ files }) => {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     return files.map((file) => ({
@@ -442,7 +442,7 @@ export function DataGridLiveDemo() {
 
   const onFilesDelete: NonNullable<
     UseDataGridProps<SkaterSchema>["onFilesDelete"]
-  > = React.useCallback(async () => {
+  > = useCallback(async () => {
     /* TODO: implement file deletion */
   }, []);
 
@@ -468,7 +468,7 @@ export function DataGridLiveDemo() {
     enablePaste: true,
   });
 
-  const onStatusUpdate = React.useCallback(
+  const onStatusUpdate = useCallback(
     (value: string) => {
       const selectedRows = table.getSelectedRowModel().rows;
       if (selectedRows.length === 0) {
@@ -493,7 +493,7 @@ export function DataGridLiveDemo() {
     [table]
   );
 
-  const onStyleUpdate = React.useCallback(
+  const onStyleUpdate = useCallback(
     (value: string) => {
       const selectedRows = table.getSelectedRowModel().rows;
       if (selectedRows.length === 0) {
@@ -518,7 +518,7 @@ export function DataGridLiveDemo() {
     [table]
   );
 
-  const onDelete = React.useCallback(() => {
+  const onDelete = useCallback(() => {
     const selectedRows = table.getSelectedRowModel().rows;
     if (selectedRows.length === 0) {
       toast.error("No skaters selected");

@@ -3,7 +3,14 @@
 import { faker } from "@faker-js/faker";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Loader, RocketIcon, SquarePen } from "lucide-react";
-import * as React from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { DataGrid } from "@/components/data-grid/data-grid";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,31 +65,31 @@ const initialData: Person[] = Array.from({ length: 100 }, () =>
 );
 
 export function DataGridRenderDemo() {
-  const [data, setData] = React.useState<Person[]>(initialData);
-  const [renderStats, setRenderStats] = React.useState({
+  const [data, setData] = useState<Person[]>(initialData);
+  const [renderStats, setRenderStats] = useState({
     componentRenders: 0,
     lastUpdateTime: 0,
     cellsUpdated: 0,
   });
-  const [cellCount, setCellCount] = React.useState(50);
-  const [isUpdatePending, startUpdateTransition] = React.useTransition();
-  const [isRapidUpdating, setIsRapidUpdating] = React.useState(false);
+  const [cellCount, setCellCount] = useState(50);
+  const [isUpdatePending, startUpdateTransition] = useTransition();
+  const [isRapidUpdating, setIsRapidUpdating] = useState(false);
 
-  const componentRenderCount = React.useRef(0);
+  const componentRenderCount = useRef(0);
   componentRenderCount.current++;
 
-  const updateCycleRef = React.useRef(0);
+  const updateCycleRef = useRef(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     console.log(
       `%c[DataGridRenderTest] Component render #${componentRenderCount.current}`,
       "color: #ff6b6b; font-weight: bold;"
     );
   });
 
-  const filterFn = React.useMemo(() => getFilterFn<Person>(), []);
+  const filterFn = useMemo(() => getFilterFn<Person>(), []);
 
-  const columns = React.useMemo<ColumnDef<Person>[]>(
+  const columns = useMemo<ColumnDef<Person>[]>(
     () => [
       {
         id: "select",
@@ -207,7 +214,7 @@ export function DataGridRenderDemo() {
     [filterFn]
   );
 
-  const onDataChange = React.useCallback((newData: Person[]) => {
+  const onDataChange = useCallback((newData: Person[]) => {
     setData(newData);
   }, []);
 
@@ -220,7 +227,7 @@ export function DataGridRenderDemo() {
     enablePaste: true,
   });
 
-  const onCellsUpdate = React.useCallback(
+  const onCellsUpdate = useCallback(
     (count: number) => {
       startUpdateTransition(() => {
         const cycle = updateCycleRef.current++;
@@ -292,7 +299,7 @@ export function DataGridRenderDemo() {
     [table]
   );
 
-  const onRapidCellsUpdate = React.useCallback(
+  const onRapidCellsUpdate = useCallback(
     async (count: number) => {
       if (isRapidUpdating) {
         return;

@@ -1,6 +1,5 @@
 "use client";
 
-import type * as React from "react";
 import type { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 import {
   Form,

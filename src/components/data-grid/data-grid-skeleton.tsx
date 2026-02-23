@@ -1,8 +1,8 @@
-import type * as React from "react";
+import type { ComponentProps } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-interface DivProps extends React.ComponentProps<"div"> {}
+interface DivProps extends ComponentProps<"div"> {}
 
 function DataGridSkeleton({ className, ...props }: DivProps) {
   return (

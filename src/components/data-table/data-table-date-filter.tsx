@@ -2,7 +2,7 @@
 
 import type { Column } from "@tanstack/react-table";
 import { CalendarIcon, XCircle } from "lucide-react";
-import * as React from "react";
+import { useCallback, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export function DataTableDateFilter<TData>({
 }: DataTableDateFilterProps<TData>) {
   const columnFilterValue = column.getFilterValue();
 
-  const selectedDates = React.useMemo<DateSelection>(() => {
+  const selectedDates = useMemo<DateSelection>(() => {
     if (!columnFilterValue) {
       return multiple ? { from: undefined, to: undefined } : [];
     }
@@ -83,7 +83,7 @@ export function DataTableDateFilter<TData>({
     return date ? [date] : [];
   }, [columnFilterValue, multiple]);
 
-  const onSelect = React.useCallback(
+  const onSelect = useCallback(
     (date: Date | DateRange | undefined) => {
       if (!date) {
         column.setFilterValue(undefined);
@@ -101,7 +101,7 @@ export function DataTableDateFilter<TData>({
     [column, multiple]
   );
 
-  const onReset = React.useCallback(
+  const onReset = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation();
       column.setFilterValue(undefined);
@@ -109,7 +109,7 @@ export function DataTableDateFilter<TData>({
     [column]
   );
 
-  const hasValue = React.useMemo(() => {
+  const hasValue = useMemo(() => {
     if (multiple) {
       if (!getIsDateRange(selectedDates)) {
         return false;
@@ -122,7 +122,7 @@ export function DataTableDateFilter<TData>({
     return selectedDates.length > 0;
   }, [multiple, selectedDates]);
 
-  const formatDateRange = React.useCallback((range: DateRange) => {
+  const formatDateRange = useCallback((range: DateRange) => {
     if (!(range.from || range.to)) {
       return "";
     }
@@ -132,7 +132,7 @@ export function DataTableDateFilter<TData>({
     return formatDate(range.from ?? range.to);
   }, []);
 
-  const label = React.useMemo(() => {
+  const label = useMemo(() => {
     if (multiple) {
       if (!getIsDateRange(selectedDates)) {
         return null;
@@ -196,15 +196,16 @@ export function DataTableDateFilter<TData>({
         }
       >
         {hasValue ? (
-          <div
+          <Button
             aria-label={`Clear ${title} filter`}
-            className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="size-9 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             onClick={onReset}
-            role="button"
-            tabIndex={0}
+            size="icon"
+            type="button"
+            variant="ghost"
           >
-            <XCircle />
-          </div>
+            <XCircle className="size-4" />
+          </Button>
         ) : (
           <CalendarIcon />
         )}

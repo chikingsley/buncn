@@ -2,7 +2,7 @@
 
 import type { Table } from "@tanstack/react-table";
 import { Check, Settings2 } from "lucide-react";
-import * as React from "react";
+import { type ComponentProps, useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface DataTableViewOptionsProps<TData>
-  extends React.ComponentProps<typeof PopoverContent> {
+  extends ComponentProps<typeof PopoverContent> {
   table: Table<TData>;
   disabled?: boolean;
 }
@@ -30,7 +30,10 @@ export function DataTableViewOptions<TData>({
   disabled,
   ...props
 }: DataTableViewOptionsProps<TData>) {
-  const columns = React.useMemo(
+  const popoverId = useId();
+  const [open, setOpen] = useState(false);
+
+  const columns = useMemo(
     () =>
       table
         .getAllColumns()
@@ -42,10 +45,12 @@ export function DataTableViewOptions<TData>({
   );
 
   return (
-    <Popover>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger
         render={
           <Button
+            aria-controls={popoverId}
+            aria-expanded={open}
             aria-label="Toggle columns"
             className="ml-auto hidden h-8 font-normal lg:flex"
             disabled={disabled}
@@ -58,7 +63,7 @@ export function DataTableViewOptions<TData>({
         <Settings2 className="text-muted-foreground" />
         View
       </PopoverTrigger>
-      <PopoverContent className="w-44 p-0" {...props}>
+      <PopoverContent className="w-44 p-0" id={popoverId} {...props}>
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList>

@@ -2,7 +2,7 @@
 
 import type { Column } from "@tanstack/react-table";
 import { Check, PlusCircle, XCircle } from "lucide-react";
-import * as React from "react";
+import { useCallback, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,14 +37,14 @@ export function DataTableFacetedFilter<TData, TValue>({
   options,
   multiple,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const columnFilterValue = column?.getFilterValue();
   const selectedValues = new Set(
     Array.isArray(columnFilterValue) ? columnFilterValue : []
   );
 
-  const onItemSelect = React.useCallback(
+  const onItemSelect = useCallback(
     (option: Option, isSelected: boolean) => {
       if (!column) {
         return;
@@ -67,9 +67,10 @@ export function DataTableFacetedFilter<TData, TValue>({
     [column, multiple, selectedValues]
   );
 
-  const onReset = React.useCallback(
-    (event?: React.MouseEvent) => {
+  const onReset = useCallback(
+    (event?: React.MouseEvent | React.KeyboardEvent) => {
       event?.stopPropagation();
+      event?.preventDefault();
       column?.setFilterValue(undefined);
     },
     [column]
@@ -87,15 +88,20 @@ export function DataTableFacetedFilter<TData, TValue>({
         }
       >
         {selectedValues?.size > 0 ? (
-          <div
+          <span
             aria-label={`Clear ${title} filter`}
-            className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             onClick={onReset}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                onReset(event);
+              }
+            }}
             role="button"
             tabIndex={0}
           >
-            <XCircle />
-          </div>
+            <XCircle className="size-4" />
+          </span>
         ) : (
           <PlusCircle />
         )}

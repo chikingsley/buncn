@@ -3,7 +3,7 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Languages } from "lucide-react";
-import * as React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DataGrid } from "@/components/data-grid/data-grid";
 import { DataGridFilterMenu } from "@/components/data-grid/data-grid-filter-menu";
 import { DataGridKeyboardShortcuts } from "@/components/data-grid/data-grid-keyboard-shortcuts";
@@ -91,13 +91,13 @@ function DataGridDemoImpl({
 }
 
 export function DataGridDemo() {
-  const [data, setData] = React.useState<Person[]>(initialData);
-  const [dir, setDir] = React.useState<Direction>("ltr");
+  const [data, setData] = useState<Person[]>(initialData);
+  const [dir, setDir] = useState<Direction>("ltr");
   const windowSize = useWindowSize({ defaultHeight: 760 });
 
-  const filterFn = React.useMemo(() => getFilterFn<Person>(), []);
+  const filterFn = useMemo(() => getFilterFn<Person>(), []);
 
-  const columns = React.useMemo<ColumnDef<Person>[]>(
+  const columns = useMemo<ColumnDef<Person>[]>(
     () => [
       getDataGridSelectColumn<Person>({ enableRowMarkers: true }),
       {
@@ -290,7 +290,7 @@ export function DataGridDemo() {
     });
 
   const onRowAdd: NonNullable<UseDataGridProps<Person>["onRowAdd"]> =
-    React.useCallback(() => {
+    useCallback(() => {
       // Called when user manually adds a single row (e.g., clicking "Add Row" button)
       // In a real app, you would make a server call here:
       // await fetch('/api/people', {
@@ -317,7 +317,7 @@ export function DataGridDemo() {
     }, [data.length, trackRowsAdd]);
 
   const onRowsAdd: NonNullable<UseDataGridProps<Person>["onRowsAdd"]> =
-    React.useCallback(
+    useCallback(
       (count: number) => {
         // Called when paste operation needs to create multiple rows at once
         // This is more efficient than calling onRowAdd multiple times - only a single API call needed
@@ -341,7 +341,7 @@ export function DataGridDemo() {
     );
 
   const onRowsDelete: NonNullable<UseDataGridProps<Person>["onRowsDelete"]> =
-    React.useCallback(
+    useCallback(
       (rows) => {
         // In a real app, you would make a server call here:
         // await fetch('/api/people', {
@@ -359,44 +359,41 @@ export function DataGridDemo() {
     );
 
   const onFilesUpload: NonNullable<UseDataGridProps<Person>["onFilesUpload"]> =
-    React.useCallback(
-      async ({ files, rowIndex: _rowIndex, columnId: _columnId }) => {
-        // In a real app, you would upload multiple files to your server/storage:
-        // const row = data[rowIndex];
-        // const formData = new FormData();
-        // files.forEach(file => formData.append('files', file));
-        // formData.append('personId', row.id);
-        // formData.append('columnId', columnId);
-        //
-        // const response = await fetch('/api/upload', {
-        //   method: 'POST',
-        //   body: formData
-        // });
-        // const data = await response.json();
-        // return data.files.map(f => ({
-        //   id: f.fileId,
-        //   name: f.fileName,
-        //   size: f.fileSize,
-        //   type: f.fileType,
-        //   url: f.fileUrl
-        // }));
+    useCallback(async ({ files, rowIndex: _rowIndex, columnId: _columnId }) => {
+      // In a real app, you would upload multiple files to your server/storage:
+      // const row = data[rowIndex];
+      // const formData = new FormData();
+      // files.forEach(file => formData.append('files', file));
+      // formData.append('personId', row.id);
+      // formData.append('columnId', columnId);
+      //
+      // const response = await fetch('/api/upload', {
+      //   method: 'POST',
+      //   body: formData
+      // });
+      // const data = await response.json();
+      // return data.files.map(f => ({
+      //   id: f.fileId,
+      //   name: f.fileName,
+      //   size: f.fileSize,
+      //   type: f.fileType,
+      //   url: f.fileUrl
+      // }));
 
-        // For this demo, simulate an upload delay and create local URLs
-        await new Promise((resolve) => setTimeout(resolve, 800));
+      // For this demo, simulate an upload delay and create local URLs
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-        return files.map((file) => ({
-          id: crypto.randomUUID(),
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          url: URL.createObjectURL(file),
-        }));
-      },
-      []
-    );
+      return files.map((file) => ({
+        id: crypto.randomUUID(),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: URL.createObjectURL(file),
+      }));
+    }, []);
 
   const onFilesDelete: NonNullable<UseDataGridProps<Person>["onFilesDelete"]> =
-    React.useCallback(async ({ fileIds, rowIndex, columnId }) => {
+    useCallback(({ fileIds, rowIndex, columnId }) => {
       // In a real app, you would delete multiple files from your server/storage:
       // const row = data[rowIndex];
       // await fetch('/api/files/batch-delete', {
@@ -412,7 +409,7 @@ export function DataGridDemo() {
     }, []);
 
   // Wrapper for onDataChange that tracks cell updates for undo/redo
-  const onDataChange = React.useCallback(
+  const onDataChange = useCallback(
     (newData: Person[]) => {
       // Find which cells changed by comparing old and new data
       const cellUpdates: UndoRedoCellUpdate[] = [];

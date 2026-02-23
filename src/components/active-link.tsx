@@ -29,6 +29,7 @@ export function ActiveLink({
   if (isExternal) {
     return (
       <Button
+        nativeButton={false}
         render={
           // biome-ignore lint/a11y/useAnchorContent: content provided via Button children
           <a
@@ -52,6 +53,7 @@ export function ActiveLink({
 
   return (
     <Button
+      nativeButton={false}
       render={
         <Link
           className={cn(

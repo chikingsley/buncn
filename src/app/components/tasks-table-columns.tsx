@@ -9,7 +9,7 @@ import {
   Ellipsis,
   Text,
 } from "lucide-react";
-import * as React from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +42,7 @@ function TaskActionsCell({
   row: Row<Task>;
   setRowAction: GetTasksTableColumnsProps["setRowAction"];
 }) {
-  const [isUpdatePending, startUpdateTransition] = React.useTransition();
+  const [isUpdatePending, startUpdateTransition] = useTransition();
 
   return (
     <DropdownMenu>

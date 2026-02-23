@@ -5,7 +5,7 @@ import type {
   ColumnDef,
   HeaderContext,
 } from "@tanstack/react-table";
-import * as React from "react";
+import { useCallback, useId } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +40,9 @@ function DataGridSelectHitbox({
           debug && "border border-red-500 border-dashed bg-red-500/20"
         )}
         htmlFor={htmlFor}
-      />
+      >
+        <span className="sr-only">Select row</span>
+      </label>
     </div>
   );
 }
@@ -60,7 +62,7 @@ function DataGridSelectCheckbox({
   className,
   ...props
 }: DataGridSelectCheckboxProps) {
-  const id = React.useId();
+  const id = useId();
 
   if (rowNumber !== undefined) {
     return (
@@ -116,7 +118,7 @@ function DataGridSelectHeader<TData>({
   readOnly,
   debug,
 }: DataGridSelectHeaderProps<TData>) {
-  const onCheckedChange = React.useCallback(
+  const onCheckedChange = useCallback(
     (value: boolean) => table.toggleAllPageRowsSelected(value),
     [table]
   );
@@ -164,7 +166,7 @@ function DataGridSelectCell<TData>({
     ? (meta?.getVisualRowIndex?.(row.id) ?? row.index + 1)
     : undefined;
 
-  const onCheckedChange = React.useCallback(
+  const onCheckedChange = useCallback(
     (value: boolean) => {
       if (meta?.onRowSelect) {
         meta.onRowSelect(row.index, value, false);
@@ -175,7 +177,7 @@ function DataGridSelectCell<TData>({
     [meta, row]
   );
 
-  const onClick = React.useCallback(
+  const onClick = useCallback(
     (event: React.MouseEvent) => {
       if (event.shiftKey) {
         event.preventDefault();

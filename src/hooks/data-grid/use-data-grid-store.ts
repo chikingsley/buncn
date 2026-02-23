@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import { useLazyRef } from "@/hooks/use-lazy-ref";
 import { getRowHeightValue, parseCellKey } from "@/lib/data-grid";
@@ -10,12 +10,12 @@ function useStore<T>(
   store: DataGridStore,
   selector: (state: DataGridState) => T
 ): T {
-  const getSnapshot = React.useCallback(
+  const getSnapshot = useCallback(
     () => selector(store.getState()),
     [store, selector]
   );
 
-  return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 }
 
 function useDataGridStore(
@@ -56,7 +56,7 @@ function useDataGridStore(
     };
   });
 
-  const store = React.useMemo<DataGridStore>(() => {
+  const store = useMemo<DataGridStore>(() => {
     let isBatching = false;
     let pendingNotification = false;
 
@@ -130,7 +130,7 @@ function useDataGridStore(
     () => new Map<number, Set<string>>()
   );
 
-  const cellSelectionMap = React.useMemo(() => {
+  const cellSelectionMap = useMemo(() => {
     const selectedCells = selectionState.selectedCells;
 
     if (selectedCells.size === 0) {

@@ -8,7 +8,15 @@ import {
   GripVertical,
   Trash2,
 } from "lucide-react";
-import * as React from "react";
+import {
+  type ComponentProps,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Sortable,
   SortableContent,
@@ -49,7 +57,7 @@ const SORT_ORDERS = [
 ];
 
 interface DataGridSortMenuProps<TData>
-  extends React.ComponentProps<typeof PopoverContent> {
+  extends ComponentProps<typeof PopoverContent> {
   table: Table<TData>;
   disabled?: boolean;
 }
@@ -60,16 +68,16 @@ export function DataGridSortMenu<TData>({
   ...props
 }: DataGridSortMenuProps<TData>) {
   const dir = useDirection();
-  const id = React.useId();
-  const labelId = React.useId();
-  const descriptionId = React.useId();
-  const [open, setOpen] = React.useState(false);
-  const addButtonRef = React.useRef<HTMLButtonElement>(null);
+  const id = useId();
+  const labelId = useId();
+  const descriptionId = useId();
+  const [open, setOpen] = useState(false);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
 
   const sorting = table.getState().sorting;
   const onSortingChange = table.setSorting;
 
-  const { columnLabels, columns } = React.useMemo(() => {
+  const { columnLabels, columns } = useMemo(() => {
     const labels = new Map<string, string>();
     const sortingIds = new Set(sorting.map((s) => s.id));
     const availableColumns: { id: string; label: string }[] = [];
@@ -93,7 +101,7 @@ export function DataGridSortMenu<TData>({
     };
   }, [sorting, table]);
 
-  const onSortAdd = React.useCallback(() => {
+  const onSortAdd = useCallback(() => {
     const firstColumn = columns[0];
     if (!firstColumn) {
       return;
@@ -105,7 +113,7 @@ export function DataGridSortMenu<TData>({
     ]);
   }, [columns, onSortingChange]);
 
-  const onSortUpdate = React.useCallback(
+  const onSortUpdate = useCallback(
     (sortId: string, updates: Partial<ColumnSort>) => {
       onSortingChange((prevSorting) => {
         if (!prevSorting) {
@@ -119,7 +127,7 @@ export function DataGridSortMenu<TData>({
     [onSortingChange]
   );
 
-  const onSortRemove = React.useCallback(
+  const onSortRemove = useCallback(
     (sortId: string) => {
       onSortingChange((prevSorting) =>
         prevSorting.filter((item) => item.id !== sortId)
@@ -128,12 +136,12 @@ export function DataGridSortMenu<TData>({
     [onSortingChange]
   );
 
-  const onSortingReset = React.useCallback(
+  const onSortingReset = useCallback(
     () => onSortingChange(table.initialState.sorting),
     [onSortingChange, table.initialState.sorting]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (
         event.target instanceof HTMLInputElement ||
@@ -158,7 +166,7 @@ export function DataGridSortMenu<TData>({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const onTriggerKeyDown = React.useCallback(
+  const onTriggerKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (
         REMOVE_SORT_SHORTCUTS.has(event.key.toLowerCase()) &&
@@ -227,10 +235,7 @@ export function DataGridSortMenu<TData>({
           {sorting.length > 0 && (
             <SortableContent
               render={
-                <div
-                  className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1"
-                  role="list"
-                />
+                <ul className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1" />
               }
             >
               {sorting.map((sort) => (
@@ -305,12 +310,11 @@ function DataTableSortItem({
   const fieldTriggerId = `${sortItemId}-field-trigger`;
   const directionListboxId = `${sortItemId}-direction-listbox`;
 
-  const [showFieldSelector, setShowFieldSelector] = React.useState(false);
-  const [showDirectionSelector, setShowDirectionSelector] =
-    React.useState(false);
+  const [showFieldSelector, setShowFieldSelector] = useState(false);
+  const [showDirectionSelector, setShowDirectionSelector] = useState(false);
 
-  const onItemKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const onItemKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement
@@ -333,12 +337,13 @@ function DataTableSortItem({
   return (
     <SortableItem
       render={
-        <div
+        <button
           className="flex items-center gap-2"
           id={sortItemId}
+          onClick={(event) => event.currentTarget.focus()}
           onKeyDown={onItemKeyDown}
-          role="listitem"
           tabIndex={-1}
+          type="button"
         />
       }
       value={sort.id}

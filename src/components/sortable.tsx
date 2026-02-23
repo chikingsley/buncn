@@ -37,8 +37,16 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { useComposedRefs } from "@/lib/compose-refs";
 import { cn } from "@/lib/utils";
 
@@ -78,10 +86,10 @@ interface SortableRootContextValue<T> {
 }
 
 const SortableRootContext =
-  React.createContext<SortableRootContextValue<unknown> | null>(null);
+  createContext<SortableRootContextValue<unknown> | null>(null);
 
 function useSortableContext(consumerName: string) {
-  const context = React.useContext(SortableRootContext);
+  const context = useContext(SortableRootContext);
   if (!context) {
     throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``);
   }
@@ -126,8 +134,8 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     ...sortableProps
   } = props;
 
-  const id = React.useId();
-  const [activeId, setActiveId] = React.useState<UniqueIdentifier | null>(null);
+  const id = useId();
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -136,12 +144,9 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-  const config = React.useMemo(
-    () => orientationConfig[orientation],
-    [orientation]
-  );
+  const config = useMemo(() => orientationConfig[orientation], [orientation]);
 
-  const getItemValue = React.useCallback(
+  const getItemValue = useCallback(
     (item: T): UniqueIdentifier => {
       if (typeof item === "object" && !getItemValueProp) {
         throw new Error("getItemValue is required when using array of objects");
@@ -153,11 +158,11 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [getItemValueProp]
   );
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     return value.map((item) => getItemValue(item));
   }, [value, getItemValue]);
 
-  const onDragStart = React.useCallback(
+  const onDragStart = useCallback(
     (event: DragStartEvent) => {
       onDragStartProp?.(event);
 
@@ -170,7 +175,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [onDragStartProp]
   );
 
-  const onDragEnd = React.useCallback(
+  const onDragEnd = useCallback(
     (event: DragEndEvent) => {
       onDragEndProp?.(event);
 
@@ -198,7 +203,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [value, onValueChange, onMove, getItemValue, onDragEndProp]
   );
 
-  const onDragCancel = React.useCallback(
+  const onDragCancel = useCallback(
     (event: DragEndEvent) => {
       onDragCancelProp?.(event);
 
@@ -211,7 +216,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [onDragCancelProp]
   );
 
-  const announcements: Announcements = React.useMemo(
+  const announcements: Announcements = useMemo(
     () => ({
       onDragStart({ active }) {
         const activeValue = active.id.toString();
@@ -254,27 +259,26 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     [value]
   );
 
-  const screenReaderInstructions: ScreenReaderInstructions =
-    React.useMemo(() => {
-      let directionKeys: string;
-      if (orientation === "vertical") {
-        directionKeys = "up and down";
-      } else if (orientation === "horizontal") {
-        directionKeys = "left and right";
-      } else {
-        directionKeys = "arrow";
-      }
+  const screenReaderInstructions: ScreenReaderInstructions = useMemo(() => {
+    let directionKeys: string;
+    if (orientation === "vertical") {
+      directionKeys = "up and down";
+    } else if (orientation === "horizontal") {
+      directionKeys = "left and right";
+    } else {
+      directionKeys = "arrow";
+    }
 
-      return {
-        draggable: `
+    return {
+      draggable: `
         To pick up a sortable item, press space or enter.
         While dragging, use the ${directionKeys} keys to move the item.
         Press space or enter again to drop the item in its new position, or press escape to cancel.
       `,
-      };
-    }, [orientation]);
+    };
+  }, [orientation]);
 
-  const contextValue = React.useMemo(
+  const contextValue = useMemo(
     () => ({
       id,
       items,
@@ -321,7 +325,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
   );
 }
 
-const SortableContentContext = React.createContext<boolean>(false);
+const SortableContentContext = createContext<boolean>(false);
 
 interface SortableContentProps extends useRender.ComponentProps<"div"> {
   strategy?: SortableContextProps["strategy"];
@@ -373,11 +377,12 @@ interface SortableItemContextValue {
   disabled?: boolean;
 }
 
-const SortableItemContext =
-  React.createContext<SortableItemContextValue | null>(null);
+const SortableItemContext = createContext<SortableItemContextValue | null>(
+  null
+);
 
 function useSortableItemContext(consumerName: string) {
-  const context = React.useContext(SortableItemContext);
+  const context = useContext(SortableItemContext);
   if (!context) {
     throw new Error(`\`${consumerName}\` must be used within \`${ITEM_NAME}\``);
   }
@@ -402,8 +407,8 @@ function SortableItem(props: SortableItemProps) {
     ...itemProps
   } = props;
 
-  const inSortableContent = React.useContext(SortableContentContext);
-  const inSortableOverlay = React.useContext(SortableOverlayContext);
+  const inSortableContent = useContext(SortableContentContext);
+  const inSortableOverlay = useContext(SortableOverlayContext);
 
   if (!(inSortableContent || inSortableOverlay)) {
     throw new Error(
@@ -416,7 +421,7 @@ function SortableItem(props: SortableItemProps) {
   }
 
   const context = useSortableContext(ITEM_NAME);
-  const id = React.useId();
+  const id = useId();
   const {
     attributes,
     listeners,
@@ -437,7 +442,7 @@ function SortableItem(props: SortableItemProps) {
     }
   });
 
-  const composedStyle = React.useMemo<React.CSSProperties>(() => {
+  const composedStyle = useMemo<React.CSSProperties>(() => {
     return {
       transform: CSS.Translate.toString(transform),
       transition,
@@ -445,7 +450,7 @@ function SortableItem(props: SortableItemProps) {
     };
   }, [transform, transition, style]);
 
-  const itemContext = React.useMemo<SortableItemContextValue>(
+  const itemContext = useMemo<SortableItemContextValue>(
     () => ({
       id,
       attributes,
@@ -532,7 +537,7 @@ function SortableItemHandle(props: SortableItemHandleProps) {
   });
 }
 
-const SortableOverlayContext = React.createContext(false);
+const SortableOverlayContext = createContext(false);
 
 const dropAnimation: DropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -557,8 +562,8 @@ function SortableOverlay(props: SortableOverlayProps) {
 
   const context = useSortableContext(OVERLAY_NAME);
 
-  const [mounted, setMounted] = React.useState(false);
-  React.useLayoutEffect(() => setMounted(true), []);
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => setMounted(true), []);
 
   const container =
     containerProp ?? (mounted ? globalThis.document?.body : null);
@@ -567,7 +572,7 @@ function SortableOverlay(props: SortableOverlayProps) {
     return null;
   }
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <DragOverlay
       className={cn(!context.flatCursor && "cursor-grabbing")}
       dropAnimation={dropAnimation}

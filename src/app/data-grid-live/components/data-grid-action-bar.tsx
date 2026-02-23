@@ -2,7 +2,7 @@
 
 import type { Table, TableMeta } from "@tanstack/react-table";
 import { CheckCircle2, Palette, Trash2, X } from "lucide-react";
-import * as React from "react";
+import { useCallback } from "react";
 
 import {
   ActionBar,
@@ -41,7 +41,7 @@ export function DataGridActionBar<TData>({
   onStyleUpdate,
   onDelete,
 }: DataGridActionBarProps<TData>) {
-  const onOpenChange = React.useCallback(
+  const onOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
         table.toggleAllRowsSelected(false);

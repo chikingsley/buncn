@@ -1,5 +1,5 @@
 import type { Row } from "@tanstack/react-table";
-import * as React from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 
 import {
@@ -35,7 +35,7 @@ function useDataGridClipboard<TData>(
 ) {
   const { store, propsRef, tableRef, dataGridRef, navigableColumnIds } = ctx;
 
-  const serializeCellsToTsv = React.useCallback(() => {
+  const serializeCellsToTsv = useCallback(() => {
     const currentState = store.getState();
 
     let selectedCellsArray: string[];
@@ -132,7 +132,7 @@ function useDataGridClipboard<TData>(
     return { tsvData, selectedCellsArray };
   }, [store, tableRef]);
 
-  const onCellsCopy = React.useCallback(async () => {
+  const onCellsCopy = useCallback(async () => {
     const result = serializeCellsToTsv();
     if (!result) {
       return;
@@ -160,7 +160,7 @@ function useDataGridClipboard<TData>(
     }
   }, [store, serializeCellsToTsv]);
 
-  const onCellsCut = React.useCallback(async () => {
+  const onCellsCut = useCallback(async () => {
     if (propsRef.current.readOnly) {
       return;
     }
@@ -189,7 +189,7 @@ function useDataGridClipboard<TData>(
     }
   }, [store, propsRef, serializeCellsToTsv]);
 
-  const onCellsPaste = React.useCallback(
+  const onCellsPaste = useCallback(
     async (expandRows = false) => {
       if (propsRef.current.readOnly) {
         return;

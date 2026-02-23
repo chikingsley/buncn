@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useSyncExternalStore } from "react";
 
 function subscribe() {
   return () => {
@@ -15,7 +15,7 @@ function getServerSnapshot() {
 }
 
 function useMounted() {
-  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 export { useMounted };

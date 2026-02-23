@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import type { ColumnDef } from "@tanstack/react-table";
 import { act, renderHook } from "@testing-library/react";
-import type * as React from "react";
+
 import { useDataGrid } from "@/hooks/use-data-grid";
 
 // Mock toast
@@ -268,13 +268,13 @@ describe("useDataGrid", () => {
         { wrapper: createWrapper() }
       );
 
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStart?.(0, "name");
       });
 
       expect(result.current.editingCell).not.toBeNull();
 
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStop?.();
       });
 
@@ -1523,7 +1523,7 @@ describe("useDataGrid", () => {
       );
 
       // Start editing
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStart?.(0, "name");
       });
 
@@ -1533,7 +1533,7 @@ describe("useDataGrid", () => {
       });
 
       // Stop editing and move to next row
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStop?.({ moveToNextRow: true });
       });
 
@@ -1551,12 +1551,12 @@ describe("useDataGrid", () => {
       );
 
       // Start editing
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStart?.(0, "name");
       });
 
       // Stop editing and navigate right
-      await act(async () => {
+      await act(() => {
         result.current.tableMeta.onCellEditingStop?.({ direction: "right" });
       });
 

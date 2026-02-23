@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
+import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ const shellVariants = cva(
 );
 
 interface ShellProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof shellVariants> {
   as?: React.ElementType;
 }
