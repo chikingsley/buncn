@@ -18,8 +18,8 @@ function DataGridSkeleton({ className, ...props }: DivProps) {
 }
 
 interface DataGridSkeletonToolbarProps extends DivProps {
-  align?: "start" | "center" | "end";
   actionCount?: number;
+  align?: "start" | "center" | "end";
 }
 
 function DataGridSkeletonToolbar({

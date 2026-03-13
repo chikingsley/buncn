@@ -31,8 +31,8 @@ import {
 
 interface DataGridDemoImplProps extends UseDataGridProps<Person> {
   dir: Direction;
-  onDirChange: (dir: Direction) => void;
   height: number;
+  onDirChange: (dir: Direction) => void;
 }
 
 function DataGridDemoImpl({

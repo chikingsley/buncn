@@ -32,6 +32,7 @@ function useDataGridNavigation<TData>(
   } = ctx;
 
   const navigateCell = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Navigation handler covering all direction variants with virtualized scroll management.
     (direction: NavigationDirection) => {
       const currentState = store.getState();
       if (!currentState.focusedCell) {
@@ -157,6 +158,8 @@ function useDataGridNavigation<TData>(
               newColumnId = targetColumnId;
             }
           }
+          break;
+        default:
           break;
       }
 

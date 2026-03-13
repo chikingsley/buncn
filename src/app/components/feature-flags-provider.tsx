@@ -15,8 +15,8 @@ import { type FlagConfig, flagConfig } from "@/config/flag";
 type FilterFlag = FlagConfig["featureFlags"][number]["value"];
 
 interface FeatureFlagsContextValue {
-  filterFlag: FilterFlag;
   enableAdvancedFilter: boolean;
+  filterFlag: FilterFlag;
 }
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextValue | null>(

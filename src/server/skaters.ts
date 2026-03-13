@@ -7,20 +7,20 @@ import {
 import { DB_TABLES, db } from "@/db";
 
 interface RawSkaterRow {
-  id: string;
-  order: number;
-  name: string | null;
-  email: string | null;
-  stance: string;
-  style: string;
-  status: string;
-  yearsSkating: number | string;
-  startedSkating: string | null;
-  isPro: boolean;
-  tricks: string | string[] | null;
-  media: string | unknown[] | null;
   createdAt: string;
+  email: string | null;
+  id: string;
+  isPro: boolean;
+  media: string | unknown[] | null;
+  name: string | null;
+  order: number;
+  stance: string;
+  startedSkating: string | null;
+  status: string;
+  style: string;
+  tricks: string | string[] | null;
   updatedAt: string | null;
+  yearsSkating: number | string;
 }
 
 export async function getSkaters() {
@@ -45,6 +45,7 @@ export async function getSkaters() {
   }));
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Handles both bulk and single skater creation with full field mapping.
 export async function createSkaters(body: unknown) {
   const bulkResult = insertSkatersSchema.safeParse(body);
 
@@ -121,6 +122,7 @@ export async function patchSkaters(body: unknown) {
   }
 
   const { updates } = result.data;
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Dynamic UPDATE builder checking each optional field.
   const updated = await db.begin(async (tx) => {
     let count = 0;
     for (const { id, changes } of updates) {

@@ -9,37 +9,43 @@ import type {
 } from "@/types/data-grid";
 
 export interface DataGridState {
-  sorting: import("@tanstack/react-table").SortingState;
   columnFilters: import("@tanstack/react-table").ColumnFiltersState;
+  contextMenu: import("@/types/data-grid").ContextMenuState;
+  cutCells: Set<string>;
+  editingCell: CellPosition | null;
+  focusedCell: CellPosition | null;
+  lastClickedRowIndex: number | null;
+  matchIndex: number;
+  pasteDialog: import("@/types/data-grid").PasteDialogState;
   rowHeight: RowHeightValue;
   rowSelection: import("@tanstack/react-table").RowSelectionState;
-  selectionState: import("@/types/data-grid").SelectionState;
-  focusedCell: CellPosition | null;
-  editingCell: CellPosition | null;
-  cutCells: Set<string>;
-  contextMenu: import("@/types/data-grid").ContextMenuState;
-  searchQuery: string;
   searchMatches: CellPosition[];
-  matchIndex: number;
   searchOpen: boolean;
-  lastClickedRowIndex: number | null;
-  pasteDialog: import("@/types/data-grid").PasteDialogState;
+  searchQuery: string;
+  selectionState: import("@/types/data-grid").SelectionState;
+  sorting: import("@tanstack/react-table").SortingState;
 }
 
 export interface DataGridStore {
-  subscribe: (callback: () => void) => () => void;
+  batch: (fn: () => void) => void;
   getState: () => DataGridState;
+  notify: () => void;
   setState: <K extends keyof DataGridState>(
     key: K,
     value: DataGridState[K]
   ) => void;
-  notify: () => void;
-  batch: (fn: () => void) => void;
+  subscribe: (callback: () => void) => () => void;
 }
 
 export interface DataGridContext<TData> {
-  store: DataGridStore;
-  stateRef: React.MutableRefObject<DataGridState>;
+  cellMapRef: React.RefObject<Map<string, HTMLDivElement>>;
+  columnIds: string[];
+  dataGridRef: React.RefObject<HTMLDivElement | null>;
+  dir: Direction;
+  focusGuardRef: React.MutableRefObject<boolean>;
+  footerRef: React.RefObject<HTMLDivElement | null>;
+  headerRef: React.RefObject<HTMLDivElement | null>;
+  navigableColumnIds: string[];
   propsRef: React.MutableRefObject<{
     data: TData[];
     columns: ColumnDef<TData, unknown>[];
@@ -80,18 +86,12 @@ export interface DataGridContext<TData> {
     initialState?: import("@tanstack/react-table").InitialTableState;
     state?: Partial<import("@tanstack/react-table").TableState>;
   }>;
-  tableRef: React.MutableRefObject<Table<TData> | null>;
+  rowMapRef: React.RefObject<Map<number, HTMLDivElement>>;
   rowVirtualizerRef: React.MutableRefObject<Virtualizer<
     HTMLDivElement,
     Element
   > | null>;
-  dataGridRef: React.RefObject<HTMLDivElement | null>;
-  headerRef: React.RefObject<HTMLDivElement | null>;
-  footerRef: React.RefObject<HTMLDivElement | null>;
-  cellMapRef: React.RefObject<Map<string, HTMLDivElement>>;
-  rowMapRef: React.RefObject<Map<number, HTMLDivElement>>;
-  focusGuardRef: React.MutableRefObject<boolean>;
-  navigableColumnIds: string[];
-  columnIds: string[];
-  dir: Direction;
+  stateRef: React.MutableRefObject<DataGridState>;
+  store: DataGridStore;
+  tableRef: React.MutableRefObject<Table<TData> | null>;
 }

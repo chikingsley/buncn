@@ -53,8 +53,8 @@ const REMOVE_SORT_SHORTCUTS = ["backspace", "delete"];
 
 interface DataTableSortListProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataTableSortList<TData>({
@@ -279,12 +279,12 @@ export function DataTableSortList<TData>({
 }
 
 interface DataTableSortItemProps {
+  columnLabels: Map<string, string>;
+  columns: { id: string; label: string }[];
+  onSortRemove: (sortId: string) => void;
+  onSortUpdate: (sortId: string, updates: Partial<ColumnSort>) => void;
   sort: ColumnSort;
   sortItemId: string;
-  columns: { id: string; label: string }[];
-  columnLabels: Map<string, string>;
-  onSortUpdate: (sortId: string, updates: Partial<ColumnSort>) => void;
-  onSortRemove: (sortId: string) => void;
 }
 
 function DataTableSortItem({

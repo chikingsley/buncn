@@ -22,8 +22,8 @@ import { cn } from "@/lib/utils";
 
 interface DataGridViewMenuProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataGridViewMenu<TData>({

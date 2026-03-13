@@ -26,9 +26,9 @@ import type { Option } from "@/types/data-table";
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
-  title?: string;
-  options: Option[];
   multiple?: boolean;
+  options: Option[];
+  title?: string;
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
@@ -88,13 +88,14 @@ export function DataTableFacetedFilter<TData, TValue>({
         }
       >
         {selectedValues?.size > 0 ? (
+          // biome-ignore lint/a11y/useSemanticElements: nested inside PopoverTrigger which renders as button
           <span
             aria-label={`Clear ${title} filter`}
-            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-sm border-none bg-transparent opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             onClick={onReset}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                onReset(event);
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onReset?.();
               }
             }}
             role="button"

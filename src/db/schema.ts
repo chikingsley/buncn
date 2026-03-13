@@ -20,15 +20,15 @@ export const SKATER_STYLE = [
 export const SKATER_STATUS = ["amateur", "sponsored", "pro", "legend"] as const;
 
 export interface Task {
-  id: string;
-  code: string;
-  title: string | null;
-  status: (typeof TASK_STATUS)[number];
-  priority: (typeof TASK_PRIORITY)[number];
-  label: (typeof TASK_LABEL)[number];
-  estimatedHours: number;
   archived: boolean;
+  code: string;
   createdAt: Date;
+  estimatedHours: number;
+  id: string;
+  label: (typeof TASK_LABEL)[number];
+  priority: (typeof TASK_PRIORITY)[number];
+  status: (typeof TASK_STATUS)[number];
+  title: string | null;
   updatedAt: Date | null;
 }
 
@@ -38,20 +38,20 @@ export type NewTask = Omit<Task, "createdAt" | "updatedAt"> & {
 };
 
 export interface Skater {
-  id: string;
-  order: number;
-  name: string | null;
-  email: string | null;
-  stance: (typeof SKATER_STANCE)[number];
-  style: (typeof SKATER_STYLE)[number];
-  status: (typeof SKATER_STATUS)[number];
-  yearsSkating: number;
-  startedSkating: Date | null;
-  isPro: boolean;
-  tricks: string[] | null;
-  media: FileCellData[] | null;
   createdAt: Date;
+  email: string | null;
+  id: string;
+  isPro: boolean;
+  media: FileCellData[] | null;
+  name: string | null;
+  order: number;
+  stance: (typeof SKATER_STANCE)[number];
+  startedSkating: Date | null;
+  status: (typeof SKATER_STATUS)[number];
+  style: (typeof SKATER_STYLE)[number];
+  tricks: string[] | null;
   updatedAt: Date | null;
+  yearsSkating: number;
 }
 
 export type NewSkater = Omit<Skater, "createdAt" | "updatedAt"> & {
@@ -92,15 +92,15 @@ export const MAIL_LABEL = [
 ] as const;
 
 export interface Mail {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
   body: string;
-  folder: (typeof MAIL_FOLDER)[number];
-  read: boolean;
-  labels: (typeof MAIL_LABEL)[number][];
   createdAt: Date;
+  email: string;
+  folder: (typeof MAIL_FOLDER)[number];
+  id: string;
+  labels: (typeof MAIL_LABEL)[number][];
+  name: string;
+  read: boolean;
+  subject: string;
   updatedAt: Date | null;
 }
 

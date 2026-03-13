@@ -1,14 +1,14 @@
 import type { LucideIcon } from "lucide-react";
 
 export interface Account {
-  label: string;
   email: string;
   icon: LucideIcon;
+  label: string;
 }
 
 export interface Contact {
-  name: string;
   email: string;
+  name: string;
 }
 
 export const contacts: Contact[] = [

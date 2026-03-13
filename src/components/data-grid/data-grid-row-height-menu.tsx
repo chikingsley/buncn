@@ -41,8 +41,8 @@ const rowHeights = [
 
 interface DataGridRowHeightMenuProps<TData>
   extends ComponentProps<typeof SelectContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataGridRowHeightMenu<TData>({

@@ -2,15 +2,15 @@ import type { Task } from "@/db/schema";
 import type { GetTasksSchema } from "./validations";
 
 interface RawTaskRow {
-  id: string;
-  code: string;
-  title: string | null;
-  status: Task["status"];
-  priority: Task["priority"];
-  label: Task["label"];
-  estimatedHours: number | string;
   archived: boolean;
+  code: string;
   createdAt: Date | string;
+  estimatedHours: number | string;
+  id: string;
+  label: Task["label"];
+  priority: Task["priority"];
+  status: Task["status"];
+  title: string | null;
   updatedAt: Date | string | null;
 }
 

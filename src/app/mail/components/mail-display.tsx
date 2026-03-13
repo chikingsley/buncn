@@ -29,7 +29,14 @@ import {
 } from "@/components/ui/tooltip";
 import type { Mail } from "@/db/schema";
 
-type MailAction = "archive" | "junk" | "trash" | "reply" | "forward";
+type MailAction =
+  | "archive"
+  | "junk"
+  | "trash"
+  | "reply"
+  | "replyAll"
+  | "forward"
+  | "snooze";
 
 interface MailDisplayProps {
   mail: Mail | null;
@@ -113,7 +120,15 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
           />
 
           <Tooltip>
-            <TooltipTrigger render={<Button size="icon" variant="ghost" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("snooze", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
               <Clock className="h-4 w-4" />
               <span className="sr-only">Snooze</span>
             </TooltipTrigger>
@@ -139,7 +154,15 @@ export function MailDisplay({ mail, onAction }: MailDisplayProps) {
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger render={<Button size="icon" variant="ghost" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => onAction("replyAll", mail.id)}
+                  size="icon"
+                  variant="ghost"
+                />
+              }
+            >
               <ReplyAll className="h-4 w-4" />
               <span className="sr-only">Reply all</span>
             </TooltipTrigger>

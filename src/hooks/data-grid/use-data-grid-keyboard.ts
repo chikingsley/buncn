@@ -68,6 +68,7 @@ function useDataGridKeyboard<TData>(
   } = handlers;
 
   const onDataGridKeyDown = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Central keyboard handler dispatching all grid shortcuts, navigation, selection, and editing.
     (event: KeyboardEvent) => {
       const currentState = store.getState();
       const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
@@ -466,6 +467,8 @@ function useDataGridKeyboard<TData>(
             direction = event.shiftKey ? "left" : "right";
           }
           break;
+        default:
+          break;
       }
 
       if (direction) {
@@ -534,6 +537,8 @@ function useDataGridKeyboard<TData>(
               if (navigableColumnIds.length > 0) {
                 newColumnId = navigableColumnIds.at(-1) ?? newColumnId;
               }
+              break;
+            default:
               break;
           }
 

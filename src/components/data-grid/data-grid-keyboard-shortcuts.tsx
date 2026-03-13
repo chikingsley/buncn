@@ -28,19 +28,19 @@ const SHORTCUT_KEY = "/";
 const MAC_KEYBOARD_REGEX = /Mac|iPhone|iPad|iPod/;
 
 interface ShortcutGroup {
-  title: string;
   shortcuts: Array<{
     keys: string[];
     description: string;
   }>;
+  title: string;
 }
 
 interface DataGridKeyboardShortcutsProps {
-  enableSearch?: boolean;
-  enableUndoRedo?: boolean;
   enablePaste?: boolean;
   enableRowAdd?: boolean;
   enableRowsDelete?: boolean;
+  enableSearch?: boolean;
+  enableUndoRedo?: boolean;
 }
 
 export const DataGridKeyboardShortcuts = memo(
@@ -69,9 +69,9 @@ function DataGridKeyboardShortcutsImpl({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isMac =
-    typeof navigator !== "undefined"
-      ? MAC_KEYBOARD_REGEX.test(navigator.userAgent)
-      : false;
+    typeof navigator === "undefined"
+      ? false
+      : MAC_KEYBOARD_REGEX.test(navigator.userAgent);
 
   const modKey = isMac ? "⌘" : "Ctrl";
 

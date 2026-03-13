@@ -43,11 +43,11 @@ type CardKind = "music" | "audiobook";
 type RepeatMode = "off" | "all" | "one";
 
 interface QueueTrack {
-  title: string;
   artist: string;
-  src: string;
   artwork: string;
   explicit?: boolean;
+  src: string;
+  title: string;
 }
 
 const MUSIC_QUEUE: QueueTrack[] = [

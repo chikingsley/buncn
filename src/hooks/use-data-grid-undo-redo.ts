@@ -15,35 +15,35 @@ const DEFAULT_MAX_HISTORY = 100;
 const BATCH_TIMEOUT = 300;
 
 interface HistoryEntry<TData> {
-  variant: "cells_update" | "rows_add" | "rows_delete";
   count: number;
+  redo: (currentData: TData[]) => TData[];
   timestamp: number;
   undo: (currentData: TData[]) => TData[];
-  redo: (currentData: TData[]) => TData[];
+  variant: "cells_update" | "rows_add" | "rows_delete";
 }
 
 interface UndoRedoCellUpdate {
-  rowId: string;
   columnId: string;
-  previousValue: unknown;
   newValue: unknown;
+  previousValue: unknown;
+  rowId: string;
 }
 
 interface StoreState<TData> {
-  undoStack: HistoryEntry<TData>[];
-  redoStack: HistoryEntry<TData>[];
   hasPendingChanges: boolean;
+  redoStack: HistoryEntry<TData>[];
+  undoStack: HistoryEntry<TData>[];
 }
 
 interface Store<TData> {
-  subscribe: (callback: () => void) => () => void;
-  getState: () => StoreState<TData>;
-  push: (entry: HistoryEntry<TData>) => void;
-  undo: () => HistoryEntry<TData> | null;
-  redo: () => HistoryEntry<TData> | null;
   clear: () => void;
-  setPendingChanges: (value: boolean) => void;
+  getState: () => StoreState<TData>;
   notify: () => void;
+  push: (entry: HistoryEntry<TData>) => void;
+  redo: () => HistoryEntry<TData> | null;
+  setPendingChanges: (value: boolean) => void;
+  subscribe: (callback: () => void) => () => void;
+  undo: () => HistoryEntry<TData> | null;
 }
 
 function useStore<T>(
@@ -78,18 +78,18 @@ function getPendingKey(rowId: string, columnId: string): string {
 
 interface UseDataGridUndoRedoProps<TData> {
   data: TData[];
-  onDataChange: (data: TData[]) => void;
+  enabled?: boolean;
   getRowId: (row: TData) => string;
   maxHistory?: number;
-  enabled?: boolean;
+  onDataChange: (data: TData[]) => void;
 }
 
 interface UseDataGridUndoRedoReturn<TData> {
-  canUndo: boolean;
   canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
+  canUndo: boolean;
   onClear: () => void;
+  onRedo: () => void;
+  onUndo: () => void;
   trackCellsUpdate: (updates: UndoRedoCellUpdate[]) => void;
   trackRowsAdd: (rows: TData[]) => void;
   trackRowsDelete: (rows: TData[]) => void;
@@ -302,7 +302,7 @@ function useDataGridUndoRedo<TData>({
     propsRef.current.onDataChange(newData);
 
     toast.success(
-      `${entry.count} action${entry.count !== 1 ? "s" : ""} undone`
+      `${entry.count} action${entry.count === 1 ? "" : "s"} undone`
     );
   }, [store, propsRef, onCommit]);
 
@@ -323,7 +323,7 @@ function useDataGridUndoRedo<TData>({
     propsRef.current.onDataChange(newData);
 
     toast.success(
-      `${entry.count} action${entry.count !== 1 ? "s" : ""} redone`
+      `${entry.count} action${entry.count === 1 ? "" : "s"} redone`
     );
   }, [store, propsRef, onCommit]);
 
@@ -468,6 +468,7 @@ function useDataGridUndoRedo<TData>({
       return;
     }
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Undo/redo keyboard handler with focus context and edit-state awareness.
     function onKeyDown(event: KeyboardEvent) {
       const isCtrlOrCmd = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
@@ -531,7 +532,7 @@ function useDataGridUndoRedo<TData>({
 }
 
 export {
-  useDataGridUndoRedo,
   //
   type UndoRedoCellUpdate,
+  useDataGridUndoRedo,
 };

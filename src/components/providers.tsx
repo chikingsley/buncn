@@ -1,29 +1,17 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
 } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/react-router";
-import { useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { appQueryClient } from "@/lib/query-client";
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000,
-            gcTime: 5 * 60 * 1000,
-          },
-        },
-      })
-  );
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={appQueryClient}>
       <NextThemesProvider {...props}>
         <TooltipProvider delay={120}>
           <NuqsAdapter>{children}</NuqsAdapter>

@@ -1,5 +1,6 @@
 import { Cloud, Globe, Mail as MailIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Mail } from "@/app/mail/components/mail";
 import { deleteMail, updateMail } from "@/app/mail/lib/actions";
@@ -15,8 +16,8 @@ const accounts: Account[] = [
 ];
 
 interface MailData {
-  mails: MailType[];
   folderCounts: Record<string, number>;
+  mails: MailType[];
 }
 
 const EMPTY_MAIL_DATA: MailData = {
@@ -26,26 +27,26 @@ const EMPTY_MAIL_DATA: MailData = {
 
 function useMailData(folder: string) {
   const [data, setData] = useState<MailData>(EMPTY_MAIL_DATA);
+  const requestIdRef = useRef(0);
 
   const fetchData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    setData((current) => ({ ...current, mails: [] }));
+
     const [mails, folderCounts] = await Promise.all([
       getMails({ folder: folder as MailType["folder"] }),
       getMailFolderCounts(),
     ]);
+
+    if (requestId !== requestIdRef.current) {
+      return;
+    }
+
     setData({ mails, folderCounts });
   }, [folder]);
 
   useEffect(() => {
-    let stale = false;
-    const run = async () => {
-      await fetchData();
-    };
-    if (!stale) {
-      run();
-    }
-    return () => {
-      stale = true;
-    };
+    fetchData();
   }, [fetchData]);
 
   useEffect(() => {
@@ -60,21 +61,37 @@ export function MailPage() {
   const data = useMailData(folder);
 
   const handleAction = useCallback(async (action: string, mailId: string) => {
+    if (action === "reply" || action === "replyAll" || action === "forward") {
+      toast.info("Compose actions are not implemented in this demo yet");
+      return;
+    }
+
+    if (action === "snooze") {
+      toast.info("Snooze is not implemented in this demo yet");
+      return;
+    }
+
+    let error: string | null = null;
+
     switch (action) {
       case "archive":
-        await updateMail({ id: mailId, folder: "archive" });
+        ({ error } = await updateMail({ id: mailId, folder: "archive" }));
         break;
       case "junk":
-        await updateMail({ id: mailId, folder: "junk" });
+        ({ error } = await updateMail({ id: mailId, folder: "junk" }));
         break;
       case "trash":
-        await updateMail({ id: mailId, folder: "trash" });
+        ({ error } = await updateMail({ id: mailId, folder: "trash" }));
         break;
       case "delete":
-        await deleteMail({ id: mailId });
+        ({ error } = await deleteMail({ id: mailId }));
         break;
       default:
         break;
+    }
+
+    if (error) {
+      toast.error(error);
     }
   }, []);
 

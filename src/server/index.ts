@@ -1,8 +1,14 @@
+import { ZodError } from "zod";
 import {
   type CreateTaskSchema,
+  createTaskSchema,
+  deleteTasksSchema,
   parseTasksSearchParams,
   type UpdateTaskSchema,
+  updateTaskSchema,
+  updateTasksSchema,
 } from "@/app/lib/validations";
+import { updateMailSchema } from "@/app/mail/lib/validations";
 import { getErrorMessage } from "@/lib/handle-error";
 import {
   deleteMail,
@@ -38,6 +44,10 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function getStatusCode(error: unknown) {
+  return error instanceof ZodError ? 400 : 500;
+}
+
 const isDev = process.env.NODE_ENV !== "production";
 
 const server = Bun.serve({
@@ -60,42 +70,39 @@ const server = Bun.serve({
       },
       POST: async (req) => {
         try {
-          const body = (await req.json()) as CreateTaskSchema;
+          const body = createTaskSchema.parse(
+            (await req.json()) as CreateTaskSchema
+          );
           await createTask(body);
           return json({ data: null, error: null });
         } catch (error) {
           return json(
             { data: null, error: getErrorMessage(error) },
-            { status: 500 }
+            { status: getStatusCode(error) }
           );
         }
       },
       PATCH: async (req) => {
         try {
-          const body = (await req.json()) as {
-            ids: string[];
-            label?: "bug" | "feature" | "enhancement" | "documentation";
-            status?: "todo" | "in-progress" | "done" | "canceled";
-            priority?: "low" | "medium" | "high";
-          };
+          const body = updateTasksSchema.parse(await req.json());
           await updateTasks(body);
           return json({ data: null, error: null });
         } catch (error) {
           return json(
             { data: null, error: getErrorMessage(error) },
-            { status: 500 }
+            { status: getStatusCode(error) }
           );
         }
       },
       DELETE: async (req) => {
         try {
-          const body = (await req.json()) as { ids: string[] };
+          const body = deleteTasksSchema.parse(await req.json());
           await deleteTasks(body);
           return json({ data: null, error: null });
         } catch (error) {
           return json(
             { data: null, error: getErrorMessage(error) },
-            { status: 500 }
+            { status: getStatusCode(error) }
           );
         }
       },
@@ -108,13 +115,15 @@ const server = Bun.serve({
             return json({ error: "Task id is required" }, { status: 400 });
           }
 
-          const body = (await req.json()) as UpdateTaskSchema;
+          const body = updateTaskSchema.parse(
+            (await req.json()) as UpdateTaskSchema
+          );
           await updateTask({ id, ...body });
           return json({ data: null, error: null });
         } catch (error) {
           return json(
             { data: null, error: getErrorMessage(error) },
-            { status: 500 }
+            { status: getStatusCode(error) }
           );
         }
       },
@@ -257,13 +266,13 @@ const server = Bun.serve({
           if (!id) {
             return json({ error: "Mail id is required" }, { status: 400 });
           }
-          const body = (await req.json()) as Parameters<typeof updateMail>[0];
+          const body = updateMailSchema.parse(await req.json());
           await updateMail({ ...body, id });
           return json({ data: null, error: null });
         } catch (error) {
           return json(
             { data: null, error: getErrorMessage(error) },
-            { status: 500 }
+            { status: getStatusCode(error) }
           );
         }
       },

@@ -27,6 +27,8 @@ import type {
   RowHeightValue,
 } from "@/types/data-grid";
 
+const DANGEROUS_PROTOCOL_REGEX = /^(javascript|data|vbscript|file):/i;
+
 export function flexRender<TProps extends object>(
   Comp: ((props: TProps) => React.ReactNode) | string | undefined,
   props: TProps
@@ -130,6 +132,7 @@ export function getColumnBorderVisibility<TData>(params: {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Computes pinning styles with RTL/LTR and border shadow logic.
 export function getColumnPinningStyle<TData>(params: {
   column: Column<TData>;
   withBorder?: boolean;
@@ -322,7 +325,7 @@ export function getUrlHref(urlString: string): string {
   const trimmed = urlString.trim();
 
   // Reject dangerous protocols (extra safety, though our http:// prefix would neutralize them)
-  if (/^(javascript|data|vbscript|file):/i.test(trimmed)) {
+  if (DANGEROUS_PROTOCOL_REGEX.test(trimmed)) {
     return "";
   }
 

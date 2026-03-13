@@ -1,4 +1,5 @@
 import {
+  array,
   number,
   object,
   string,
@@ -13,17 +14,17 @@ import type {
 } from "@/types/data-table";
 
 export interface GetTasksSchema {
-  filterFlag: (typeof flagConfig.featureFlags)[number]["value"] | null;
-  page: number;
-  perPage: number;
-  sort: ExtendedColumnSort<Task>[];
-  title: string;
-  status: Task["status"][];
-  priority: Task["priority"][];
-  estimatedHours: number[];
   createdAt: number[];
+  estimatedHours: number[];
+  filterFlag: (typeof flagConfig.featureFlags)[number]["value"] | null;
   filters: ExtendedColumnFilter<Task>[];
   joinOperator: "and" | "or";
+  page: number;
+  perPage: number;
+  priority: Task["priority"][];
+  sort: ExtendedColumnSort<Task>[];
+  status: Task["status"][];
+  title: string;
 }
 
 function parseNumberArray(value: string | null): number[] {
@@ -128,5 +129,18 @@ export const updateTaskSchema = object({
   estimatedHours: number().optional(),
 });
 
+export const updateTasksSchema = object({
+  ids: array(string()).min(1),
+  label: zodEnum(tasks.label.enumValues).optional(),
+  status: zodEnum(tasks.status.enumValues).optional(),
+  priority: zodEnum(tasks.priority.enumValues).optional(),
+});
+
+export const deleteTasksSchema = object({
+  ids: array(string()).min(1),
+});
+
 export type CreateTaskSchema = ZodInfer<typeof createTaskSchema>;
 export type UpdateTaskSchema = ZodInfer<typeof updateTaskSchema>;
+export type UpdateTasksSchema = ZodInfer<typeof updateTasksSchema>;
+export type DeleteTasksSchema = ZodInfer<typeof deleteTasksSchema>;

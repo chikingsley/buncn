@@ -31,11 +31,11 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { deleteTasks } from "../lib/actions";
 
 interface DeleteTasksDialogProps {
-  tasks: Row<Task>["original"][];
-  showTrigger?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
   open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
+  tasks: Row<Task>["original"][];
 }
 
 export function DeleteTasksDialog({

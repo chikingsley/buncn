@@ -3,20 +3,22 @@ import { generateId } from "@/lib/id";
 import type { FileCellData } from "@/types/data-grid";
 
 export interface Person {
-  id: string;
-  name?: string;
   age?: number;
+  attachments?: FileCellData[];
+  department?: string;
   email?: string;
-  website?: string;
+  id: string;
+  isActive?: boolean;
+  name?: string;
   notes?: string;
   salary?: number;
-  department?: string;
-  status?: string;
   skills?: string[];
-  isActive?: boolean;
   startDate?: string;
-  attachments?: FileCellData[];
+  status?: string;
+  website?: string;
 }
+
+const TRAILING_SLASH_REGEX = /\/$/;
 
 faker.seed(12_345);
 
@@ -148,7 +150,7 @@ function generatePerson(id: number): Person {
     name: `${firstName} ${lastName}`,
     age: faker.number.int({ min: 22, max: 65 }),
     email: faker.internet.email({ firstName, lastName }).toLowerCase(),
-    website: faker.internet.url().replace(/\/$/, ""),
+    website: faker.internet.url().replace(TRAILING_SLASH_REGEX, ""),
     notes: faker.helpers.arrayElement(notes),
     salary: faker.number.int({ min: 40_000, max: 150_000 }),
     department: faker.helpers.arrayElement(departments),

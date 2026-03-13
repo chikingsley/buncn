@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 interface WindowSize {
-  width: number;
   height: number;
+  width: number;
 }
 
 interface UseWindowSizeProps {
-  defaultWidth?: number;
   defaultHeight?: number;
+  defaultWidth?: number;
 }
 
 export function useWindowSize(props: UseWindowSizeProps = {}): WindowSize {

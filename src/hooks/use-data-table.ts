@@ -39,6 +39,8 @@ const JOIN_OPERATOR_KEY = "joinOperator";
 const ARRAY_SEPARATOR = ",";
 const DEBOUNCE_MS = 300;
 const THROTTLE_MS = 50;
+const NON_ALNUM_TEST_REGEX = /[^a-zA-Z0-9]/;
+const NON_ALNUM_SPLIT_REGEX = /[^a-zA-Z0-9]+/;
 
 interface UseDataTableProps<TData>
   extends Omit<
@@ -51,18 +53,18 @@ interface UseDataTableProps<TData>
       | "manualSorting"
     >,
     Required<Pick<TableOptions<TData>, "pageCount">> {
+  clearOnDefault?: boolean;
+  debounceMs?: number;
+  enableAdvancedFilter?: boolean;
+  history?: "push" | "replace";
   initialState?: Omit<Partial<TableState>, "sorting"> & {
     sorting?: ExtendedColumnSort<TData>[];
   };
   queryKeys?: Partial<QueryKeys>;
-  history?: "push" | "replace";
-  debounceMs?: number;
-  throttleMs?: number;
-  clearOnDefault?: boolean;
-  enableAdvancedFilter?: boolean;
   scroll?: boolean;
   shallow?: boolean;
   startTransition?: React.TransitionStartFunction;
+  throttleMs?: number;
 }
 
 export function useDataTable<TData>(props: UseDataTableProps<TData>) {
@@ -139,11 +141,11 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     (updaterOrValue: Updater<PaginationState>) => {
       if (typeof updaterOrValue === "function") {
         const newPagination = updaterOrValue(pagination);
-        void setPage(newPagination.pageIndex + 1);
-        void setPerPage(newPagination.pageSize);
+        setPage(newPagination.pageIndex + 1);
+        setPerPage(newPagination.pageSize);
       } else {
-        void setPage(updaterOrValue.pageIndex + 1);
-        void setPerPage(updaterOrValue.pageSize);
+        setPage(updaterOrValue.pageIndex + 1);
+        setPerPage(updaterOrValue.pageSize);
       }
     },
     [pagination, setPage, setPerPage]
@@ -206,8 +208,8 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   const debouncedSetFilterValues = useDebouncedCallback(
     (values: typeof filterValues) => {
-      void setPage(1);
-      void setFilterValues(values);
+      setPage(1);
+      setFilterValues(values);
     },
     debounceMs
   );
@@ -223,8 +225,11 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
           let processedValue: string[];
           if (Array.isArray(value)) {
             processedValue = value;
-          } else if (typeof value === "string" && /[^a-zA-Z0-9]/.test(value)) {
-            processedValue = value.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+          } else if (
+            typeof value === "string" &&
+            NON_ALNUM_TEST_REGEX.test(value)
+          ) {
+            processedValue = value.split(NON_ALNUM_SPLIT_REGEX).filter(Boolean);
           } else {
             processedValue = [value];
           }

@@ -61,6 +61,7 @@ function useDataGridSearch<TData>(
   );
 
   const onSearch = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Search implementation iterating all rows and columns to find matches.
     (query: string) => {
       if (!query.trim()) {
         store.batch(() => {

@@ -1,16 +1,14 @@
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import { createCollection } from "@tanstack/react-db";
-import { QueryClient } from "@tanstack/react-query";
+import { appQueryClient } from "@/lib/query-client";
 import { getAbsoluteUrl } from "@/lib/utils";
 import { type SkaterSchema, skaterSchema } from "./validation";
-
-const queryClient = new QueryClient();
 
 export const skatersCollection = createCollection(
   queryCollectionOptions({
     id: "skaters",
     queryKey: ["skaters"],
-    queryClient,
+    queryClient: appQueryClient,
     queryFn: async (): Promise<SkaterSchema[]> => {
       const response = await fetch(getAbsoluteUrl("/api/skaters"));
       if (!response.ok) {

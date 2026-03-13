@@ -71,8 +71,8 @@ const OPERATORS_WITHOUT_VALUE = new Set([
 
 interface DataGridFilterMenuProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataGridFilterMenu<TData>({
@@ -322,16 +322,16 @@ export function DataGridFilterMenu<TData>({
 }
 
 interface DataGridFilterItemProps<TData> {
-  filter: ColumnFilter;
-  index: number;
-  filterItemId: string;
-  dir: "ltr" | "rtl";
-  columns: { id: string; label: string }[];
   columnLabels: Map<string, string>;
+  columns: { id: string; label: string }[];
   columnVariants: Map<string, string>;
-  table: Table<TData>;
-  onFilterUpdate: (filterId: string, updates: Partial<ColumnFilter>) => void;
+  dir: "ltr" | "rtl";
+  filter: ColumnFilter;
+  filterItemId: string;
+  index: number;
   onFilterRemove: (filterId: string) => void;
+  onFilterUpdate: (filterId: string, updates: Partial<ColumnFilter>) => void;
+  table: Table<TData>;
 }
 
 function DataGridFilterItem<TData>({
@@ -580,16 +580,16 @@ function DataGridFilterItem<TData>({
 }
 
 interface DataGridFilterInputProps<TData> {
-  variant: string;
-  operator: FilterOperator;
+  column: Column<TData>;
   dir: "ltr" | "rtl";
+  endValue?: string | number;
+  inputId: string;
+  onEndValueChange?: (value: string | number | string[] | undefined) => void;
+  onValueChange: (value: string | number | string[] | undefined) => void;
+  operator: FilterOperator;
   placeholder?: string;
   value: string | number | string[] | undefined;
-  endValue?: string | number;
-  column: Column<TData>;
-  inputId: string;
-  onValueChange: (value: string | number | string[] | undefined) => void;
-  onEndValueChange?: (value: string | number | string[] | undefined) => void;
+  variant: string;
 }
 
 function DataGridFilterInput<TData>({

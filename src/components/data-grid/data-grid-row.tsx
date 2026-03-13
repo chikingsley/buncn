@@ -25,23 +25,23 @@ import type {
 } from "@/types/data-grid";
 
 interface DataGridRowProps<TData> extends ComponentProps<"div"> {
+  activeSearchMatch: CellPosition | null;
+  adjustLayout: boolean;
+  cellSelectionKeys: Set<string>;
+  columnPinning: ColumnPinningState;
+  columnVisibility: VisibilityState;
+  dir: Direction;
+  editingCell: CellPosition | null;
+  focusedCell: CellPosition | null;
+  measureElement: (node: Element | null) => void;
+  readOnly: boolean;
   row: Row<TData>;
+  rowHeight: RowHeightValue;
+  rowMapRef: React.RefObject<Map<number, HTMLDivElement>>;
+  searchMatchColumns: Set<string> | null;
+  stretchColumns: boolean;
   tableMeta: TableMeta<TData>;
   virtualItem: VirtualItem;
-  measureElement: (node: Element | null) => void;
-  rowMapRef: React.RefObject<Map<number, HTMLDivElement>>;
-  rowHeight: RowHeightValue;
-  columnVisibility: VisibilityState;
-  columnPinning: ColumnPinningState;
-  focusedCell: CellPosition | null;
-  editingCell: CellPosition | null;
-  cellSelectionKeys: Set<string>;
-  searchMatchColumns: Set<string> | null;
-  activeSearchMatch: CellPosition | null;
-  dir: Direction;
-  readOnly: boolean;
-  stretchColumns: boolean;
-  adjustLayout: boolean;
 }
 
 export const DataGridRow = memo(DataGridRowImpl, (prev, next) => {

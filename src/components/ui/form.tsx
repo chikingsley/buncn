@@ -23,9 +23,7 @@ interface FormFieldContextValue<
   name: TName;
 }
 
-const FormFieldContext = createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
-);
+const FormFieldContext = createContext<FormFieldContextValue | null>(null);
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
@@ -43,14 +41,18 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = useContext(FormFieldContext);
   const itemContext = useContext(FormItemContext);
-  const { getFieldState } = useFormContext();
-  const formState = useFormState({ name: fieldContext.name });
-  const fieldState = getFieldState(fieldContext.name, formState);
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>");
   }
 
+  if (!itemContext) {
+    throw new Error("useFormField should be used within <FormItem>");
+  }
+
+  const { getFieldState } = useFormContext();
+  const formState = useFormState({ name: fieldContext.name });
+  const fieldState = getFieldState(fieldContext.name, formState);
   const { id } = itemContext;
 
   return {
@@ -67,9 +69,7 @@ interface FormItemContextValue {
   id: string;
 }
 
-const FormItemContext = createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-);
+const FormItemContext = createContext<FormItemContextValue | null>(null);
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = useId();

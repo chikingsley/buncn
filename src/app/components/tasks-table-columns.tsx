@@ -109,12 +109,12 @@ function TaskActionsCell({
 }
 
 interface GetTasksTableColumnsProps {
-  statusCounts: Record<Task["status"], number>;
-  priorityCounts: Record<Task["priority"], number>;
   estimatedHoursRange: { min: number; max: number };
+  priorityCounts: Record<Task["priority"], number>;
   setRowAction: React.Dispatch<
     React.SetStateAction<DataTableRowAction<Task> | null>
   >;
+  statusCounts: Record<Task["status"], number>;
 }
 
 export function getTasksTableColumns({

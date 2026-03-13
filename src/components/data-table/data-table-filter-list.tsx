@@ -83,11 +83,11 @@ const REMOVE_FILTER_SHORTCUTS = ["backspace", "delete"];
 
 interface DataTableFilterListProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   debounceMs?: number;
-  throttleMs?: number;
-  shallow?: boolean;
   disabled?: boolean;
+  shallow?: boolean;
+  table: Table<TData>;
+  throttleMs?: number;
 }
 
 export function DataTableFilterList<TData>({
@@ -334,17 +334,17 @@ export function DataTableFilterList<TData>({
 }
 
 interface DataTableFilterItemProps<TData> {
-  filter: ExtendedColumnFilter<TData>;
-  index: number;
-  filterItemId: string;
-  joinOperator: JoinOperator;
-  setJoinOperator: (value: JoinOperator) => void;
   columns: Column<TData>[];
+  filter: ExtendedColumnFilter<TData>;
+  filterItemId: string;
+  index: number;
+  joinOperator: JoinOperator;
+  onFilterRemove: (filterId: string) => void;
   onFilterUpdate: (
     filterId: string,
     updates: Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>
   ) => void;
-  onFilterRemove: (filterId: string) => void;
+  setJoinOperator: (value: JoinOperator) => void;
 }
 
 function DataTableFilterItem<TData>({

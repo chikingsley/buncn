@@ -109,6 +109,7 @@ export function getOperatorsForVariant(variant: string): ReadonlyArray<{
 }
 
 export function getFilterFn<TData>(): FilterFn<TData> {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Filter function handling all operator/type combinations (text, number, date, select, boolean).
   return (row: Row<TData>, columnId: string, filterValue: unknown): boolean => {
     if (!filterValue || typeof filterValue !== "object") {
       return true;

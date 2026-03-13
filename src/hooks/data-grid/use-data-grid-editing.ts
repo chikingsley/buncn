@@ -35,6 +35,7 @@ function useDataGridEditing<TData>(
   } = ctx;
 
   const onDataUpdate = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: this handler must reconcile filtered row-model indices with the source dataset in one mutation boundary.
     (updates: CellUpdate | CellUpdate[]) => {
       if (propsRef.current.readOnly) {
         return;
@@ -63,7 +64,7 @@ function useDataGridEditing<TData>(
           const originalRowIndex = currentData.indexOf(originalData);
 
           const targetIndex =
-            originalRowIndex !== -1 ? originalRowIndex : update.rowIndex;
+            originalRowIndex === -1 ? update.rowIndex : originalRowIndex;
 
           const existingUpdates = rowUpdatesMap.get(targetIndex) ?? [];
           existingUpdates.push({
@@ -81,7 +82,7 @@ function useDataGridEditing<TData>(
         }
       }
 
-      const tableRowCount = rows?.length ?? currentData.length;
+      const tableRowCount = currentData.length;
       const newData: TData[] = new Array(tableRowCount);
 
       for (let i = 0; i < tableRowCount; i++) {
@@ -243,6 +244,7 @@ function useDataGridEditing<TData>(
         return;
       }
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: focus recovery coordinates virtualization, viewport correction, and retry logic in one async flow.
       async function onScrollAndFocus(retryCount: number) {
         if (!(targetColumnId && rowVirtualizer)) {
           return;

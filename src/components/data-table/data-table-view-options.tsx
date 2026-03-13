@@ -21,8 +21,8 @@ import { cn } from "@/lib/utils";
 
 interface DataTableViewOptionsProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataTableViewOptions<TData>({

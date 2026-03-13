@@ -28,12 +28,12 @@ import { getFilterFn } from "@/lib/data-grid-filters";
 import type { CellUpdate } from "@/types/data-grid";
 
 interface Person {
+  age?: number;
+  department?: string;
+  email?: string;
   id: string;
   name?: string;
-  age?: number;
-  email?: string;
   salary?: number;
-  department?: string;
 }
 
 const DEPARTMENTS = ["Engineering", "Marketing", "Sales", "HR", "Finance"];
@@ -276,6 +276,8 @@ export function DataGridRenderDemo() {
               case "salary":
                 value = 40_000 + ((rowIndex + cycle) % 20) * 5000;
                 break;
+              default:
+                continue;
             }
 
             updates.push({
@@ -414,6 +416,8 @@ export function DataGridRenderDemo() {
                 return 22 + ((row + cycle * 7) % 43);
               case "salary":
                 return 40_000 + ((row + cycle) % 20) * 5000;
+              default:
+                return "";
             }
           });
 

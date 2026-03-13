@@ -8,29 +8,29 @@ declare module "@tanstack/react-table" {
   }
 
   interface ColumnMeta<TData extends RowData, TValue> {
+    icon?: React.FC<React.SVGProps<SVGSVGElement>>;
     label?: string;
-    placeholder?: string;
-    variant?: FilterVariant;
     options?: Option[];
+    placeholder?: string;
     range?: [number, number];
     unit?: string;
-    icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+    variant?: FilterVariant;
   }
 }
 
 export interface QueryKeys {
+  filters: string;
+  joinOperator: string;
   page: string;
   perPage: string;
   sort: string;
-  filters: string;
-  joinOperator: string;
 }
 
 export interface Option {
-  label: string;
-  value: string;
   count?: number;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  label: string;
+  value: string;
 }
 
 export type FilterOperator = DataTableConfig["operators"][number];

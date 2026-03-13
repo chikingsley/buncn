@@ -58,33 +58,33 @@ const NON_NAVIGABLE_COLUMN_IDS = new Set(["select", "actions"]);
 
 interface UseDataGridProps<TData>
   extends Omit<TableOptions<TData>, "pageCount" | "getCoreRowModel"> {
+  autoFocus?: boolean | Partial<CellPosition>;
+  dir?: Direction;
+  enableColumnSelection?: boolean;
+  enablePaste?: boolean;
+  enableSearch?: boolean;
+  enableSingleCellSelection?: boolean;
   onDataChange?: (data: TData[]) => void;
-  onRowAdd?: (
-    event?: React.MouseEvent<HTMLDivElement>
-  ) => Partial<CellPosition> | Promise<Partial<CellPosition> | null> | null;
-  onRowsAdd?: (count: number) => void | Promise<void>;
-  onRowsDelete?: (rows: TData[], rowIndices: number[]) => void | Promise<void>;
-  onPaste?: (updates: CellUpdate[]) => void | Promise<void>;
-  onFilesUpload?: (params: {
-    files: File[];
-    rowIndex: number;
-    columnId: string;
-  }) => Promise<FileCellData[]>;
   onFilesDelete?: (params: {
     fileIds: string[];
     rowIndex: number;
     columnId: string;
   }) => void | Promise<void>;
-  rowHeight?: RowHeightValue;
+  onFilesUpload?: (params: {
+    files: File[];
+    rowIndex: number;
+    columnId: string;
+  }) => Promise<FileCellData[]>;
+  onPaste?: (updates: CellUpdate[]) => void | Promise<void>;
+  onRowAdd?: (
+    event?: React.MouseEvent<HTMLDivElement>
+  ) => Partial<CellPosition> | Promise<Partial<CellPosition> | null> | null;
   onRowHeightChange?: (rowHeight: RowHeightValue) => void;
+  onRowsAdd?: (count: number) => void | Promise<void>;
+  onRowsDelete?: (rows: TData[], rowIndices: number[]) => void | Promise<void>;
   overscan?: number;
-  dir?: Direction;
-  autoFocus?: boolean | Partial<CellPosition>;
-  enableSingleCellSelection?: boolean;
-  enableColumnSelection?: boolean;
-  enableSearch?: boolean;
-  enablePaste?: boolean;
   readOnly?: boolean;
+  rowHeight?: RowHeightValue;
 }
 
 function useDataGrid<TData>({
@@ -253,6 +253,7 @@ function useDataGrid<TData>({
   });
 
   const onCellClick = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Click handler with shift-select, ctrl-select, scroll-into-view, and editing trigger logic.
     (rowIndex: number, columnId: string, event?: React.MouseEvent) => {
       if (event?.button === 2) {
         return;
@@ -817,6 +818,7 @@ function useDataGrid<TData>({
   }, [onDataGridKeyDown]);
 
   useEffect(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Global keydown listener routing events to the grid when focus is inside a cell editor or popover.
     function onGlobalKeyDown(event: KeyboardEvent) {
       const dataGridElement = dataGridRef.current;
       if (!dataGridElement) {
@@ -1116,7 +1118,7 @@ function useDataGrid<TData>({
 }
 
 export {
-  useDataGrid,
   //
   type UseDataGridProps,
+  useDataGrid,
 };

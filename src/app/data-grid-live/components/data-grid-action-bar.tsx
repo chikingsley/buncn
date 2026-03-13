@@ -21,14 +21,14 @@ import {
 import type { CellSelectOption } from "@/types/data-grid";
 
 interface DataGridActionBarProps<TData> {
-  table: Table<TData>;
-  tableMeta: TableMeta<TData>;
+  onDelete?: () => void;
+  onStatusUpdate?: (value: string) => void;
+  onStyleUpdate?: (value: string) => void;
   selectedCellCount: number;
   statusOptions?: CellSelectOption[];
   styleOptions?: CellSelectOption[];
-  onStatusUpdate?: (value: string) => void;
-  onStyleUpdate?: (value: string) => void;
-  onDelete?: () => void;
+  table: Table<TData>;
+  tableMeta: TableMeta<TData>;
 }
 
 export function DataGridActionBar<TData>({

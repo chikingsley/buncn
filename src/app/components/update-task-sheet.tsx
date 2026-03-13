@@ -22,9 +22,9 @@ import { type UpdateTaskSchema, updateTaskSchema } from "../lib/validations";
 import { TaskForm } from "./task-form";
 
 interface UpdateTaskSheetProps {
-  task: Task | null;
-  open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  task: Task | null;
 }
 
 export function UpdateTaskSheet({

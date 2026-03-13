@@ -16,8 +16,8 @@ import type { MediaItem } from "../lib/media-data";
 import { PlayerControls } from "./player-controls";
 
 interface VideoPlayerProps extends MediaItem {
-  variant?: "video" | "audio";
   audioLayout?: "compact" | "deck";
+  variant?: "video" | "audio";
 }
 
 function EqualizerBars() {

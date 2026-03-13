@@ -1,9 +1,34 @@
 # STATUS.md
 
 ## Last Updated
-2026-02-19
+2026-03-06
 
 ## Decision Log
+
+### 2026-03-06
+- Upgraded Bun tooling baseline to `1.3.10`:
+  - Aligned `packageManager`, GitHub Actions, and composite setup action.
+  - Switched CI installs to `bun ci` for lockfile-enforced reproducibility.
+- Corrected Bun build/runtime scripts:
+  - `build` now produces a compiled standalone Bun binary.
+  - `start` now runs the compiled production artifact instead of the source entry.
+  - Rationale: Bun `1.3.10` full-stack HTML-import JS bundles still failed to boot reliably in local verification, while `--compile` worked.
+- Hardened Base UI wrappers:
+  - Fixed slider thumb rendering to default to a single thumb and pass explicit thumb indices.
+  - Fixed form context guards to throw reliably outside `FormField`/`FormItem`.
+  - Restored calendar day-button focus by wiring the internal ref.
+  - Preserved `SidebarMenuButton` custom composition when tooltips are enabled.
+- Fixed app-level correctness issues:
+  - Data-grid edits now preserve hidden rows while filtered.
+  - Data-grid footer only renders add-row affordance when a handler exists.
+  - Live grid preload now shows loading/error states with retry instead of blanking.
+  - Mail actions now surface unimplemented actions and mutation failures.
+  - Task page and mail page request handling now ignore stale responses.
+- Corrected task API behavior:
+  - Restored real CRUD semantics for create/delete operations.
+  - Partial task updates now update only provided fields.
+  - Create-task now persists `estimatedHours`.
+  - Added runtime request validation and SQL support for advanced task filters.
 
 ### 2026-02-19
 - Adopted a token-first UI approach documented in `AGENTS.md`:

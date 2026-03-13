@@ -93,15 +93,16 @@ function getSavedLayout(): Record<string, number> | null {
 
 interface MailProps {
   accounts: Account[];
-  mails: MailType[];
-  folderCounts: Record<string, number>;
   currentFolder: string;
-  onFolderChange: (folder: string) => void;
+  folderCounts: Record<string, number>;
+  mails: MailType[];
   onAction: (action: string, mailId: string) => void;
+  onFolderChange: (folder: string) => void;
 }
 
 interface MailSidebarBodyProps {
   accounts: Account[];
+  onFolderSelect: (title: string) => void;
   primaryLinks: Array<{
     title: string;
     label?: string;
@@ -114,7 +115,6 @@ interface MailSidebarBodyProps {
     icon: LucideIcon;
     variant: "default" | "ghost";
   }>;
-  onFolderSelect: (title: string) => void;
 }
 
 function MailSidebarBody({

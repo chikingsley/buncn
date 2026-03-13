@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 import type { PasteDialogState } from "@/types/data-grid";
 
 interface DataGridPasteDialogProps<TData> {
-  tableMeta: TableMeta<TData>;
   pasteDialog: PasteDialogState;
+  tableMeta: TableMeta<TData>;
 }
 
 export function DataGridPasteDialog<TData>({
@@ -95,7 +95,7 @@ function PasteDialogImpl({
           <DialogTitle>Do you want to add more rows?</DialogTitle>
           <DialogDescription>
             We need <strong>{pasteDialog.rowsNeeded}</strong> additional row
-            {pasteDialog.rowsNeeded !== 1 ? "s" : ""} to paste everything from
+            {pasteDialog.rowsNeeded === 1 ? "" : "s"} to paste everything from
             your clipboard.
           </DialogDescription>
         </DialogHeader>
@@ -117,7 +117,7 @@ function PasteDialogImpl({
               </span>
               <span className="text-muted-foreground text-sm">
                 Add {pasteDialog.rowsNeeded} new row
-                {pasteDialog.rowsNeeded !== 1 ? "s" : ""} to the table and paste
+                {pasteDialog.rowsNeeded === 1 ? "" : "s"} to the table and paste
                 all data
               </span>
             </div>

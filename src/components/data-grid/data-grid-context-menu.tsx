@@ -16,9 +16,9 @@ import { parseCellKey } from "@/lib/data-grid";
 import type { CellUpdate, ContextMenuState } from "@/types/data-grid";
 
 interface DataGridContextMenuProps<TData> {
-  tableMeta: TableMeta<TData>;
   columns: ColumnDef<TData>[];
   contextMenu: ContextMenuState;
+  tableMeta: TableMeta<TData>;
 }
 
 export function DataGridContextMenu<TData>({
@@ -67,8 +67,8 @@ interface ContextMenuProps<TData>
       | "readOnly"
     >,
     Required<Pick<TableMeta<TData>, "contextMenu">> {
-  tableMeta: TableMeta<TData>;
   columns: ColumnDef<TData>[];
+  tableMeta: TableMeta<TData>;
 }
 
 const ContextMenu = memo(ContextMenuImpl, (prev, next) => {
@@ -183,7 +183,7 @@ function ContextMenuImpl<TData>({
     onDataUpdate?.(updates);
 
     toast.success(
-      `${updates.length} cell${updates.length !== 1 ? "s" : ""} cleared`
+      `${updates.length} cell${updates.length === 1 ? "" : "s"} cleared`
     );
   }, [propsRef]);
 
@@ -208,7 +208,7 @@ function ContextMenuImpl<TData>({
 
     await onRowsDelete?.(rowIndicesArray);
 
-    toast.success(`${rowCount} row${rowCount !== 1 ? "s" : ""} deleted`);
+    toast.success(`${rowCount} row${rowCount === 1 ? "" : "s"} deleted`);
   }, [propsRef]);
 
   return (

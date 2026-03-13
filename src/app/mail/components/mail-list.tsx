@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 
 interface MailListProps {
   items: Mail[];
-  selectedMailId: string | null;
   onSelect: (id: string) => void;
+  selectedMailId: string | null;
 }
 
 function getBadgeVariant(
@@ -102,8 +102,8 @@ export function MailList({ items, selectedMailId, onSelect }: MailListProps) {
 
 interface MailItemListProps {
   items: Mail[];
-  selectedMailId: string | null;
   onSelect: (id: string) => void;
+  selectedMailId: string | null;
 }
 
 function MailItemList({ items, selectedMailId, onSelect }: MailItemListProps) {

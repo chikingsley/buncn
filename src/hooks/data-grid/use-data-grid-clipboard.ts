@@ -35,6 +35,7 @@ function useDataGridClipboard<TData>(
 ) {
   const { store, propsRef, tableRef, dataGridRef, navigableColumnIds } = ctx;
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Serialization logic that handles multiple cell types and selection states.
   const serializeCellsToTsv = useCallback(() => {
     const currentState = store.getState();
 
@@ -150,7 +151,7 @@ function useDataGridClipboard<TData>(
 
       toast.success(
         `${selectedCellsArray.length} cell${
-          selectedCellsArray.length !== 1 ? "s" : ""
+          selectedCellsArray.length === 1 ? "" : "s"
         } copied`
       );
     } catch (error) {
@@ -179,7 +180,7 @@ function useDataGridClipboard<TData>(
 
       toast.success(
         `${selectedCellsArray.length} cell${
-          selectedCellsArray.length !== 1 ? "s" : ""
+          selectedCellsArray.length === 1 ? "" : "s"
         } cut`
       );
     } catch (error) {
@@ -190,6 +191,7 @@ function useDataGridClipboard<TData>(
   }, [store, propsRef, serializeCellsToTsv]);
 
   const onCellsPaste = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Paste handler with per-variant type coercion, row expansion, and selection update logic.
     async (expandRows = false) => {
       if (propsRef.current.readOnly) {
         return;
@@ -550,12 +552,12 @@ function useDataGridClipboard<TData>(
           if (cellsSkipped > 0) {
             toast.success(
               `${cellsUpdated} cell${
-                cellsUpdated !== 1 ? "s" : ""
+                cellsUpdated === 1 ? "" : "s"
               } pasted, ${cellsSkipped} skipped`
             );
           } else {
             toast.success(
-              `${cellsUpdated} cell${cellsUpdated !== 1 ? "s" : ""} pasted`
+              `${cellsUpdated} cell${cellsUpdated === 1 ? "" : "s"} pasted`
             );
           }
 
@@ -574,7 +576,7 @@ function useDataGridClipboard<TData>(
         } else if (cellsSkipped > 0) {
           toast.error(
             `${cellsSkipped} cell${
-              cellsSkipped !== 1 ? "s" : ""
+              cellsSkipped === 1 ? "" : "s"
             } skipped pasting for invalid data`
           );
         }

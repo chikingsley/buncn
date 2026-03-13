@@ -58,8 +58,8 @@ const SORT_ORDERS = [
 
 interface DataGridSortMenuProps<TData>
   extends ComponentProps<typeof PopoverContent> {
-  table: Table<TData>;
   disabled?: boolean;
+  table: Table<TData>;
 }
 
 export function DataGridSortMenu<TData>({
@@ -288,13 +288,13 @@ export function DataGridSortMenu<TData>({
 }
 
 interface DataTableSortItemProps {
+  columnLabels: Map<string, string>;
+  columns: { id: string; label: string }[];
+  dir: "ltr" | "rtl";
+  onSortRemove: (sortId: string) => void;
+  onSortUpdate: (sortId: string, updates: Partial<ColumnSort>) => void;
   sort: ColumnSort;
   sortItemId: string;
-  dir: "ltr" | "rtl";
-  columns: { id: string; label: string }[];
-  columnLabels: Map<string, string>;
-  onSortUpdate: (sortId: string, updates: Partial<ColumnSort>) => void;
-  onSortRemove: (sortId: string) => void;
 }
 
 function DataTableSortItem({

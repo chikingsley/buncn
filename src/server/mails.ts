@@ -4,15 +4,15 @@ import type { Mail } from "@/db/schema";
 type SqlParam = string | number | boolean | Date | null | string[];
 
 interface RawMailRow {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
   body: string;
-  folder: Mail["folder"];
-  read: boolean;
-  labels: string | string[];
   createdAt: Date | string;
+  email: string;
+  folder: Mail["folder"];
+  id: string;
+  labels: string | string[];
+  name: string;
+  read: boolean;
+  subject: string;
   updatedAt: Date | string | null;
 }
 
@@ -81,10 +81,10 @@ export async function getMailById(id: string): Promise<Mail | null> {
 }
 
 export interface UpdateMailInput {
-  id: string;
-  read?: boolean;
   folder?: Mail["folder"];
+  id: string;
   labels?: Mail["labels"];
+  read?: boolean;
 }
 
 export async function updateMail(input: UpdateMailInput) {

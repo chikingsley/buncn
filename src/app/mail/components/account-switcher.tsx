@@ -10,12 +10,12 @@ import {
 import { cn } from "@/lib/utils";
 
 interface AccountSwitcherProps {
-  isCollapsed: boolean;
   accounts: Array<{
     label: string;
     email: string;
     icon: LucideIcon;
   }>;
+  isCollapsed: boolean;
 }
 
 export function AccountSwitcher({

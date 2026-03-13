@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FeatureFlagsProvider } from "@/app/components/feature-flags-provider";
 import { TasksTable } from "@/app/components/tasks-table";
@@ -15,10 +15,10 @@ import type { Task } from "@/db/schema";
 import { getValidFilters } from "@/lib/data-table";
 
 interface TasksData {
-  tasks: { data: Task[]; pageCount: number };
-  statusCounts: Awaited<ReturnType<typeof getTaskStatusCounts>>;
-  priorityCounts: Awaited<ReturnType<typeof getTaskPriorityCounts>>;
   estimatedHoursRange: Awaited<ReturnType<typeof getEstimatedHoursRange>>;
+  priorityCounts: Awaited<ReturnType<typeof getTaskPriorityCounts>>;
+  statusCounts: Awaited<ReturnType<typeof getTaskStatusCounts>>;
+  tasks: { data: Task[]; pageCount: number };
 }
 
 const EMPTY_TASKS_DATA: TasksData = {
@@ -31,8 +31,10 @@ const EMPTY_TASKS_DATA: TasksData = {
 function useTasksData(searchParams: URLSearchParams) {
   const [data, setData] = useState<TasksData>(EMPTY_TASKS_DATA);
   const searchParamsKey = searchParams.toString();
+  const requestIdRef = useRef(0);
 
   const fetchData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     const search = parseTasksSearchParams(new URLSearchParams(searchParamsKey));
     const validFilters = getValidFilters(search.filters);
 
@@ -44,20 +46,15 @@ function useTasksData(searchParams: URLSearchParams) {
         getEstimatedHoursRange(),
       ]);
 
+    if (requestId !== requestIdRef.current) {
+      return;
+    }
+
     setData({ tasks, statusCounts, priorityCounts, estimatedHoursRange });
   }, [searchParamsKey]);
 
   useEffect(() => {
-    let stale = false;
-    const run = async () => {
-      await fetchData();
-    };
-    if (!stale) {
-      run();
-    }
-    return () => {
-      stale = true;
-    };
+    fetchData();
   }, [fetchData]);
 
   useEffect(() => {

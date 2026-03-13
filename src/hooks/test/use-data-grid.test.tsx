@@ -20,8 +20,8 @@ vi.mock("@radix-ui/react-direction", () => ({
 interface TestData {
   id: string;
   name: string;
-  trick: string;
   score: number;
+  trick: string;
 }
 
 const testData: TestData[] = [

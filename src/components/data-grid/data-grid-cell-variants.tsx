@@ -389,7 +389,7 @@ function getFileUploadRejectionMessage(
 function getFileUploadError(error: unknown, fileCount: number): string {
   return error instanceof Error
     ? error.message
-    : `Failed to upload ${fileCount} file${fileCount !== 1 ? "s" : ""}`;
+    : `Failed to upload ${fileCount} file${fileCount === 1 ? "" : "s"}`;
 }
 
 async function resolveUploadedFiles({
@@ -416,20 +416,20 @@ async function resolveUploadedFiles({
 }
 
 interface AddFilesContext {
-  newFiles: File[];
-  skipUpload: boolean;
-  files: FileCellData[];
-  maxFiles: number;
-  readOnly: boolean;
-  isPending: boolean;
-  validateFile: (file: File) => string | null;
-  showFileUploadError: (message: string, description?: string) => void;
-  tableMeta: DataGridTableMeta | null | undefined;
-  rowIndex: number;
   columnId: string;
+  files: FileCellData[];
+  isPending: boolean;
+  maxFiles: number;
+  newFiles: File[];
+  readOnly: boolean;
+  rowIndex: number;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
   setUploadingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+  showFileUploadError: (message: string, description?: string) => void;
+  skipUpload: boolean;
+  tableMeta: DataGridTableMeta | null | undefined;
+  validateFile: (file: File) => string | null;
 }
 
 async function handleAddFiles({
@@ -513,16 +513,16 @@ async function handleAddFiles({
 }
 
 interface RemoveFileContext {
-  fileId: string;
-  readOnly: boolean;
-  isPending: boolean;
-  files: FileCellData[];
-  tableMeta: DataGridTableMeta | null | undefined;
-  rowIndex: number;
   columnId: string;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  fileId: string;
+  files: FileCellData[];
+  isPending: boolean;
+  readOnly: boolean;
+  rowIndex: number;
   setDeletingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
   setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  tableMeta: DataGridTableMeta | null | undefined;
 }
 
 async function handleRemoveFile({
@@ -587,15 +587,15 @@ async function handleRemoveFile({
 }
 
 interface ClearAllFilesContext {
-  readOnly: boolean;
-  isPending: boolean;
-  files: FileCellData[];
-  tableMeta: DataGridTableMeta | null | undefined;
-  rowIndex: number;
   columnId: string;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  files: FileCellData[];
+  isPending: boolean;
+  readOnly: boolean;
+  rowIndex: number;
   setDeletingFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
   setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  tableMeta: DataGridTableMeta | null | undefined;
 }
 
 async function handleClearAllFiles({
@@ -726,13 +726,13 @@ function handleFileWrapperKeyDown({
 }
 
 interface FileCellStateSyncContext {
+  cellKey: string;
   cellValue: FileCellData[];
   files: FileCellData[];
-  cellKey: string;
-  prevCellValueRef: React.RefObject<FileCellData[]>;
   prevCellKeyRef: React.RefObject<string>;
-  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
+  prevCellValueRef: React.RefObject<FileCellData[]>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setFiles: React.Dispatch<React.SetStateAction<FileCellData[]>>;
 }
 
 function syncFileCellState({
@@ -796,9 +796,9 @@ function handleFileDragOver(event: React.DragEvent) {
 }
 
 interface DropzoneCellEnterContext {
+  allowFilesOnly?: boolean;
   event: React.DragEvent;
   setIsDragging: (value: boolean) => void;
-  allowFilesOnly?: boolean;
 }
 
 function handleDropzoneCellEnter({
@@ -1012,33 +1012,33 @@ function stopFileCellNavigation({
 }
 
 interface FileCellPopoverContext {
-  isEditing: boolean;
-  onOpenChange: (open: boolean) => void;
+  accept: string | undefined;
+  clearAll: () => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  sideOffset: number;
-  labelId: string;
+  deletingFiles: Set<string>;
   descriptionId: string;
+  dropzoneRef: React.RefObject<HTMLDivElement | null>;
+  error: string | null;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  files: FileCellData[];
+  isDragging: boolean;
+  isEditing: boolean;
+  isPending: boolean;
+  labelId: string;
+  maxFileSize: number | undefined;
+  maxFiles: number | undefined;
+  multiple: boolean;
   onDropzoneClick: () => void;
   onDropzoneDragEnter: (event: React.DragEvent) => void;
   onDropzoneDragLeave: (event: React.DragEvent) => void;
   onDropzoneDragOver: (event: React.DragEvent) => void;
   onDropzoneDrop: (event: React.DragEvent) => void;
   onDropzoneKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
-  dropzoneRef: React.RefObject<HTMLDivElement | null>;
-  isPending: boolean;
-  isDragging: boolean;
-  error: string | null;
-  accept: string | undefined;
-  multiple: boolean;
   onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  files: FileCellData[];
-  clearAll: () => void;
+  onOpenChange: (open: boolean) => void;
   removeFile: (fileId: string) => void;
+  sideOffset: number;
   uploadingFiles: Set<string>;
-  deletingFiles: Set<string>;
-  maxFileSize: number | undefined;
-  maxFiles: number | undefined;
 }
 
 function renderFileCellPopover({
@@ -1168,11 +1168,11 @@ function renderFileCellPopover({
 }
 
 interface FileCellSummaryContext {
-  isDraggingOver: boolean;
   files: FileCellData[];
-  visibleFiles: FileCellData[];
   hiddenFileCount: number;
+  isDraggingOver: boolean;
   uploadingFiles: Set<string>;
+  visibleFiles: FileCellData[];
 }
 
 function renderFileCellSummary({

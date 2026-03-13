@@ -75,16 +75,16 @@ function getDirectionAwareKey(key: string, dir?: Direction) {
 }
 
 interface ItemData {
+  disabled: boolean;
   id: string;
   ref: React.RefObject<ItemElement | null>;
-  disabled: boolean;
 }
 
 interface ActionBarContextValue {
-  onOpenChange?: (open: boolean) => void;
   dir: Direction;
-  orientation: Orientation;
   loop: boolean;
+  onOpenChange?: (open: boolean) => void;
+  orientation: Orientation;
 }
 
 const ActionBarContext = createContext<ActionBarContextValue | null>(null);
@@ -98,14 +98,14 @@ function useActionBarContext(consumerName: string) {
 }
 
 interface FocusContextValue {
-  tabStopId: string | null;
-  onItemFocus: (tabStopId: string) => void;
-  onItemShiftTab: () => void;
+  getItems: () => ItemData[];
   onFocusableItemAdd: () => void;
   onFocusableItemRemove: () => void;
+  onItemFocus: (tabStopId: string) => void;
   onItemRegister: (item: ItemData) => void;
+  onItemShiftTab: () => void;
   onItemUnregister: (id: string) => void;
-  getItems: () => ItemData[];
+  tabStopId: string | null;
 }
 
 const FocusContext = createContext<FocusContextValue | null>(null);
@@ -121,17 +121,17 @@ function useFocusContext(consumerName: string) {
 }
 
 interface ActionBarProps extends ComponentProps<"div"> {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   align?: "start" | "center" | "end";
   alignOffset?: number;
+  dir?: Direction;
+  loop?: boolean;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  orientation?: Orientation;
+  portalContainer?: Element | DocumentFragment | null;
   side?: "top" | "bottom";
   sideOffset?: number;
-  portalContainer?: Element | DocumentFragment | null;
-  dir?: Direction;
-  orientation?: Orientation;
-  loop?: boolean;
 }
 
 function ActionBar(props: ActionBarProps) {
@@ -317,9 +317,11 @@ function ActionBarGroup(props: React.ComponentProps<"div">) {
           return 0;
         }
         const position = elementA.compareDocumentPosition(elementB);
+        // biome-ignore lint/suspicious/noBitwiseOperators: Intentional bitwise check on compareDocumentPosition bitmask.
         if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
           return -1;
         }
+        // biome-ignore lint/suspicious/noBitwiseOperators: Intentional bitwise check on compareDocumentPosition bitmask.
         if (position & Node.DOCUMENT_POSITION_PRECEDING) {
           return 1;
         }
@@ -439,11 +441,11 @@ interface ActionBarItemProps
     React.ComponentProps<typeof Button>,
     "onSelect" | "onClick" | "onFocus" | "onKeyDown" | "onMouseDown"
   > {
-  onSelect?: (event: Event) => void;
   onClick?: React.MouseEventHandler<ItemElement>;
   onFocus?: React.FocusEventHandler<ItemElement>;
   onKeyDown?: React.KeyboardEventHandler<ItemElement>;
   onMouseDown?: React.MouseEventHandler<ItemElement>;
+  onSelect?: (event: Event) => void;
 }
 
 function ActionBarItem(props: ActionBarItemProps) {
@@ -533,6 +535,7 @@ function ActionBarItem(props: ActionBarItemProps) {
   );
 
   const onKeyDown = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Keyboard navigation handler with direction-aware roving tabindex logic.
     (event: React.KeyboardEvent<ItemElement>) => {
       onKeyDownProp?.(event);
       if (event.defaultPrevented) {
@@ -694,10 +697,10 @@ function ActionBarSeparator(props: ActionBarSeparatorProps) {
 
 export {
   ActionBar,
-  ActionBarSelection,
+  ActionBarClose,
   ActionBarGroup,
   ActionBarItem,
-  ActionBarClose,
-  ActionBarSeparator,
   type ActionBarProps,
+  ActionBarSelection,
+  ActionBarSeparator,
 };

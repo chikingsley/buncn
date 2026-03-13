@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ActiveLinkProps {
-  href: string;
-  className?: string;
   children: React.ReactNode;
-  target?: string;
+  className?: string;
+  href: string;
   rel?: string;
+  target?: string;
 }
 
 export function ActiveLink({

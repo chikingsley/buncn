@@ -18,9 +18,9 @@ import { PlayerSpeedMenu } from "./player-speed-menu";
 import { PlayerTimeDisplay } from "./player-time-display";
 
 interface PlayerControlsProps {
-  variant: "video" | "audio";
   audioLayout?: "compact" | "deck";
   thumbnails?: string;
+  variant: "video" | "audio";
 }
 
 export function PlayerControls({

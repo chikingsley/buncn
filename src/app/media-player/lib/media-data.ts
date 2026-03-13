@@ -1,11 +1,11 @@
 export interface MediaItem {
-  title: string;
-  src: string;
-  poster?: string;
   artist?: string;
   artwork?: string;
-  thumbnails?: string;
   captions?: string;
+  poster?: string;
+  src: string;
+  thumbnails?: string;
+  title: string;
 }
 
 export const DEMO_VIDEO: MediaItem = {

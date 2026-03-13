@@ -2,8 +2,8 @@ import { AudioGainSlider, TimeSlider, VolumeSlider } from "@vidstack/react";
 import { cn } from "@/lib/utils";
 
 interface TimeSliderProps {
-  variant: "video" | "audio";
   thumbnails?: string;
+  variant: "video" | "audio";
 }
 
 interface VolumeSliderProps {

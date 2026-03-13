@@ -269,7 +269,7 @@ export function DataGrid<TData>({
             );
           })}
         </div>
-        {!readOnly && onRowAdd && (
+        {!readOnly && onRowAddProp && (
           // biome-ignore lint/a11y/useSemanticElements: Virtualized grid structure uses custom ARIA roles to preserve keyboard navigation behavior.
           <div
             className="sticky bottom-0 z-10 grid border-t bg-background"

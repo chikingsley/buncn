@@ -17,6 +17,7 @@ import { DataGridRowHeightMenu } from "@/components/data-grid/data-grid-row-heig
 import { getDataGridSelectColumn } from "@/components/data-grid/data-grid-select-column";
 import { DataGridSortMenu } from "@/components/data-grid/data-grid-sort-menu";
 import { DataGridViewMenu } from "@/components/data-grid/data-grid-view-menu";
+import { Button } from "@/components/ui/button";
 import { skaters } from "@/db/schema";
 import { type UseDataGridProps, useDataGrid } from "@/hooks/use-data-grid";
 import {
@@ -71,12 +72,64 @@ const trickSelectOptions = trickOptions.map((trick) => ({
   value: trick,
 }));
 
+function getComparableValue(value: unknown) {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function hasSkaterValueChanged(previousValue: unknown, nextValue: unknown) {
+  return (
+    JSON.stringify(getComparableValue(previousValue)) !==
+    JSON.stringify(getComparableValue(nextValue))
+  );
+}
+
+function applySkaterSnapshot(skater: SkaterSchema) {
+  skatersCollection.update(skater.id, (draft) => {
+    Object.assign(draft, skater);
+  });
+}
+
+function buildSkaterCellUpdates(
+  existingSkater: SkaterSchema,
+  nextSkater: SkaterSchema
+) {
+  const updates: UndoRedoCellUpdate[] = [];
+
+  for (const key of Object.keys(nextSkater) as Array<keyof SkaterSchema>) {
+    if (!hasSkaterValueChanged(existingSkater[key], nextSkater[key])) {
+      continue;
+    }
+
+    updates.push({
+      rowId: existingSkater.id,
+      columnId: key,
+      previousValue: existingSkater[key],
+      newValue: nextSkater[key],
+    });
+  }
+
+  return updates;
+}
+
 export function DataGridLiveDemo() {
-  const [preloaded, setPreloaded] = useState(false);
+  const [preloadState, setPreloadState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+
+  const preloadCollection = useCallback(async () => {
+    setPreloadState("loading");
+    try {
+      await skatersCollection.preload();
+      setPreloadState("ready");
+    } catch {
+      setPreloadState("error");
+      toast.error("Failed to load skaters");
+    }
+  }, []);
 
   useEffect(() => {
-    skatersCollection.preload().then(() => setPreloaded(true));
-  }, []);
+    preloadCollection();
+  }, [preloadCollection]);
 
   const windowSize = useWindowSize();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -98,6 +151,10 @@ export function DataGridLiveDemo() {
       return query;
     },
     [sorting]
+  );
+  const skatersById = useMemo(
+    () => new Map(data.map((skater) => [skater.id, skater])),
+    [data]
   );
 
   const filterFn = useMemo(() => getFilterFn<SkaterSchema>(), []);
@@ -254,11 +311,11 @@ export function DataGridLiveDemo() {
   // and allows reverting changes via keyboard shortcuts
   const undoRedoOnDataChange = useCallback(
     (newData: SkaterSchema[]) => {
-      const currentIds = new Set(data.map((s) => s.id));
+      const currentIds = new Set(skatersById.keys());
       const newIds = new Set(newData.map((s) => s.id));
 
       // Delete rows that exist in current but not in new (undo add / redo delete)
-      for (const skater of data) {
+      for (const skater of skatersById.values()) {
         if (!newIds.has(skater.id)) {
           skatersCollection.delete(skater.id);
         }
@@ -268,30 +325,13 @@ export function DataGridLiveDemo() {
       for (const skater of newData) {
         if (currentIds.has(skater.id)) {
           // Update existing row
-          const existingSkater = data.find((s) => s.id === skater.id);
+          const existingSkater = skatersById.get(skater.id);
           if (!existingSkater) {
             continue;
           }
 
-          const hasChanges = (
-            Object.keys(skater) as Array<keyof SkaterSchema>
-          ).some((key) => {
-            const existingValue =
-              existingSkater[key] instanceof Date
-                ? (existingSkater[key] as Date).toISOString()
-                : existingSkater[key];
-            const newValue =
-              skater[key] instanceof Date
-                ? (skater[key] as Date).toISOString()
-                : skater[key];
-
-            return JSON.stringify(existingValue) !== JSON.stringify(newValue);
-          });
-
-          if (hasChanges) {
-            skatersCollection.update(skater.id, (draft) => {
-              Object.assign(draft, skater);
-            });
+          if (buildSkaterCellUpdates(existingSkater, skater).length > 0) {
+            applySkaterSnapshot(skater);
           }
         } else {
           // Insert new row (undo delete / redo add)
@@ -299,7 +339,7 @@ export function DataGridLiveDemo() {
         }
       }
     },
-    [data]
+    [skatersById]
   );
 
   const { trackCellsUpdate, trackRowsAdd, trackRowsDelete } =
@@ -313,54 +353,31 @@ export function DataGridLiveDemo() {
     UseDataGridProps<SkaterSchema>["onDataChange"]
   > = useCallback(
     (newData) => {
-      // Track cell updates for undo/redo
       const cellUpdates: UndoRedoCellUpdate[] = [];
 
-      // Diff and update changed skaters via TanStack DB for optimistic updates
       for (const skater of newData) {
-        const existingSkater = data.find((s) => s.id === skater.id);
-
-        // For new rows (not yet in our stale closure data), still update them
-        // because onRowsAdd already created them in the collection
+        const existingSkater = skatersById.get(skater.id);
         if (!existingSkater) {
-          skatersCollection.update(skater.id, (draft) => {
-            Object.assign(draft, skater);
-          });
+          // Newly added rows already exist in the collection, so we only need
+          // to sync the latest snapshot into the optimistic draft.
+          applySkaterSnapshot(skater);
           continue;
         }
 
-        // Check if any field changed using JSON comparison for arrays/objects
-        for (const key of Object.keys(skater) as Array<keyof SkaterSchema>) {
-          const existingValue =
-            existingSkater[key] instanceof Date
-              ? (existingSkater[key] as Date).toISOString()
-              : existingSkater[key];
-          const newValue =
-            skater[key] instanceof Date
-              ? (skater[key] as Date).toISOString()
-              : skater[key];
-
-          if (JSON.stringify(existingValue) !== JSON.stringify(newValue)) {
-            cellUpdates.push({
-              rowId: existingSkater.id,
-              columnId: key,
-              previousValue: existingSkater[key],
-              newValue: skater[key],
-            });
-
-            skatersCollection.update(skater.id, (draft) => {
-              (draft as Record<string, unknown>)[key] = skater[key];
-            });
-          }
+        const rowUpdates = buildSkaterCellUpdates(existingSkater, skater);
+        if (rowUpdates.length === 0) {
+          continue;
         }
+
+        applySkaterSnapshot(skater);
+        cellUpdates.push(...rowUpdates);
       }
 
-      // Track cell updates if there are any
       if (cellUpdates.length > 0) {
         trackCellsUpdate(cellUpdates);
       }
     },
-    [data, trackCellsUpdate]
+    [skatersById, trackCellsUpdate]
   );
 
   const onRowAdd: NonNullable<UseDataGridProps<SkaterSchema>["onRowAdd"]> =
@@ -538,8 +555,35 @@ export function DataGridLiveDemo() {
   const height = Math.max(400, windowSize.height - 150);
   const selectedCellCount = tableMeta.selectionState?.selectedCells.size ?? 0;
 
-  if (!preloaded) {
-    return null;
+  if (preloadState === "loading") {
+    return (
+      <div className="container py-4">
+        <div className="rounded-md border border-dashed p-6 text-muted-foreground text-sm">
+          Loading skaters...
+        </div>
+      </div>
+    );
+  }
+
+  if (preloadState === "error") {
+    return (
+      <div className="container py-4">
+        <div className="flex flex-col items-start gap-4 rounded-md border border-dashed p-6">
+          <div>
+            <div className="font-medium text-sm">
+              Could not load the live grid
+            </div>
+            <div className="text-muted-foreground text-sm">
+              The initial skater preload failed. Retry once the API is
+              available.
+            </div>
+          </div>
+          <Button onClick={preloadCollection} type="button" variant="outline">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

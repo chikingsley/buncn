@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 type HitboxSize = "default" | "sm" | "lg";
 
 interface DataGridSelectHitboxProps {
-  htmlFor: string;
   children: React.ReactNode;
-  size?: HitboxSize;
   debug?: boolean;
+  htmlFor: string;
+  size?: HitboxSize;
 }
 
 function DataGridSelectHitbox({
@@ -49,9 +49,9 @@ function DataGridSelectHitbox({
 
 interface DataGridSelectCheckboxProps
   extends Omit<React.ComponentProps<typeof Checkbox>, "id"> {
-  rowNumber?: number;
-  hitboxSize?: HitboxSize;
   debug?: boolean;
+  hitboxSize?: HitboxSize;
+  rowNumber?: number;
 }
 
 function DataGridSelectCheckbox({
@@ -107,9 +107,9 @@ function DataGridSelectCheckbox({
 
 interface DataGridSelectHeaderProps<TData>
   extends Pick<HeaderContext<TData, unknown>, "table"> {
+  debug?: boolean;
   hitboxSize?: HitboxSize;
   readOnly?: boolean;
-  debug?: boolean;
 }
 
 function DataGridSelectHeader<TData>({
@@ -147,10 +147,10 @@ function DataGridSelectHeader<TData>({
 
 interface DataGridSelectCellProps<TData>
   extends Pick<CellContext<TData, unknown>, "row" | "table"> {
-  hitboxSize?: HitboxSize;
-  enableRowMarkers?: boolean;
-  readOnly?: boolean;
   debug?: boolean;
+  enableRowMarkers?: boolean;
+  hitboxSize?: HitboxSize;
+  readOnly?: boolean;
 }
 
 function DataGridSelectCell<TData>({
@@ -210,10 +210,10 @@ function DataGridSelectCell<TData>({
 
 interface GetDataGridSelectColumnOptions<TData>
   extends Omit<Partial<ColumnDef<TData>>, "id" | "header" | "cell"> {
-  enableRowMarkers?: boolean;
-  readOnly?: boolean;
-  hitboxSize?: HitboxSize;
   debug?: boolean;
+  enableRowMarkers?: boolean;
+  hitboxSize?: HitboxSize;
+  readOnly?: boolean;
 }
 
 export function getDataGridSelectColumn<TData>({

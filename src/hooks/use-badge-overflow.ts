@@ -7,11 +7,11 @@ const DEFAULT_BADGE_GAP = 4; // gap-1 = 4px
 const DEFAULT_OVERFLOW_BADGE_WIDTH = 40; // Approximate width of "+N" badge
 
 interface MeasureBadgeWidthProps {
-  label: string;
   cacheKey: string;
-  iconSize?: number;
-  maxWidth?: number;
   className?: string;
+  iconSize?: number;
+  label: string;
+  maxWidth?: number;
 }
 
 function measureBadgeWidth({
@@ -59,23 +59,23 @@ function measureBadgeWidth({
 }
 
 interface UseBadgeOverflowProps<T> {
-  items: T[];
-  getLabel: (item: T) => string;
-  containerRef: React.RefObject<HTMLElement | null>;
-  lineCount: number;
+  badgeGap?: number;
   cacheKeyPrefix?: string;
-  iconSize?: number;
-  maxWidth?: number;
   className?: string;
   containerPadding?: number;
-  badgeGap?: number;
+  containerRef: React.RefObject<HTMLElement | null>;
+  getLabel: (item: T) => string;
+  iconSize?: number;
+  items: T[];
+  lineCount: number;
+  maxWidth?: number;
   overflowBadgeWidth?: number;
 }
 
 interface UseBadgeOverflowReturn<T> {
-  visibleItems: T[];
-  hiddenCount: number;
   containerWidth: number;
+  hiddenCount: number;
+  visibleItems: T[];
 }
 
 export function useBadgeOverflow<T>({

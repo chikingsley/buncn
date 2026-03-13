@@ -23,11 +23,11 @@ import { UpdateTaskSheet } from "./update-task-sheet";
 
 interface TasksTableProps {
   data: Task[];
-  pageCount: number;
-  statusCounts: Awaited<ReturnType<typeof getTaskStatusCounts>>;
-  priorityCounts: Awaited<ReturnType<typeof getTaskPriorityCounts>>;
   estimatedHoursRange: Awaited<ReturnType<typeof getEstimatedHoursRange>>;
+  pageCount: number;
+  priorityCounts: Awaited<ReturnType<typeof getTaskPriorityCounts>>;
   queryKeys?: Partial<QueryKeys>;
+  statusCounts: Awaited<ReturnType<typeof getTaskStatusCounts>>;
 }
 
 export function TasksTable({

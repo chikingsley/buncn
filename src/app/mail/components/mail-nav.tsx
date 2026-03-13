@@ -8,9 +8,9 @@ import {
 import { cn } from "@/lib/utils";
 
 interface NavLink {
-  title: string;
-  label?: string;
   icon: LucideIcon;
+  label?: string;
+  title: string;
   variant: "default" | "ghost";
 }
 

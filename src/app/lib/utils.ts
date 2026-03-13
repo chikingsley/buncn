@@ -25,13 +25,15 @@ import {
 
 import { generateId } from "@/lib/id";
 
+const FIRST_CHAR_REGEX = /^./;
+
 export function generateRandomTask(input?: Partial<Task>): Task {
   return {
     id: generateId("task"),
     code: `TASK-${customAlphabet("0123456789", 4)()}`,
     title: faker.hacker
       .phrase()
-      .replace(/^./, (letter) => letter.toUpperCase()),
+      .replace(FIRST_CHAR_REGEX, (letter) => letter.toUpperCase()),
     estimatedHours: faker.number.int({ min: 1, max: 24 }),
     status: faker.helpers.shuffle(tasks.status.enumValues)[0] ?? "todo",
     label: faker.helpers.shuffle(tasks.label.enumValues)[0] ?? "bug",
